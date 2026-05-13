@@ -10,7 +10,30 @@ import {
 } from '@shikijs/transformers';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import { visit } from 'unist-util-visit';
 import { site } from './src/config/site.ts';
+
+// Astro's `base` prefix is applied by the routing layer and by Astro
+// components, but Markdown link nodes are emitted verbatim — so a
+// root-absolute href like `/docs/foo` in MDX renders as `/docs/foo`
+// in the deployed HTML and 404s under the project-site subpath.
+// This remark transform prepends the configured base to every link
+// whose URL starts with `/` (and isn't already prefixed, protocol-
+// relative, or an in-page fragment).
+function remarkBasePath(basePath) {
+  const prefix = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
+  return () => (tree) => {
+    if (!prefix) return;
+    visit(tree, 'link', (node) => {
+      const url = node.url;
+      if (typeof url !== 'string') return;
+      if (!url.startsWith('/')) return;
+      if (url.startsWith('//')) return;
+      if (url === prefix || url.startsWith(prefix + '/')) return;
+      node.url = prefix + url;
+    });
+  };
+}
 
 // https://astro.build/config
 export default defineConfig({
@@ -37,6 +60,9 @@ export default defineConfig({
         transformerNotationDiff(),
       ],
     },
+    remarkPlugins: [
+      remarkBasePath(process.env.PUBLIC_BASE_PATH ?? site.basePath),
+    ],
     rehypePlugins: [
       // Every h1/h2/h3/h4 gets a slug-based id. Per
       // gspec/features/documentation-section.md §4 P0.

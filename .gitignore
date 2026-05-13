@@ -6,6 +6,9 @@ context/
 dist/
 .astro/
 
+# Lychee link checker cache
+.lycheecache
+
 # Node
 node_modules/
 npm-debug.log*

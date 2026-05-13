@@ -18,24 +18,31 @@ timeout = 20
 retry_wait_time = 2
 max_retries = 2
 
-# The site is served from a base path on GitHub Pages — internal links in the
-# built HTML are prefixed with /maester-website. Tell lychee about it so that
-# relative-to-domain-root links resolve correctly when crawling the dist tree.
-base_url = "https://baller-software.github.io/maester-website"
+# Resolve directory-style links (e.g. /maester-website/about/) to index files.
+index_files = ["index.html"]
 
-# Skip well-known anchor-only fragments that don't correspond to real elements
+# The path-specific options (`--root-dir` for resolving root-relative links
+# and `--remap` for translating the deployed origin to the local staging
+# tree) live in the CI workflow because they need an absolute path. See
+# .github/workflows/deploy.yml.
+
 exclude_path = []
 
-# External hosts are checked but failures are warnings, not errors.
-# A failure on these (or anything matching exclude/) does not block the deploy.
+# Failures on these URLs don't block the deploy. The maester CLI project and
+# its npm package are not yet publicly published, so their canonical pages
+# 404/403 — we still want to keep the links in content so they go live when
+# the project does.
 exclude = [
   # Social/share previews — sometimes flaky and not load-bearing
   "^https://twitter\\.com",
   "^https://x\\.com",
+  # The maester CLI project & package — not yet publicly published
+  "^https://github\\.com/baller-software/maester(/|$)",
+  "^https://www\\.npmjs\\.com/package/@baller\\.software/maester",
 ]
 
 # Treat external-only failures as warnings rather than errors
 # (lychee CLI: pass `--accept-empty-fragments` etc. via workflow if needed)
 no_progress = false
 require_https = false
-include_fragments = true
+include_fragments = "full"
