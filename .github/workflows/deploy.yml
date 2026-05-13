@@ -49,6 +49,11 @@ jobs:
       - name: Verify asset & link integrity (lychee)
         uses: lycheeverse/lychee-action@v2
         with:
+          # Pin lychee to v0.24.2 so the config schema used here (notably
+          # `include_fragments = "full"`) matches what runs in CI; the
+          # action's bundled default is v0.23.0, which expects the older
+          # boolean form of that field.
+          lycheeVersion: v0.24.2
           args: >-
             --config lychee.toml
             --root-dir ${{ github.workspace }}/_lychee
