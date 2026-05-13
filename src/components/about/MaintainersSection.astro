@@ -1,0 +1,39 @@
+---
+// Maintainership section. Per gspec/features/about-page.md §4 P0:
+// identifies maintaining individual(s) or organization, indicates governance
+// model in a sentence or two, links to repo's maintainers/org page.
+
+import { site } from '../../config/site';
+---
+
+<section class="maintainers" aria-labelledby="maintainers-heading">
+  <h2 id="maintainers-heading">Who maintains it</h2>
+  <p>
+    Maester is maintained by{' '}
+    <a href={site.maintainer.url} rel="noopener external">
+      {site.maintainer.name}
+    </a>.
+  </p>
+  <p class="maintainers-governance">{site.maintainer.governance}</p>
+</section>
+
+<style>
+  .maintainers {
+    padding: 0;
+  }
+
+  .maintainers h2 {
+    margin-top: 0;
+  }
+
+  .maintainers p {
+    color: var(--fg);
+    line-height: 1.7;
+    margin: 0 0 1rem;
+    max-width: 38rem;
+  }
+
+  .maintainers-governance {
+    color: var(--fg-muted);
+  }
+</style>

@@ -1,0 +1,49 @@
+---
+// Project story / origin. Per gspec/features/about-page.md §4 P0:
+// 1–3 short paragraphs of narrative; focused on *why* the project exists.
+---
+
+<section class="story" aria-labelledby="story-heading">
+  <h2 id="story-heading">Why Maester exists</h2>
+  <p>
+    Most teams' documentation lives in too many places at once. Service
+    READMEs, library wikis, internal handbooks, design docs scattered across
+    private repos, and the inevitable "where is that one diagram again?"
+    Slack thread. Each source has its own owner, its own review cadence,
+    and its own definition of "current."
+  </p>
+  <p>
+    Maester is a thin tool for a focused problem: let each source declare
+    what it's willing to publish, and let a central aggregator pull those
+    pieces into one structured tree that humans and AI agents can read.
+    Source repos keep their ownership. Citadels get their reading view.
+    Nobody has to migrate a CMS.
+  </p>
+  <p>
+    The project started from the observation that AI coding agents perform
+    measurably better when they can ground their context against a single,
+    well-structured documentation surface — and that the same surface
+    happens to make life easier for the humans they assist.
+  </p>
+</section>
+
+<style>
+  .story {
+    padding: 3rem 0 0;
+  }
+
+  .story h2 {
+    margin-top: 0;
+  }
+
+  .story p {
+    color: var(--fg);
+    line-height: 1.7;
+    margin: 0 0 1rem;
+    max-width: 38rem;
+  }
+
+  .story p:last-child {
+    margin-bottom: 0;
+  }
+</style>

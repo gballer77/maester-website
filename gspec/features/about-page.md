@@ -56,37 +56,37 @@ This matters now because the home page is intentionally focused on the tool itse
 
 ## 4. Capabilities
 
-- [ ] **P0**: A project story section communicates the motivation and background
+- [x] **P0**: A project story section communicates the motivation and background
   - Section has a clear heading and one to three short paragraphs of narrative
   - Content reads as a story, not a feature list — focused on *why* the project exists
   - Section is visually distinct from the mission section
 
-- [ ] **P0**: A mission or purpose statement section articulates what the project stands for
+- [x] **P0**: A mission or purpose statement section articulates what the project stands for
   - Mission statement is given visual emphasis (e.g., larger type, distinct styling) so it is the focal point of the section
   - Statement is concise and scannable — ideally 1–3 sentences
   - Section is visually separated from the project story and maintainership sections
 
-- [ ] **P0**: A maintainership section identifies who maintains the project
+- [x] **P0**: A maintainership section identifies who maintains the project
   - Section names the maintaining individual(s) or organization
   - Section indicates the project's governance model in a sentence or two (e.g., maintained by a single author, maintained by an organization, community-led)
   - Section links to the source repository's maintainers or organization page when applicable
 
-- [ ] **P0**: A "Get involved" section provides clear paths to contribute or follow the project
+- [x] **P0**: A "Get involved" section provides clear paths to contribute or follow the project
   - Section includes a link to the source repository
   - Section includes a link to the project's issue tracker
   - Section lists any community channels the project uses (chat, discussion forum, mailing list) — or explicitly states that none exist
 
-- [ ] **P0**: The page is fully responsive across common device sizes
+- [x] **P0**: The page is fully responsive across common device sizes
   - Layout adapts cleanly to desktop (1024px+), tablet (768px), and mobile (375px) viewports
   - No horizontal scrolling on any viewport
   - Text remains readable at all sizes
 
-- [ ] **P1**: The page structure supports scannability
+- [x] **P1**: The page structure supports scannability
   - Clear visual hierarchy guides the visitor through story → mission → maintainership → get involved
   - Sections are separated with adequate spacing to avoid a dense, text-heavy appearance
   - The page can be skimmed in under 30 seconds to get the gist of the project's identity
 
-- [ ] **P2**: Semantic page structure supports accessibility
+- [x] **P2**: Semantic page structure supports accessibility
   - Page uses proper heading hierarchy (single h1, logical h2/h3 nesting)
   - All links have descriptive accessible names
   - Page is fully navigable via keyboard, with visible focus indicators

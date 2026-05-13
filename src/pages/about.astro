@@ -1,0 +1,56 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import StorySection from '../components/about/StorySection.astro';
+import MissionSection from '../components/about/MissionSection.astro';
+import MaintainersSection from '../components/about/MaintainersSection.astro';
+import GetInvolved from '../components/about/GetInvolved.astro';
+
+const title = 'About';
+const description =
+  'Maester is an open-source CLI for aggregating documentation from many sources into one central knowledge home. Learn the project story, mission, and how to contribute.';
+---
+
+<BaseLayout title={title} description={description}>
+  <article class="about">
+    <header class="about-header">
+      <h1>About Maester</h1>
+      <p class="about-lede">
+        A small tool for a focused problem: aggregating multi-repository
+        documentation without taking ownership away from the source repos
+        that produce it.
+      </p>
+    </header>
+
+    <StorySection />
+    <MissionSection />
+    <MaintainersSection />
+    <GetInvolved />
+  </article>
+</BaseLayout>
+
+<style>
+  .about {
+    max-width: 48rem;
+    margin: 0 auto;
+    padding: 1rem 0 2rem;
+  }
+
+  .about-header {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+  }
+
+  .about-header h1 {
+    margin: 0 0 0.75rem;
+    font-size: clamp(2.25rem, 3vw + 1rem, 3rem);
+  }
+
+  .about-lede {
+    color: var(--fg-muted);
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 38rem;
+  }
+</style>

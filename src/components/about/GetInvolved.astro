@@ -1,0 +1,96 @@
+---
+// "Get involved" section. Per gspec/features/about-page.md §4 P0:
+// links to source repo, issue tracker, and community channels (or explicitly
+// states that none exist). Resolved via gspec/architecture.md §9.12: no
+// dedicated chat/mailing list at this time; GitHub Discussions stands in.
+
+import { site } from '../../config/site';
+---
+
+<section class="involved" aria-labelledby="involved-heading">
+  <h2 id="involved-heading">Get involved</h2>
+  <p class="involved-intro">
+    Maester is open source. The fastest paths in:
+  </p>
+
+  <ul class="involved-list">
+    <li>
+      <a href={site.cliRepoUrl} rel="noopener external">Source repository</a>
+      <span class="involved-desc">— browse the code, read recent commits, file a PR.</span>
+    </li>
+    <li>
+      <a href={site.cliIssuesUrl} rel="noopener external">Issue tracker</a>
+      <span class="involved-desc">— report a bug, request a feature, or pick up a "good first issue".</span>
+    </li>
+    <li>
+      <a href={site.cliDiscussionsUrl} rel="noopener external">GitHub Discussions</a>
+      <span class="involved-desc">— ask questions and trade configuration tips with other adopters.</span>
+    </li>
+  </ul>
+
+  <p class="involved-aside">
+    There's no dedicated chat or mailing list at this time. Discussion happens
+    on the source repository — keeping the project's history in one place
+    that everyone can search.
+  </p>
+</section>
+
+<style>
+  .involved {
+    padding: 0;
+  }
+
+  .involved h2 {
+    margin-top: 0;
+  }
+
+  .involved-intro {
+    color: var(--fg);
+    margin: 0 0 1rem;
+  }
+
+  .involved-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .involved-list li {
+    padding: 1rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: border-color 120ms ease;
+  }
+
+  .involved-list li:hover {
+    border-color: var(--border-strong);
+  }
+
+  .involved-list a {
+    font-weight: 600;
+    color: var(--fg);
+  }
+
+  .involved-list a:hover {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .involved-desc {
+    color: var(--fg-muted);
+    margin-left: 0.25rem;
+  }
+
+  .involved-aside {
+    color: var(--fg-muted);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    max-width: 38rem;
+    margin: 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+</style>
