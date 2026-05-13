@@ -1,0 +1,206 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ExampleCard from '../../components/examples/ExampleCard.astro';
+import { EXAMPLE_CATEGORIES } from '../../content/config';
+
+const entries = await getCollection('examples');
+
+// Sort by title for a stable order; tag filtering re-orders visually,
+// not in DOM.
+entries.sort((a, b) => a.data.title.localeCompare(b.data.title));
+
+// Compute which categories actually have at least one example so we can
+// omit empty filter pills.
+const used = new Set<string>();
+for (const e of entries) for (const c of e.data.categories) used.add(c);
+const filters = EXAMPLE_CATEGORIES.filter((c) => used.has(c));
+
+const title = 'Examples';
+const description =
+  'Curated configurations and recipes for Maester — copy a starting point that matches your situation.';
+---
+
+<BaseLayout title={title} description={description}>
+  <header class="examples-header">
+    <h1>Examples</h1>
+    <p class="examples-lede">
+      Configurations and recipes drawn from real Maester setups. Pick the
+      one closest to your situation, copy the snippet, and adjust.
+    </p>
+  </header>
+
+  {
+    filters.length > 1 && (
+      <div class="examples-filters" role="toolbar" aria-label="Filter examples by category">
+        <button type="button" class="filter-pill active" data-filter="all">
+          All
+        </button>
+        {filters.map((c) => (
+          <button type="button" class="filter-pill" data-filter={c}>
+            {c}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  {
+    entries.length > 0 ? (
+      <ul class="examples-grid" id="examples-grid">
+        {entries.map((entry) => (
+          <li class="examples-grid-item" data-categories={entry.data.categories.join(',')}>
+            <ExampleCard entry={entry} />
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="examples-empty">
+        No examples yet. Add MDX files under <code>src/content/examples/</code> to populate this gallery.
+      </p>
+    )
+  }
+
+  <p class="examples-no-results" id="examples-no-results" hidden>
+    No examples match this category yet.
+  </p>
+</BaseLayout>
+
+<script>
+  // URL-state category filter. The category query param is the source of
+  // truth; pills + grid sync to it. Click a pill → push state → re-render.
+  // Per gspec/features/examples-page.md §4 P0:
+  //   - filter state reflected in URL so view is shareable
+  //   - no filter applied → all examples visible
+
+  const pills = document.querySelectorAll<HTMLButtonElement>('.filter-pill');
+  const items = document.querySelectorAll<HTMLElement>('.examples-grid-item');
+  const noResults = document.getElementById('examples-no-results');
+
+  function applyFilter(category: string) {
+    const target = (category || 'all').toLowerCase();
+    let visible = 0;
+    items.forEach((item) => {
+      const cats = (item.dataset.categories ?? '')
+        .split(',')
+        .map((c) => c.toLowerCase());
+      const show = target === 'all' || cats.includes(target);
+      item.toggleAttribute('hidden', !show);
+      if (show) visible++;
+    });
+    pills.forEach((pill) => {
+      const active = (pill.dataset.filter ?? 'all').toLowerCase() === target;
+      pill.classList.toggle('active', active);
+      pill.setAttribute('aria-pressed', String(active));
+    });
+    if (noResults) noResults.toggleAttribute('hidden', visible > 0);
+  }
+
+  function readUrlCategory(): string {
+    const url = new URL(window.location.href);
+    return url.searchParams.get('category') ?? 'all';
+  }
+
+  function writeUrlCategory(category: string) {
+    const url = new URL(window.location.href);
+    if (category === 'all') url.searchParams.delete('category');
+    else url.searchParams.set('category', category);
+    history.replaceState(null, '', url.toString());
+  }
+
+  pills.forEach((pill) => {
+    pill.addEventListener('click', () => {
+      const category = pill.dataset.filter ?? 'all';
+      writeUrlCategory(category);
+      applyFilter(category);
+    });
+  });
+
+  // Initialise from the URL on first paint.
+  applyFilter(readUrlCategory());
+</script>
+
+<style>
+  .examples-header {
+    padding: 1rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+  }
+
+  .examples-header h1 {
+    margin: 0 0 0.5rem;
+  }
+
+  .examples-lede {
+    color: var(--fg-muted);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 38rem;
+  }
+
+  .examples-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .filter-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--fg-muted);
+    padding: 0.4375rem 0.875rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition:
+      color 120ms ease,
+      background 120ms ease,
+      border-color 120ms ease;
+  }
+
+  .filter-pill:hover {
+    color: var(--fg);
+    border-color: var(--border-strong);
+  }
+
+  .filter-pill.active {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .examples-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+
+  .examples-grid-item[hidden] {
+    display: none;
+  }
+
+  .examples-empty,
+  .examples-no-results {
+    color: var(--fg-muted);
+    font-size: 0.9375rem;
+    padding: 2rem 0;
+  }
+
+  @media (max-width: 960px) {
+    .examples-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .examples-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

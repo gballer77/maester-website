@@ -55,45 +55,45 @@ This matters now because examples are one of the highest-converting elements on 
 
 ## 4. Capabilities
 
-- [ ] **P0**: The examples landing page lists every available example in a grid
+- [x] **P0**: The examples landing page lists every available example in a grid
   - All examples render as cards in a grid layout
   - Each card includes the example's title and short description
   - Cards have consistent height/width within a row to maintain visual rhythm
   - The page has a clear heading and brief intro explaining what the section is
 
-- [ ] **P0**: Each example card shows a visible code or configuration preview
+- [x] **P0**: Each example card shows a visible code or configuration preview
   - Each card includes a small preview of the example's primary code or configuration content (provided by `[[code-snippets]]`)
   - The preview is truncated or scrollable when content exceeds the card's allotted height
   - The preview does not overflow the card or break the grid
 
-- [ ] **P0**: Each example card links to a fuller resource
+- [x] **P0**: Each example card links to a fuller resource
   - Each card includes at least one outbound link — to a sample repository, a dedicated docs page, or an expanded in-page view
   - Links are visually distinct from card body text
   - Outbound links to external resources open according to standard link behavior (no forced new tabs unless the visitor explicitly opts in)
 
-- [ ] **P0**: Examples can be grouped or filtered by category/tag
+- [x] **P0**: Examples can be grouped or filtered by category/tag
   - Each example declares one or more category labels in its source
   - The page exposes a way to filter or visually group examples by category (e.g., tag pills above the grid, or labeled sections)
   - When no filter is applied, all examples are visible
   - Filter state is reflected in the URL so a filtered view can be shared via link
 
-- [ ] **P0**: The page is fully responsive across common device sizes
+- [x] **P0**: The page is fully responsive across common device sizes
   - On desktop (1024px+), examples render in a multi-column grid
   - On tablet (768px), the grid reflows to fewer columns
   - On mobile (375px), examples render as a single column
   - No horizontal scrolling on any viewport
 
-- [ ] **P0**: New examples can be added without page-template changes
+- [x] **P0**: New examples can be added without page-template changes
   - Examples are authored in a consistent format (e.g., one Markdown/MDX file per example or a single registry file)
   - Adding a new example requires creating or editing one source file, with no changes to the page template
   - Build fails with a clear error if a required example field (title, description, category, snippet) is missing
 
-- [ ] **P1**: The page structure supports scannability
+- [x] **P1**: The page structure supports scannability
   - Visitors can skim the entire gallery to understand the range of examples in under 30 seconds
   - Card titles are visually prominent so scanning is title-driven, not body-driven
   - Spacing and grouping prevent the gallery from feeling like a wall of text
 
-- [ ] **P2**: Semantic structure supports accessibility
+- [x] **P2**: Semantic structure supports accessibility
   - Each card is a single accessible region with a clear name
   - Card outbound links have descriptive accessible names (not just "Learn more")
   - Category filters are keyboard-accessible with visible focus indicators

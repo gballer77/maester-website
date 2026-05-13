@@ -1,0 +1,127 @@
+---
+// Card rendering one example. Per gspec/features/examples-page.md §4 P0.
+
+import type { CollectionEntry } from 'astro:content';
+import { isExternal } from '../../lib/url';
+
+interface Props {
+  entry: CollectionEntry<'examples'>;
+}
+
+const { entry } = Astro.props;
+const { title, description, categories, link } = entry.data;
+const { Content } = await entry.render();
+
+const linkIsExternal = isExternal(link);
+const rel = linkIsExternal ? 'noopener external' : undefined;
+---
+
+<article class="example-card" data-categories={categories.join(',')}>
+  <div class="example-card-header">
+    <h3>{title}</h3>
+    <ul class="example-card-tags" aria-label="Categories">
+      {categories.map((c) => <li>{c}</li>)}
+    </ul>
+  </div>
+
+  <p class="example-card-desc">{description}</p>
+
+  <div class="example-card-snippet">
+    <Content />
+  </div>
+
+  <a class="example-card-link" href={link} rel={rel}>
+    See full example
+    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+    </svg>
+  </a>
+</article>
+
+<style>
+  .example-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: border-color 120ms ease;
+  }
+
+  .example-card:hover {
+    border-color: var(--border-strong);
+  }
+
+  .example-card-header {
+    padding: 1rem 1.25rem 0;
+  }
+
+  .example-card-header h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.0625rem;
+    color: var(--fg);
+  }
+
+  .example-card-tags {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  .example-card-tags li {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--fg-muted);
+    background: var(--elevated);
+    border: 1px solid var(--border);
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .example-card-desc {
+    margin: 0.75rem 1.25rem 1rem;
+    color: var(--fg-muted);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .example-card-snippet {
+    /* Bound the snippet preview height; longer content scrolls inside the card. */
+    max-height: 12.5rem;
+    overflow: auto;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 0;
+    background: var(--bg);
+  }
+
+  /* Tame the global pre styling so it doesn't get a second border inside the card. */
+  .example-card-snippet :global(pre.astro-code),
+  .example-card-snippet :global(.code-block) {
+    border: 0 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+
+  .example-card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    padding: 0.875rem 1.25rem;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    background: var(--surface);
+  }
+
+  .example-card-link:hover {
+    background: var(--elevated);
+    text-decoration: none;
+  }
+</style>

@@ -1,0 +1,22 @@
+---
+title: Multi-repo docs aggregator
+description: Pull READMEs and docs trees from three sibling repositories into one local citadel for cross-repo reading.
+categories: [Setup]
+link: https://github.com/baller-software/maester/tree/main/examples/multi-repo-docs
+---
+
+```yaml
+# citadel.yaml
+schemaVersion: 2
+baseDir: context
+maesters:
+  - name: api-service
+    url: https://github.com/your-org/api-service
+    ref: main
+  - name: web-app
+    url: https://github.com/your-org/web-app
+    ref: main
+  - name: shared-libs
+    url: https://github.com/your-org/shared-libs
+    ref: main
+```

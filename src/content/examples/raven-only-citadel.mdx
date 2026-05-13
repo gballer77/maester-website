@@ -1,0 +1,24 @@
+---
+title: Raven-only citadel
+description: Aggregate documentation from third-party repos that don't publish their own maester.yaml using explicit include globs.
+categories: [Configuration, Recipes]
+link: https://github.com/baller-software/maester/tree/main/examples/raven-only-citadel
+---
+
+```yaml
+# citadel.yaml — pulling docs from third-party repos
+schemaVersion: 2
+maesters: []
+ravens:
+  - name: astro
+    url: https://github.com/withastro/docs
+    ref: main
+    includes:
+      - 'src/content/docs/en/**/*.mdx'
+      - 'README.md'
+  - name: tailwind
+    url: https://github.com/tailwindlabs/tailwindcss.com
+    ref: main
+    includes:
+      - 'src/pages/docs/**/*.mdx'
+```

@@ -1,0 +1,28 @@
+---
+title: CI-driven docs sync
+description: Sync a citadel inside GitHub Actions so the aggregated tree is always rebuilt against the latest sources before publication.
+categories: [CI]
+link: https://github.com/baller-software/maester/tree/main/examples/ci-aggregation
+---
+
+```yaml
+# .github/workflows/sync-docs.yml
+name: Sync docs
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npx @baller.software/maester sync --json
+        env:
+          GH_TOKEN: ${{ secrets.READ_TOKEN }}
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: context }
+```
