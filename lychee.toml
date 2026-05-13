@@ -38,7 +38,7 @@ exclude = [
   "^https://x\\.com",
   # The maester CLI project & package — not yet publicly published
   "^https://github\\.com/baller-software/maester(/|$)",
-  "^https://www\\.npmjs\\.com/package/@baller\\.software/maester",
+  "^https://www\\.npmjs\\.com/package/baller-maester",
 ]
 
 # Treat external-only failures as warnings rather than errors
