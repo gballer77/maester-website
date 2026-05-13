@@ -1,0 +1,56 @@
+---
+title: Citadels
+description: A citadel is an aggregator that pulls documentation from many sources into one structured tree.
+group: Concepts
+order: 2
+---
+
+A **citadel** is a directory that aggregates documentation from many
+source repositories. The directory has a `citadel.yaml` at its root
+listing the sources to pull from, and a destination tree (by default
+under `citadel/`) where the synced content materialises.
+
+## Two kinds of source
+
+Citadels know two kinds of source:
+
+- **Maesters** — repositories that publish their own `maester.yaml`.
+  The citadel consumes whatever the maester publishes; the maester owns
+  the surface.
+- **Ravens** — git repositories without a `maester.yaml`. The citadel
+  declares its own `includes` list of paths and globs to materialise.
+  Use ravens for public third-party repos or for repos you have access
+  to but don't own.
+
+Both kinds sync in a single `maester sync` pass. Output is labelled
+`[maester]` or `[raven]` so it's easy to tell them apart.
+
+## Configuration example
+
+```yaml
+# citadel.yaml
+schemaVersion: 2
+baseDir: context
+maesters:
+  - name: source-context
+    url: https://github.com/your-org/your-source
+    ref: main
+ravens:
+  - name: external-style-guide
+    url: https://github.com/another-org/style-guide
+    ref: main
+    includes:
+      - 'docs/**/*.md'
+      - 'README.md'
+```
+
+`baseDir` changes the parent folder once for every source. With
+`baseDir: context`, the example above would surface as
+`context/source-context/` and `context/external-style-guide/`.
+
+## Sync semantics
+
+`maester sync` is atomic per source: each source's destination is
+swapped in only after its checkout completes successfully. If one source
+fails, the others still land. A non-zero exit code at the end of the
+run signals "at least one source failed" — useful for CI.

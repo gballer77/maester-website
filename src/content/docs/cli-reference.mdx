@@ -1,0 +1,95 @@
+---
+title: CLI reference
+description: Commands and flags for the maester CLI — init, publish, sync, and global options.
+group: Reference
+order: 2
+---
+
+This page lists every Maester subcommand and the flags they accept. For
+prose explanations of how the commands fit together, start with
+[Getting started](/docs/getting-started).
+
+## Global flags
+
+These flags work on every subcommand:
+
+| Flag                    | Description                                                       |
+| ----------------------- | ----------------------------------------------------------------- |
+| `--verbose`, `-v`       | Log file paths, env detection results, and skip reasons.          |
+| `--quiet`               | Print only failures and the final summary line.                   |
+| `--json`                | Emit machine-readable NDJSON output instead of styled console UI. |
+| `--no-welcome`          | Suppress the banner on `--help`, `--version`, and first run.      |
+| `--help`, `-h`          | Show command help and exit.                                       |
+| `--version`             | Print the installed Maester version and exit.                     |
+
+The `MAESTER_NO_WELCOME=1` environment variable has the same effect as
+`--no-welcome`.
+
+## maester init
+
+Interactive walk-through that creates a `citadel.yaml` at the current
+working directory and (if a `package.json` is present) adds a
+`maester:sync` script entry.
+
+```bash
+maester init
+```
+
+Prompts cover:
+
+- One or more **maesters** to register, with optional `auth.type: token`
+  env-var-name validation.
+- A configurable `baseDir` (default: `citadel`).
+- Optional **ravens** with `includes` lists.
+
+The walk-through is idempotent — re-running it on an existing
+`citadel.yaml` merges new sources without losing existing ones.
+
+## maester publish
+
+Interactive walk-through that creates a `maester.yaml` at the current
+working directory.
+
+```bash
+maester publish
+```
+
+It scans for likely-publishable files (READMEs, anything under `docs/`)
+and asks per-entry for description, categories, and tags.
+
+## maester sync
+
+Synchronises the configured sources into the citadel's destination
+tree.
+
+```bash
+maester sync                # all sources
+maester sync source-context # one named source
+maester sync source-a source-b  # several
+```
+
+Sync is atomic per source: each source's destination is swapped in only
+after its checkout completes successfully. Individual source failures
+are isolated — other sources still land — but the overall exit code is
+non-zero if any source failed, so the command is CI-safe.
+
+### Sync output
+
+By default, sync prints one line per source as it lands:
+
+```
+[maester] source-context  →  context/source-context/  (43 files, 218 KB)
+[raven]   third-party     →  context/third-party/     (12 files, 41 KB)
+```
+
+With `--json`, each source emits NDJSON records suitable for piping to
+`jq` or another structured-log processor.
+
+## Exit codes
+
+| Code | Meaning                                                          |
+| ---- | ---------------------------------------------------------------- |
+| 0    | All sources synced successfully.                                 |
+| 1    | One or more sources failed; see logs for which.                  |
+| 2    | Invalid input — bad `citadel.yaml`, unknown flag, missing arg.   |
+| 3    | Environment problem — missing required env var, git not found.   |

@@ -8,6 +8,8 @@ import {
   transformerNotationDiff,
   transformerNotationHighlight,
 } from '@shikijs/transformers';
+import rehypeSlug from 'rehype-slug';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import { site } from './src/config/site.ts';
 
 // https://astro.build/config
@@ -35,5 +37,26 @@ export default defineConfig({
         transformerNotationDiff(),
       ],
     },
+    rehypePlugins: [
+      // Every h1/h2/h3/h4 gets a slug-based id. Per
+      // gspec/features/documentation-section.md §4 P0.
+      rehypeSlug,
+      [
+        rehypeAutolinkHeadings,
+        {
+          behavior: 'append',
+          properties: {
+            className: ['heading-anchor'],
+            ariaLabel: 'Copy link to this section',
+          },
+          content: {
+            type: 'element',
+            tagName: 'span',
+            properties: { 'aria-hidden': 'true' },
+            children: [{ type: 'text', value: '#' }],
+          },
+        },
+      ],
+    ],
   },
 });

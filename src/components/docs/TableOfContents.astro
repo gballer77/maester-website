@@ -1,0 +1,152 @@
+---
+// In-page table of contents. Built from the page's h2 and h3 headings
+// via Astro's `headings` array (returned from entry.render()).
+// Scroll-spy highlights the active section as the reader scrolls.
+//
+// Per gspec/features/documentation-section.md §4 P0:
+//   - includes all h2 and h3 headings
+//   - clicking scrolls to the heading
+//   - active section highlighted as the reader scrolls
+//   - hidden / empty-state when no h2 headings
+
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{
+  items.length > 0 && (
+    <nav class="toc" aria-label="On this page">
+      <p class="toc-heading">On this page</p>
+      <ul>
+        {items.map((h) => (
+          <li class:list={[`toc-depth-${h.depth}`]}>
+            <a href={`#${h.slug}`} data-toc-link={h.slug}>
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+{items.length === 0 && <div class="toc-empty">&nbsp;</div>}
+
+<script>
+  // Scroll-spy: highlight the TOC item matching the currently-visible section.
+  const tocLinks = document.querySelectorAll<HTMLAnchorElement>('.toc a[data-toc-link]');
+  if (tocLinks.length > 0) {
+    const headingIds = Array.from(tocLinks).map((a) => a.dataset.tocLink!);
+    const headings = headingIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => !!el);
+
+    let activeId: string | null = null;
+
+    function setActive(id: string | null) {
+      if (id === activeId) return;
+      activeId = id;
+      tocLinks.forEach((link) => {
+        if (link.dataset.tocLink === id) link.classList.add('active');
+        else link.classList.remove('active');
+      });
+    }
+
+    const observer = new IntersectionObserver(
+      () => {
+        // Pick the topmost heading that is at or above the trigger line.
+        const trigger = window.innerHeight * 0.25;
+        let current: HTMLElement | null = null;
+        for (const h of headings) {
+          const rect = h.getBoundingClientRect();
+          if (rect.top <= trigger) current = h;
+          else break;
+        }
+        setActive(current ? current.id : headings[0]?.id ?? null);
+      },
+      { rootMargin: '0px 0px -75% 0px', threshold: [0, 1] },
+    );
+
+    headings.forEach((h) => observer.observe(h));
+
+    // Also re-evaluate on plain scroll for smoothness.
+    let raf = 0;
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (raf) return;
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          const trigger = window.innerHeight * 0.25;
+          let current: HTMLElement | null = null;
+          for (const h of headings) {
+            const rect = h.getBoundingClientRect();
+            if (rect.top <= trigger) current = h;
+            else break;
+          }
+          setActive(current ? current.id : headings[0]?.id ?? null);
+        });
+      },
+      { passive: true },
+    );
+  }
+</script>
+
+<style>
+  .toc {
+    font-size: 0.875rem;
+    position: sticky;
+    top: 5rem;
+    padding: 1rem 0.5rem;
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+  }
+
+  .toc-heading {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--fg-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 0.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .toc a {
+    display: block;
+    color: var(--fg-muted);
+    padding: 0.25rem 0.5rem;
+    line-height: 1.4;
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    margin-left: -2px;
+    transition: color 120ms ease;
+  }
+
+  .toc a:hover {
+    color: var(--fg);
+    text-decoration: none;
+  }
+
+  .toc a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+
+  .toc .toc-depth-3 a {
+    padding-left: 1.25rem;
+    font-size: 0.8125rem;
+  }
+</style>

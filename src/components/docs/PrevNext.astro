@@ -1,0 +1,131 @@
+---
+// Bottom-of-page prev/next navigation. Derived from the same sidebar order
+// as Sidebar.astro so the two stay in lockstep.
+//
+// Per gspec/features/documentation-section.md §4 P0:
+//   - prev/next link at the bottom of every docs page
+//   - first page shows only "next"; last shows only "prev"
+//   - link includes the destination page's title
+// Per §4 P1: empty-state when the docs set has only one page.
+
+import { getCollection } from 'astro:content';
+import { withBase } from '../../lib/url';
+
+interface Props {
+  currentSlug: string;
+}
+
+const { currentSlug } = Astro.props;
+
+const GROUP_ORDER: readonly string[] = ['Getting Started', 'Concepts', 'Reference'];
+
+function inferGroup(slug: string, explicit?: string): string {
+  if (explicit) return explicit;
+  const head = slug.split('/')[0];
+  if (head === slug) return 'Reference';
+  return head
+    .split('-')
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(' ');
+}
+
+function groupRank(name: string): number {
+  const i = GROUP_ORDER.indexOf(name);
+  return i === -1 ? GROUP_ORDER.length + name.charCodeAt(0) : i;
+}
+
+// Flatten all docs into the same order the sidebar shows.
+const entries = await getCollection('docs');
+const flat = [...entries].sort((a, b) => {
+  const gA = inferGroup(a.slug, a.data.group);
+  const gB = inferGroup(b.slug, b.data.group);
+  if (gA !== gB) return groupRank(gA) - groupRank(gB);
+  if (a.data.order !== b.data.order) return a.data.order - b.data.order;
+  return a.data.title.localeCompare(b.data.title);
+});
+
+const idx = flat.findIndex((e) => e.slug === currentSlug);
+const prev = idx > 0 ? flat[idx - 1] : null;
+const next = idx >= 0 && idx < flat.length - 1 ? flat[idx + 1] : null;
+
+const hasNav = Boolean(prev || next);
+---
+
+{
+  hasNav && (
+    <nav class="prev-next" aria-label="Page navigation">
+      {prev ? (
+        <a href={withBase(`/docs/${prev.slug}`)} class="prev-next-link prev">
+          <span class="prev-next-label">Previous</span>
+          <span class="prev-next-title">{prev.data.title}</span>
+        </a>
+      ) : (
+        <span class="prev-next-spacer" />
+      )}
+      {next ? (
+        <a href={withBase(`/docs/${next.slug}`)} class="prev-next-link next">
+          <span class="prev-next-label">Next</span>
+          <span class="prev-next-title">{next.data.title}</span>
+        </a>
+      ) : (
+        <span class="prev-next-spacer" />
+      )}
+    </nav>
+  )
+}
+
+<style>
+  .prev-next {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .prev-next-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--fg);
+    text-decoration: none;
+    transition: border-color 120ms ease;
+  }
+
+  .prev-next-link:hover {
+    border-color: var(--accent);
+    text-decoration: none;
+  }
+
+  .prev-next-link.next {
+    text-align: right;
+  }
+
+  .prev-next-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--fg-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .prev-next-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--fg);
+  }
+
+  .prev-next-spacer {
+    display: block;
+  }
+
+  @media (max-width: 600px) {
+    .prev-next {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

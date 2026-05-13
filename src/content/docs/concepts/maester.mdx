@@ -1,0 +1,48 @@
+---
+title: Maesters
+description: A maester is a source repository that declares what documentation it publishes via a maester.yaml file at its root.
+group: Concepts
+order: 1
+---
+
+A **maester** is any git repository that publishes documentation for
+aggregation. The maester owns its publish surface: it decides which files
+to share via a single `maester.yaml` at the repository root.
+
+## Why source-owned?
+
+The alternative — having a central aggregator decide what to pull from
+each source — pushes coordination costs onto whoever maintains the
+aggregator. As the number of sources grows, that person needs to know the
+internal structure of every repository they pull from, and any source-side
+restructuring breaks the aggregator silently.
+
+Maesters invert that. Each repository's maintainers decide what is
+"public" for documentation purposes, declare it in plain YAML, and review
+changes to that surface alongside their code changes.
+
+## The publish manifest
+
+Running `maester publish` from a source repository drops a `maester.yaml`
+with a structure like this:
+
+```yaml
+name: source-context
+entries:
+  - path: README.md
+    description: Project overview and quickstart.
+  - path: docs/architecture.md
+    categories: [reference]
+  - path: docs/api/**/*.md
+    tags: [api, generated]
+```
+
+Each entry declares a path or glob, plus optional `description`,
+`categories`, and `tags`. Citadels can use those hints to organise their
+view; nothing about the publish manifest forces a particular consumer.
+
+## What gets pulled
+
+A citadel that registers this maester pulls only the files listed in
+the publish manifest — not the entire repository. That keeps sync
+fast and avoids surfacing files that the source didn't intend to share.

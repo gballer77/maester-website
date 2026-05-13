@@ -1,0 +1,145 @@
+---
+import { getCollection } from 'astro:content';
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import { withBase } from '../../lib/url';
+
+const entries = await getCollection('docs');
+
+// Build a one-screen overview grouped the same way the sidebar groups.
+const GROUP_ORDER: readonly string[] = ['Getting Started', 'Concepts', 'Reference'];
+
+function inferGroup(slug: string, explicit?: string): string {
+  if (explicit) return explicit;
+  const head = slug.split('/')[0];
+  if (head === slug) return 'Reference';
+  return head
+    .split('-')
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(' ');
+}
+
+function groupRank(name: string): number {
+  const i = GROUP_ORDER.indexOf(name);
+  return i === -1 ? GROUP_ORDER.length + name.charCodeAt(0) : i;
+}
+
+const grouped = new Map<string, typeof entries>();
+for (const entry of entries) {
+  const group = inferGroup(entry.slug, entry.data.group);
+  const list = grouped.get(group) ?? [];
+  list.push(entry);
+  grouped.set(group, list);
+}
+for (const [group, list] of grouped) {
+  list.sort((a, b) => {
+    if (a.data.order !== b.data.order) return a.data.order - b.data.order;
+    return a.data.title.localeCompare(b.data.title);
+  });
+}
+
+const groupsInOrder = [...grouped.entries()].sort(
+  ([a], [b]) => groupRank(a) - groupRank(b),
+);
+---
+
+<DocsLayout
+  title="Documentation"
+  description="Maester documentation — concepts, getting started, configuration reference, and CLI reference."
+>
+  <h1>Documentation</h1>
+  <p class="docs-lede">
+    Concepts, setup walk-throughs, and reference for the Maester CLI and its
+    configuration. Use the sidebar to browse, or jump straight to a section
+    below.
+  </p>
+
+  {
+    groupsInOrder.map(([group, list]) => (
+      <section class="docs-section">
+        <h2>{group}</h2>
+        <ul class="docs-section-list">
+          {list.map((entry) => (
+            <li>
+              <a href={withBase(`/docs/${entry.slug}`)}>
+                <strong>{entry.data.title}</strong>
+                <span>{entry.data.description}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  {
+    groupsInOrder.length === 0 && (
+      <p class="docs-empty">
+        No documentation entries yet. Add Markdown/MDX files under
+        <code>src/content/docs/</code> to populate this page.
+      </p>
+    )
+  }
+</DocsLayout>
+
+<style>
+  .docs-lede {
+    color: var(--fg-muted);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    margin-top: 0.5rem;
+    margin-bottom: 2.5rem;
+    max-width: 38rem;
+  }
+
+  .docs-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .docs-section h2 {
+    font-size: 1.25rem;
+    margin: 0 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .docs-section-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .docs-section-list a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.875rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--fg);
+    text-decoration: none;
+    transition: border-color 120ms ease;
+  }
+
+  .docs-section-list a:hover {
+    border-color: var(--accent);
+    text-decoration: none;
+  }
+
+  .docs-section-list strong {
+    font-size: 1rem;
+    color: var(--fg);
+  }
+
+  .docs-section-list span {
+    color: var(--fg-muted);
+    font-size: 0.9375rem;
+  }
+
+  .docs-empty {
+    color: var(--fg-muted);
+    font-size: 0.9375rem;
+  }
+</style>

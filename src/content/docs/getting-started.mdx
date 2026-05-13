@@ -1,0 +1,67 @@
+---
+title: Getting started
+description: Install Maester, register a citadel, and pull docs from your first source repository.
+group: Getting Started
+order: 1
+---
+
+Maester is a Node CLI. You install it once, then use it to manage two
+kinds of configuration files: a `citadel.yaml` that lists the sources you
+pull from, and (optionally) a `maester.yaml` on each source that declares
+what it publishes.
+
+## Install
+
+```bash
+npm install -g @baller.software/maester
+```
+
+If you'd rather not install globally, every command below also works
+through `npx`:
+
+```bash
+npx @baller.software/maester init
+```
+
+## Register your first citadel
+
+Run the interactive walk-through from the root of the repository you
+want to use as an aggregation point:
+
+```bash
+maester init
+```
+
+It will:
+
+1. Prompt for one or more source repositories to register as **maesters**.
+2. Validate any `auth.type` env-var names so secrets never land in the
+   `citadel.yaml`.
+3. Offer to register one or more unaffiliated source repos as **ravens**.
+4. Add an idempotent `maester:sync` script to `package.json` if one
+   exists.
+
+When it's done, you'll have a `citadel.yaml` at the repo root. Commit it.
+
+## Sync the citadel
+
+To pull every source in your `citadel.yaml` into the local tree:
+
+```bash
+maester sync
+```
+
+Or to pull a single named source:
+
+```bash
+maester sync source-context
+```
+
+Sync uses partial clones and sparse checkouts — it only fetches the
+paths the source actually publishes.
+
+## Next steps
+
+- Learn the [maester / citadel model](/docs/concepts/maester).
+- See the [configuration reference](/docs/configuration).
+- Look up command flags in the [CLI reference](/docs/cli-reference).

@@ -1,0 +1,92 @@
+---
+title: Configuration
+description: Reference for citadel.yaml and maester.yaml — the two configuration files Maester reads.
+group: Reference
+order: 1
+---
+
+Maester is configured through two YAML files: `citadel.yaml` lives at
+the root of an aggregating repository, and `maester.yaml` lives at the
+root of each source repository.
+
+## citadel.yaml
+
+The aggregator's configuration. Lists the sources to pull from.
+
+```yaml
+schemaVersion: 2
+baseDir: context           # optional; defaults to 'citadel'
+maesters:
+  - name: source-context
+    url: https://github.com/your-org/source-repo
+    ref: main
+    destination: docs/external/source-context   # optional override
+    auth:
+      type: token
+      env: GH_TOKEN
+ravens:
+  - name: third-party
+    url: https://github.com/another/repo
+    ref: main
+    includes:
+      - 'README.md'
+      - 'docs/**/*.md'
+```
+
+### Top-level fields
+
+| Field           | Type     | Required | Description                                                                 |
+| --------------- | -------- | -------- | --------------------------------------------------------------------------- |
+| `schemaVersion` | integer  | yes      | Schema version. Use `2`. v1 documents are still accepted and migrated.       |
+| `baseDir`       | string   | no       | Parent folder for sources whose `destination` is unset. Default: `citadel`.  |
+| `maesters`      | list     | no       | Sources that publish their own `maester.yaml`.                              |
+| `ravens`        | list     | no       | Sources without a publish manifest; the citadel declares `includes` itself. |
+
+### Per-source fields
+
+Both `maesters[]` and `ravens[]` share:
+
+- `name` — unique identifier; becomes the destination folder name.
+- `url` — git URL (https or ssh).
+- `ref` — branch, tag, or commit SHA.
+- `destination` — optional override for the output path. Wins over `baseDir`.
+- `auth` — optional credentials object. `auth.env` names the env var that
+  holds the token; the value itself never lands in YAML.
+
+Ravens additionally take `includes` — a required list of glob patterns
+that select what to materialise from the source.
+
+## maester.yaml
+
+The publish manifest a source repository ships. Lists the documentation
+the source is willing to share.
+
+```yaml
+name: my-source
+entries:
+  - path: README.md
+    description: Project overview.
+  - path: docs/architecture.md
+    categories: [reference]
+  - path: docs/recipes/**/*.md
+    tags: [recipes, advanced]
+```
+
+### Fields
+
+- `name` — the publish identity. Must be unique across citadels that
+  consume this source.
+- `entries[]` — the publish list. Each entry declares a `path` (or glob)
+  and optional descriptive metadata.
+
+The publish manifest doesn't enforce a category taxonomy. Citadels
+choose whether to surface those hints in their consumer.
+
+## Generating either file
+
+You don't have to write these by hand:
+
+```bash
+maester init      # interactive citadel.yaml walk-through
+maester publish   # interactive maester.yaml walk-through
+```
