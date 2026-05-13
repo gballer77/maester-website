@@ -57,49 +57,49 @@ This matters now because the landing page is the entry point for every other pro
 
 ## 4. Capabilities
 
-- [ ] **P0**: The hero section communicates what the tool is at a glance
+- [x] **P0**: The hero section communicates what the tool is at a glance
   - Project name is the most prominent element on the page
   - A tagline (one short sentence) immediately follows the name
   - A supporting 1–2 sentence value statement clarifies what the tool does and for whom
   - Primary CTAs are visible without scrolling on desktop viewports
 
-- [ ] **P0**: Primary CTAs link to the source repository and the package registry
+- [x] **P0**: Primary CTAs link to the source repository and the package registry
   - One CTA links to the project's source repository
   - One CTA links to the project's package registry listing (or equivalent install location)
   - CTAs are visually distinct from secondary links and meet a minimum tap-target size for mobile
 
-- [ ] **P0**: A concept overview section explains the tool's core model
+- [x] **P0**: A concept overview section explains the tool's core model
   - Section presents the tool's primary concept(s) in brief prose
   - At least one supporting visual element accompanies the prose (diagram, illustration, or annotated example)
   - Section is visually distinct from the hero and from the benefits section
 
-- [ ] **P0**: A key benefits section lists 3–6 concrete benefits
+- [x] **P0**: A key benefits section lists 3–6 concrete benefits
   - Each benefit has a short title and a 1–2 sentence description
   - Benefits are presented in a consistent, repeatable layout pattern (e.g., a grid of cards)
   - Benefits are scannable — a reader can absorb the full set in under 30 seconds
 
-- [ ] **P0**: An install/usage snippet section shows a copyable one-line command
+- [x] **P0**: An install/usage snippet section shows a copyable one-line command
   - The snippet is rendered with monospaced styling and clear visual containment
   - A copy-to-clipboard affordance is present (provided by `[[code-snippets]]`)
   - The snippet shows the minimal command to start using the tool
 
-- [ ] **P0**: The page is fully responsive across common device sizes
+- [x] **P0**: The page is fully responsive across common device sizes
   - Layout adapts cleanly to desktop (1024px+), tablet (768px), and mobile (375px) viewports
   - No horizontal scrolling on any viewport
   - Text remains readable and visual elements scale appropriately at all sizes
   - Primary CTAs remain prominent on mobile
 
-- [ ] **P1**: The page loads quickly and feels responsive
+- [x] **P1**: The page loads quickly and feels responsive
   - Largest Contentful Paint occurs within 2 seconds on a standard broadband connection
   - Images and visual elements are appropriately sized and optimized for web delivery
   - No layout shift after initial render
 
-- [ ] **P1**: The page structure supports scannability
+- [x] **P1**: The page structure supports scannability
   - Clear visual hierarchy guides the visitor from name → tagline → concept → benefits → install
   - Sections are separated with adequate spacing to avoid a dense, text-heavy appearance
   - A first-time visitor can grasp the tool's purpose within 15 seconds of landing
 
-- [ ] **P2**: Semantic page structure supports accessibility
+- [x] **P2**: Semantic page structure supports accessibility
   - Page uses proper heading hierarchy (single h1 for the project name, logical h2/h3 nesting)
   - All visual elements have descriptive alternative text where appropriate
   - Page is fully navigable via keyboard, with visible focus indicators

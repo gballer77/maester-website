@@ -1,0 +1,123 @@
+---
+// Concept overview: prose explanation + diagram for the maester/citadel model.
+// Per gspec/features/home-page.md §4 P0: section presents primary concepts
+// in brief prose, with at least one supporting visual element.
+
+import { withBase } from '../../lib/url';
+---
+
+<section class="concept" aria-labelledby="concept-heading">
+  <div class="concept-inner">
+    <div class="concept-text">
+      <h2 id="concept-heading">Two roles. One model.</h2>
+      <p>
+        A <strong>maester</strong> is a source repository that declares — in a
+        single YAML file — which of its docs are worth sharing. The repo owns
+        what it publishes, and the same review process that gates code gates
+        the docs surface.
+      </p>
+      <p>
+        A <strong>citadel</strong> is an aggregator. It lists the maesters
+        (and optional unaffiliated git repos called <em>ravens</em>) it pulls
+        from, and surfaces them all in one directory tree. The citadel chooses
+        its sources; the sources choose what they expose.
+      </p>
+      <p class="concept-summary">
+        Source-owned configuration. Central aggregation. Zero magic.
+      </p>
+    </div>
+
+    <figure class="concept-figure">
+      <img
+        src={withBase('/diagrams/maester-citadel.svg')}
+        alt="Diagram: three maester source repositories on the left, each publishing documentation, with arrows feeding into a single citadel knowledge home on the right."
+        width="720"
+        height="360"
+        loading="lazy"
+      />
+      <figcaption>The maester / citadel relationship.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .concept {
+    padding: 4rem 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .concept-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .concept-text h2 {
+    font-size: clamp(1.5rem, 2vw + 0.75rem, 2rem);
+    margin-top: 0;
+    margin-bottom: 1rem;
+  }
+
+  .concept-text p {
+    color: var(--fg);
+    line-height: 1.65;
+    margin: 0 0 1rem;
+  }
+
+  .concept-text strong {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  .concept-text em {
+    color: var(--fg-muted);
+    font-style: normal;
+    font-family: var(--font-mono);
+    font-size: 0.95em;
+  }
+
+  .concept-summary {
+    font-family: var(--font-mono);
+    font-size: 0.9375rem;
+    color: var(--accent);
+    border-left: 2px solid var(--accent);
+    padding-left: 1rem;
+    margin-top: 1.5rem !important;
+  }
+
+  .concept-figure {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem 1.5rem 1.25rem;
+    margin: 0;
+    color: var(--fg-muted);
+  }
+
+  .concept-figure img {
+    width: 100%;
+    height: auto;
+    color: var(--fg);
+  }
+
+  .concept-figure figcaption {
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--fg-faint);
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 900px) {
+    .concept-inner {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .concept {
+      padding: 2.5rem 0;
+    }
+  }
+</style>

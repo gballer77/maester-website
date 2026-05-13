@@ -1,0 +1,66 @@
+---
+// Install snippet: one-line command with copy affordance.
+// Per gspec/features/home-page.md §4 P0: monospaced styling, clear visual
+// containment, copy-to-clipboard, minimal command.
+
+import CodeBlock from '../code/CodeBlock.astro';
+import { site } from '../../config/site';
+import { withBase } from '../../lib/url';
+---
+
+<section class="install" aria-labelledby="install-heading">
+  <h2 id="install-heading">Get started in two lines</h2>
+  <p class="install-intro">
+    Install once, then register a maester or a citadel from any repo. The
+    same review process that owns your code owns the docs surface.
+  </p>
+
+  <div class="install-blocks">
+    <CodeBlock code={site.installCommand} lang="bash" filename="install" />
+    <CodeBlock code="npx maester init" lang="bash" filename="register a citadel" />
+  </div>
+
+  <p class="install-after">
+    Full setup walk-through in <a href={withBase('/docs/getting-started')}>Getting started</a>.
+  </p>
+</section>
+
+<style>
+  .install {
+    padding: 4rem 0;
+    border-top: 1px solid var(--border);
+    max-width: 52rem;
+    margin: 0 auto;
+  }
+
+  .install h2 {
+    margin-top: 0;
+    text-align: center;
+  }
+
+  .install-intro {
+    text-align: center;
+    color: var(--fg-muted);
+    max-width: 40rem;
+    margin: 0.5rem auto 2rem;
+    line-height: 1.6;
+  }
+
+  .install-blocks {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .install-after {
+    text-align: center;
+    color: var(--fg-muted);
+    font-size: 0.9375rem;
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .install {
+      padding: 2.5rem 0;
+    }
+  }
+</style>

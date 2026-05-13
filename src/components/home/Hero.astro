@@ -1,0 +1,148 @@
+---
+// Hero section: project name (h1), tagline, value statement, primary CTAs.
+// Per gspec/features/home-page.md §4 P0.
+
+import { site } from '../../config/site';
+import { withBase } from '../../lib/url';
+---
+
+<section class="hero" aria-labelledby="hero-heading">
+  <p class="hero-eyebrow">Open-source CLI · v0.x</p>
+  <h1 id="hero-heading">{site.name}</h1>
+  <p class="hero-tagline">
+    Aggregate documentation from many repositories into one central knowledge home —
+    built for developers and AI&nbsp;agents.
+  </p>
+  <p class="hero-supporting">
+    Source repositories publish what they want to share. A central aggregator
+    pulls them together. No platform, no lock-in — just configuration files
+    that the same review process owns as your code.
+  </p>
+
+  <div class="hero-ctas">
+    <a class="cta cta-primary" href={site.cliRepoUrl} rel="noopener external">
+      View on GitHub
+      <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+      </svg>
+    </a>
+    <a class="cta cta-secondary" href={site.cliRegistryUrl} rel="noopener external">
+      View on npm
+      <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+      </svg>
+    </a>
+  </div>
+
+  <p class="hero-docs-link">
+    Or <a href={withBase('/docs/getting-started')}>read the getting-started guide</a>.
+  </p>
+</section>
+
+<style>
+  .hero {
+    padding: 4rem 0 3rem;
+    max-width: 56rem;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0 0 1rem;
+  }
+
+  .hero h1 {
+    font-family: var(--font-mono);
+    font-size: clamp(2.5rem, 5vw + 1rem, 4.5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin: 0 0 1.25rem;
+    color: var(--fg);
+  }
+
+  .hero-tagline {
+    font-size: clamp(1.0625rem, 1vw + 0.85rem, 1.375rem);
+    line-height: 1.5;
+    color: var(--fg);
+    max-width: 42rem;
+    margin: 0 auto 1.25rem;
+  }
+
+  .hero-supporting {
+    font-size: 1rem;
+    color: var(--fg-muted);
+    max-width: 42rem;
+    margin: 0 auto 2rem;
+    line-height: 1.65;
+  }
+
+  .hero-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .hero-docs-link {
+    margin-top: 1.25rem;
+    font-size: 0.9375rem;
+    color: var(--fg-muted);
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6875rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    min-height: 44px;
+    transition:
+      background 120ms ease,
+      color 120ms ease,
+      border-color 120ms ease;
+  }
+
+  .cta:hover {
+    text-decoration: none;
+  }
+
+  .cta-primary {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border: 1px solid var(--accent);
+  }
+
+  .cta-primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    color: var(--accent-fg);
+  }
+
+  .cta-secondary {
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--border-strong);
+  }
+
+  .cta-secondary:hover {
+    background: var(--elevated);
+    color: var(--fg);
+    border-color: var(--fg-muted);
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      padding: 2.5rem 0 2rem;
+    }
+  }
+</style>
