@@ -10,12 +10,13 @@ export const site = {
   description:
     'Aggregate documentation from many sources into one central knowledge home — built for developers and AI agents.',
 
-  // Production hosting (GitHub Pages project site).
+  // Production hosting (GitHub Pages, served via a custom apex/subdomain).
   // `productionUrl` is the origin only, per Astro's `site` config convention.
-  // `basePath` is the project-site subpath. Together they form the canonical
+  // `basePath` is '/' because the site is served at the domain root rather
+  // than under a project-site subpath. Together they form the canonical
   // URL: productionUrl + basePath + route. See astro.config.mjs.
-  productionUrl: 'https://baller-software.github.io',
-  basePath: '/maester-website',
+  productionUrl: 'https://maester.baller.software',
+  basePath: '/',
 
   // This website's source repository.
   websiteRepoUrl: 'https://github.com/baller-software/maester-website',

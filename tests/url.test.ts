@@ -2,16 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { withBase, absoluteUrl, isExternal } from '../src/lib/url';
 
 describe('withBase', () => {
-  it('prefixes a leading-slash path with the base', () => {
-    expect(withBase('/about')).toBe('/maester-website/about');
+  it('returns a leading-slash path unchanged at root base', () => {
+    expect(withBase('/about')).toBe('/about');
   });
 
-  it('prefixes a no-leading-slash path with the base', () => {
-    expect(withBase('about')).toBe('/maester-website/about');
+  it('adds a leading slash to a no-leading-slash path', () => {
+    expect(withBase('about')).toBe('/about');
   });
 
-  it('returns the base for the root path with a trailing slash', () => {
-    expect(withBase('/')).toBe('/maester-website/');
+  it('returns the root path with a trailing slash', () => {
+    expect(withBase('/')).toBe('/');
   });
 
   it('leaves in-page anchors unchanged', () => {
@@ -33,23 +33,15 @@ describe('withBase', () => {
   it('leaves tel: URLs unchanged', () => {
     expect(withBase('tel:+15555550100')).toBe('tel:+15555550100');
   });
-
-  it('is idempotent on already-base-prefixed paths', () => {
-    expect(withBase('/maester-website/about')).toBe('/maester-website/about');
-    expect(withBase('/maester-website')).toBe('/maester-website');
-    expect(withBase('/maester-website/')).toBe('/maester-website/');
-  });
 });
 
 describe('absoluteUrl', () => {
-  it('builds an absolute URL with host + base + path', () => {
-    expect(absoluteUrl('/about')).toBe(
-      'https://baller-software.github.io/maester-website/about',
-    );
+  it('builds an absolute URL with host + path', () => {
+    expect(absoluteUrl('/about')).toBe('https://maester.baller.software/about');
   });
 
   it('builds an absolute URL for the root', () => {
-    expect(absoluteUrl('/')).toBe('https://baller-software.github.io/maester-website/');
+    expect(absoluteUrl('/')).toBe('https://maester.baller.software/');
   });
 
   it('returns external URLs unchanged', () => {

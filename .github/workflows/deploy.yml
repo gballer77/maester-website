@@ -38,20 +38,17 @@ jobs:
       - name: Build site (Astro + Pagefind index)
         run: npm run build
 
-      # Astro writes files to dist/, but GitHub Pages serves them under the
-      # /maester-website base path. Stage a directory whose layout mirrors the
-      # live URL structure so lychee can resolve root-relative links locally.
-      - name: Stage dist for link checking
-        run: |
-          mkdir -p _lychee
-          ln -s ../dist _lychee/maester-website
-
       # Install and run lychee directly rather than via lycheeverse/lychee-action.
       # The released v2.x of that action can't open the v0.24.x tarball (the
       # binary moved into a subfolder); the fix exists on master but isn't
       # tagged yet. Owning these ~10 lines avoids further wrapper churn and
       # keeps the lychee version aligned with our config schema (notably
       # `include_fragments = "full"`, which is v0.24+).
+      #
+      # The site is served at the custom-domain root, so dist/ already mirrors
+      # the live URL layout — no staging symlink needed. The --remap rewrites
+      # the production origin to the local dist/ tree so absolute internal
+      # links (e.g. canonical URLs in the sitemap) resolve to local files.
       - name: Verify asset & link integrity (lychee)
         env:
           LYCHEE_VERSION: v0.24.2
@@ -63,9 +60,9 @@ jobs:
           tar -xzf lychee.tar.gz
           "${RUNNER_TEMP}/lychee-x86_64-unknown-linux-gnu/lychee" \
             --config "${GITHUB_WORKSPACE}/lychee.toml" \
-            --root-dir "${GITHUB_WORKSPACE}/_lychee" \
-            --remap "https://baller-software.github.io file://${GITHUB_WORKSPACE}/_lychee" \
-            "${GITHUB_WORKSPACE}/_lychee/maester-website"
+            --root-dir "${GITHUB_WORKSPACE}/dist" \
+            --remap "https://maester.baller.software file://${GITHUB_WORKSPACE}/dist" \
+            "${GITHUB_WORKSPACE}/dist"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

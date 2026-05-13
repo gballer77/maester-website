@@ -18,7 +18,7 @@ timeout = 20
 retry_wait_time = 2
 max_retries = 2
 
-# Resolve directory-style links (e.g. /maester-website/about/) to index files.
+# Resolve directory-style links (e.g. /about/) to index files.
 index_files = ["index.html"]
 
 # The path-specific options (`--root-dir` for resolving root-relative links

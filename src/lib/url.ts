@@ -43,10 +43,15 @@ function resolveBase(): string {
 /**
  * Prefix an in-site path with the project's base path.
  *
+ * The site is currently served at the custom-domain root (basePath '/'),
+ * so the prefix is empty and these helpers normalize leading slashes only.
+ * The implementation still honors a non-trivial base, so the same code keeps
+ * working if the deploy ever moves back to a project-site subpath.
+ *
  * @example
- *   withBase('/about')        // → '/maester-website/about'
- *   withBase('about')         // → '/maester-website/about'
- *   withBase('/')             // → '/maester-website/'
+ *   withBase('/about')        // → '/about'
+ *   withBase('about')         // → '/about'
+ *   withBase('/')             // → '/'
  *   withBase('#section')      // → '#section' (in-page anchor, unchanged)
  *   withBase('https://x.com') // → 'https://x.com' (external, unchanged)
  */
@@ -78,7 +83,7 @@ export function withBase(pathOrUrl: string): string {
  *
  * @example
  *   absoluteUrl('/about')
- *   // → 'https://baller-software.github.io/maester-website/about'
+ *   // → 'https://maester.baller.software/about'
  */
 export function absoluteUrl(pathOrUrl: string): string {
   if (isExternal(pathOrUrl)) return pathOrUrl;

@@ -461,8 +461,8 @@ The site is fully static and reads no environment variables at runtime. A small 
 
 | Variable                     | Purpose                                                                                        | Required? | Secret? | Example                                     |
 |------------------------------|------------------------------------------------------------------------------------------------|-----------|---------|---------------------------------------------|
-| `PUBLIC_SITE_URL`            | Override `site.productionUrl` from `src/config/site.ts` when deploying to a different host. Used by `astro build` to emit canonical URLs and the sitemap. | no        | no      | `https://baller-software.github.io/maester-website` |
-| `PUBLIC_BASE_PATH`           | Override `site.basePath` for non-default deploys                                               | no        | no      | `/maester-website`                          |
+| `PUBLIC_SITE_URL`            | Override `site.productionUrl` from `src/config/site.ts` when deploying to a different host. Used by `astro build` to emit canonical URLs and the sitemap. | no        | no      | `https://maester.baller.software`           |
+| `PUBLIC_BASE_PATH`           | Override `site.basePath` for non-default deploys (e.g. preview builds under a subpath)         | no        | no      | `/maester-website`                          |
 
 Both are read inside `astro.config.mjs` via `process.env`. If unset, the build falls back to the values in `src/config/site.ts` — which is the normal path.
 
@@ -615,7 +615,7 @@ This section captures gaps identified while reading the specs against an impleme
 
 **Why it matters:** Without these, `astro.config.mjs` cannot set `site` or `base`, canonical URLs cannot be emitted, sitemap entries cannot be absolute, and `robots.txt`'s `Sitemap:` directive cannot be written. The lychee CI check cannot validate base-path-prefixed links.
 
-**Resolution:** Website repo is `baller-software/maester-website`. Production URL: `https://baller-software.github.io/maester-website`. Base path: `/maester-website`. These values are recorded in `src/config/site.ts` at implementation time.
+**Resolution:** Website repo is `baller-software/maester-website`. The site is served from GitHub Pages under the custom subdomain `maester.baller.software` (configured via a `public/CNAME` file that Astro copies into `dist/`). Production URL: `https://maester.baller.software`. Base path: `/` (root deployment, not a project-site subpath). These values are recorded in `src/config/site.ts` at implementation time.
 
 #### 9.3 — Product's source repo and package name (CTA + install targets)
 
