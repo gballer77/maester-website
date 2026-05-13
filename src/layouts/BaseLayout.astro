@@ -7,6 +7,7 @@ import MetaTags from '../components/seo/MetaTags.astro';
 import SkipLink from '../components/shell/SkipLink.astro';
 import Header from '../components/shell/Header.astro';
 import Footer from '../components/shell/Footer.astro';
+import SearchPalette from '../components/docs/SearchPalette.astro';
 
 interface Props {
   /** Page title. Required — build fails per gspec/features/seo-metadata.md §4 P0. */
@@ -52,6 +53,7 @@ if (!title || !description) {
       <slot />
     </main>
     <Footer />
+    <SearchPalette />
   </body>
 </html>
 

@@ -1,0 +1,7 @@
+# Pagefind configuration. Scopes the search index to the documentation
+# section so home / about / examples / changelog content does not pollute
+# results. Per gspec/features/docs-search.md §3 "Out of scope: Search across
+# pages outside the documentation section".
+
+site: dist
+glob: "docs/**/*.html"

@@ -8,14 +8,14 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && pagefind",
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
     "check:links": "lychee --config lychee.toml dist",
-    "search:index": "pagefind --site dist"
+    "search:index": "pagefind"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",

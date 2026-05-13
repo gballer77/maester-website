@@ -61,51 +61,51 @@ This matters now because once the documentation section exists and starts accumu
 
 ## 4. Capabilities
 
-- [ ] **P0**: A search index covers every documentation page
+- [x] **P0**: A search index covers every documentation page
   - The index is generated at build time from the docs content (titles, headings, body text)
   - Adding a new docs page automatically adds it to the index on the next build — no manual indexing step required
   - The index is small enough to ship with the static build without significantly inflating page weight (target: under 200 KB compressed for a small-to-medium docs set)
 
-- [ ] **P0**: A search trigger is present in the site header on docs-accessible routes
+- [x] **P0**: A search trigger is present in the site header on docs-accessible routes
   - The trigger is keyboard-accessible with a visible focus indicator
   - The trigger has a descriptive accessible name (e.g., "Search documentation")
   - Activating the trigger opens the search palette and moves focus to the search input
 
-- [ ] **P0**: A keyboard shortcut opens the search palette
+- [x] **P0**: A keyboard shortcut opens the search palette
   - Pressing `Cmd+K` on macOS or `Ctrl+K` elsewhere opens the palette and moves focus to the input
   - The shortcut works from any page that has the search trigger available
   - The shortcut does not interfere with the browser's built-in shortcuts (e.g., does not block the address-bar focus shortcut)
   - The shortcut is discoverable via a visible hint near the search trigger (e.g., "⌘K")
 
-- [ ] **P0**: The search palette accepts queries and shows ranked results as the user types
+- [x] **P0**: The search palette accepts queries and shows ranked results as the user types
   - Typing in the input updates the result list with low latency (no perceptible delay for a small index)
   - Results are ordered by relevance, with title/heading matches ranked above body-only matches
   - An empty query state shows either nothing or a brief prompt; it does not show all pages
   - Result list is bounded to a reasonable maximum (e.g., 10–20 visible results) with scrolling for the remainder
 
-- [ ] **P0**: Each result entry shows page title, matched heading, and a text snippet
+- [x] **P0**: Each result entry shows page title, matched heading, and a text snippet
   - Page title is always shown
   - If the match is in a specific heading (not just the page body), the heading is shown beneath the title
   - A short snippet of the surrounding text accompanies the result, with the matched query terms emphasized
   - Clicking or pressing enter on a result navigates to the page (and to the specific heading anchor when applicable)
 
-- [ ] **P0**: The palette supports full keyboard navigation
+- [x] **P0**: The palette supports full keyboard navigation
   - Arrow keys move the highlighted result up or down
   - Enter opens the highlighted result
   - Escape closes the palette and returns focus to the trigger
   - The currently highlighted result is communicated to assistive technologies
 
-- [ ] **P0**: The search palette is responsive across common device sizes
+- [x] **P0**: The search palette is responsive across common device sizes
   - On desktop, the palette appears as a centered modal
   - On mobile, the palette occupies the screen in a touch-friendly layout
   - On every size, the input is the primary focus and the result list is scrollable
   - The palette does not cause page-level horizontal overflow
 
-- [ ] **P1**: Empty-state handling when there are no results
+- [x] **P1**: Empty-state handling when there are no results
   - When a query has zero matches, the palette shows a clear "no results" message with the query echoed back
   - The message suggests checking spelling or trying a different term
 
-- [ ] **P2**: Search performance remains responsive at scale
+- [x] **P2**: Search performance remains responsive at scale
   - With at least 100 docs pages, typed-query latency to first rendered result remains under 100 ms on a mid-range device
   - The palette does not block the main thread for a perceptible amount of time during query updates
 

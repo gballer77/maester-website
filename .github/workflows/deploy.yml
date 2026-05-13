@@ -35,11 +35,8 @@ jobs:
       - name: Run unit tests
         run: npm test
 
-      - name: Build site
+      - name: Build site (Astro + Pagefind index)
         run: npm run build
-
-      - name: Generate search index (Pagefind)
-        run: npm run search:index
 
       - name: Verify asset & link integrity (lychee)
         uses: lycheeverse/lychee-action@v2
