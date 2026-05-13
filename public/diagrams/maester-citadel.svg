@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-label="Maester and citadel diagram: many maesters publish docs that a citadel aggregates into one central knowledge home">
+  <title>The maester / citadel model</title>
+  <desc>Three maester source repositories on the left, each publishing documentation, fed by arrows into a single citadel knowledge home on the right.</desc>
+
+  <!-- Background -->
+  <rect width="720" height="360" fill="none"/>
+
+  <!-- Maesters (sources) -->
+  <g font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="14">
+    <g>
+      <rect x="40" y="40" width="180" height="64" rx="8" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.4"/>
+      <text x="130" y="68" text-anchor="middle" font-weight="600" fill="currentColor">maester</text>
+      <text x="130" y="88" text-anchor="middle" fill="currentColor" opacity="0.7">source repo A</text>
+    </g>
+    <g>
+      <rect x="40" y="148" width="180" height="64" rx="8" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.4"/>
+      <text x="130" y="176" text-anchor="middle" font-weight="600" fill="currentColor">maester</text>
+      <text x="130" y="196" text-anchor="middle" fill="currentColor" opacity="0.7">source repo B</text>
+    </g>
+    <g>
+      <rect x="40" y="256" width="180" height="64" rx="8" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.4"/>
+      <text x="130" y="284" text-anchor="middle" font-weight="600" fill="currentColor">maester</text>
+      <text x="130" y="304" text-anchor="middle" fill="currentColor" opacity="0.7">source repo C</text>
+    </g>
+  </g>
+
+  <!-- Arrows -->
+  <g stroke="#7CE7C7" stroke-width="2.5" fill="none">
+    <defs>
+      <marker id="arrowhead" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+        <path d="M0,0 L12,6 L0,12 z" fill="#7CE7C7"/>
+      </marker>
+    </defs>
+    <path d="M220,72 C310,72 360,140 460,180" marker-end="url(#arrowhead)"/>
+    <path d="M220,180 L460,180" marker-end="url(#arrowhead)"/>
+    <path d="M220,288 C310,288 360,220 460,180" marker-end="url(#arrowhead)"/>
+  </g>
+
+  <!-- Citadel -->
+  <g font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="16">
+    <rect x="470" y="120" width="220" height="120" rx="12" fill="#7CE7C7" fill-opacity="0.12" stroke="#7CE7C7" stroke-width="2"/>
+    <text x="580" y="170" text-anchor="middle" font-weight="700" fill="currentColor">citadel</text>
+    <text x="580" y="194" text-anchor="middle" fill="currentColor" opacity="0.75" font-size="13">aggregated</text>
+    <text x="580" y="212" text-anchor="middle" fill="currentColor" opacity="0.75" font-size="13">knowledge home</text>
+  </g>
+</svg>

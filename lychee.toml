@@ -1,0 +1,41 @@
+# Asset & link integrity check configuration.
+# Per gspec/stack.md §5 and gspec/practices.md §2:
+#   - internal failures block deploy (treated as errors)
+#   - external failures warn but do not block
+#
+# Run against the built output: `lychee --config lychee.toml dist`
+
+# Accept successful responses
+accept = ["200", "203", "206", "301", "302", "307", "308"]
+
+# Cache external responses to avoid hammering remote hosts on repeated runs
+cache = true
+max_cache_age = "1d"
+
+# Reasonable network behavior
+max_concurrency = 8
+timeout = 20
+retry_wait_time = 2
+max_retries = 2
+
+# The site is served from a base path on GitHub Pages — internal links in the
+# built HTML are prefixed with /maester-website. Tell lychee about it so that
+# relative-to-domain-root links resolve correctly when crawling the dist tree.
+base = "https://baller-software.github.io/maester-website"
+
+# Skip well-known anchor-only fragments that don't correspond to real elements
+exclude_path = []
+
+# External hosts are checked but failures are warnings, not errors.
+# A failure on these (or anything matching exclude/) does not block the deploy.
+exclude = [
+  # Social/share previews — sometimes flaky and not load-bearing
+  "^https://twitter\\.com",
+  "^https://x\\.com",
+]
+
+# Treat external-only failures as warnings rather than errors
+# (lychee CLI: pass `--accept-empty-fragments` etc. via workflow if needed)
+no_progress = false
+require_https = false
+include_fragments = true

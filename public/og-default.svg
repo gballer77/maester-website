@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#0a0d0c"/>
+  <rect x="40" y="40" width="1120" height="550" rx="20" fill="#111716" stroke="#2a3530" stroke-width="2"/>
+  <text x="100" y="280" font-family="ui-monospace, 'SF Mono', Menlo, monospace" font-size="120" font-weight="700" fill="#7CE7C7">Maester</text>
+  <text x="100" y="360" font-family="ui-sans-serif, system-ui, sans-serif" font-size="36" fill="#a3aea8">Aggregate documentation from many sources</text>
+  <text x="100" y="408" font-family="ui-sans-serif, system-ui, sans-serif" font-size="36" fill="#a3aea8">into one central knowledge home.</text>
+  <text x="100" y="540" font-family="ui-monospace, 'SF Mono', Menlo, monospace" font-size="28" fill="#6e7a74" letter-spacing="2">baller-software.github.io/maester-website</text>
+</svg>
