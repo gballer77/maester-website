@@ -17,7 +17,7 @@ const benefits: Benefit[] = [
   {
     title: 'One pass, many sources',
     description:
-      'A single `maester sync` command pulls every source in your citadel — maesters and ravens — into one place atomically.',
+      'A single `maester sync` command pulls every source in your citadel into one place atomically, whether each source publishes its own manifest or the citadel declares an `includes` list.',
   },
   {
     title: 'Built for AI agents',
@@ -32,7 +32,7 @@ const benefits: Benefit[] = [
   {
     title: 'Partial clones, sparse checkouts',
     description:
-      'Sync pulls only what the maester publishes. No full-repo clones to land a README.',
+      'Sync pulls only the paths the source declares — via its `maester.yaml` or the citadel-side `includes` list. No full-repo clones to land a README.',
   },
   {
     title: 'Open by default',

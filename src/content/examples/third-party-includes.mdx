@@ -1,15 +1,14 @@
 ---
-title: Raven-only citadel
-description: Aggregate documentation from third-party repos that don't publish their own maester.yaml using explicit include globs.
+title: Third-party docs via includes
+description: Aggregate documentation from third-party repos that don't publish their own maester.yaml by declaring an includes list on each source.
 categories: [Configuration, Recipes]
-link: https://github.com/baller-software/maester/tree/main/examples/raven-only-citadel
+link: https://github.com/baller-software/maester/tree/main/examples/third-party-includes
 ---
 
 ```yaml
 # citadel.yaml — pulling docs from third-party repos
-schemaVersion: 2
-maesters: []
-ravens:
+schemaVersion: 1
+sources:
   - name: astro
     url: https://github.com/withastro/docs
     ref: main

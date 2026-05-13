@@ -14,17 +14,18 @@ root of each source repository.
 The aggregator's configuration. Lists the sources to pull from.
 
 ```yaml
-schemaVersion: 2
+schemaVersion: 1
 baseDir: context           # optional; defaults to 'citadel'
-maesters:
+sources:
+  # Manifest-driven: the remote publishes its own maester.yaml.
   - name: source-context
     url: https://github.com/your-org/source-repo
     ref: main
     destination: docs/external/source-context   # optional override
     auth:
       type: token
-      env: GH_TOKEN
-ravens:
+      envVar: GH_TOKEN
+  # Includes-driven: the citadel declares what to pull.
   - name: third-party
     url: https://github.com/another/repo
     ref: main
@@ -37,24 +38,33 @@ ravens:
 
 | Field           | Type     | Required | Description                                                                 |
 | --------------- | -------- | -------- | --------------------------------------------------------------------------- |
-| `schemaVersion` | integer  | yes      | Schema version. Use `2`. v1 documents are still accepted and migrated.       |
+| `schemaVersion` | integer  | yes      | Schema version. Current version is `1`.                                     |
 | `baseDir`       | string   | no       | Parent folder for sources whose `destination` is unset. Default: `citadel`.  |
-| `maesters`      | list     | no       | Sources that publish their own `maester.yaml`.                              |
-| `ravens`        | list     | no       | Sources without a publish manifest; the citadel declares `includes` itself. |
+| `sources`       | list     | yes      | The remote git repositories this citadel pulls from. At least one entry.    |
 
 ### Per-source fields
 
-Both `maesters[]` and `ravens[]` share:
+Every entry in `sources[]` accepts:
 
-- `name` — unique identifier; becomes the destination folder name.
-- `url` — git URL (https or ssh).
-- `ref` — branch, tag, or commit SHA.
-- `destination` — optional override for the output path. Wins over `baseDir`.
-- `auth` — optional credentials object. `auth.env` names the env var that
-  holds the token; the value itself never lands in YAML.
+- `name` — unique slug; becomes the destination folder name.
+- `url` — git URL (`https://`, `ssh://`, `file://`, or `git@host:path`).
+- `ref` — optional branch, tag, or commit SHA. Defaults to the remote's
+  default branch.
+- `includes` — optional list of glob patterns. **When set, the citadel
+  owns the filter set and the remote `maester.yaml` is not consulted.
+  When unset, sync looks for a `maester.yaml` on the remote and uses its
+  paths.** An empty `includes` array is rejected.
+- `destination` — optional override for the output path. Wins over
+  `baseDir`.
+- `auth` — optional credentials object. `auth.envVar` names the env var
+  that holds the token; the value itself never lands in YAML.
+- `description`, `tags` — optional metadata surfaced in `--verbose`
+  output.
 
-Ravens additionally take `includes` — a required list of glob patterns
-that select what to materialise from the source.
+The two source modes — manifest-driven (no `includes`) and includes-driven
+(`includes` set) — are processed by the same sync command. Use
+includes-driven sources for public third-party repos or repos you have
+read access to but do not own.
 
 ## maester.yaml
 
@@ -62,22 +72,23 @@ The publish manifest a source repository ships. Lists the documentation
 the source is willing to share.
 
 ```yaml
-name: my-source
-entries:
+schemaVersion: 1
+documents:
   - path: README.md
+    category: readme
     description: Project overview.
   - path: docs/architecture.md
-    categories: [reference]
+    category: reference
   - path: docs/recipes/**/*.md
     tags: [recipes, advanced]
 ```
 
 ### Fields
 
-- `name` — the publish identity. Must be unique across citadels that
-  consume this source.
-- `entries[]` — the publish list. Each entry declares a `path` (or glob)
-  and optional descriptive metadata.
+- `schemaVersion` — current version is `1`.
+- `documents[]` — the publish list. Each entry declares a `path` (file
+  or glob, repo-relative) and optional `description`, `category`, and
+  `tags`.
 
 The publish manifest doesn't enforce a category taxonomy. Citadels
 choose whether to surface those hints in their consumer.

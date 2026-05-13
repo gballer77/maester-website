@@ -27,18 +27,19 @@ Running `maester publish` from a source repository drops a `maester.yaml`
 with a structure like this:
 
 ```yaml
-name: source-context
-entries:
+schemaVersion: 1
+documents:
   - path: README.md
+    category: readme
     description: Project overview and quickstart.
   - path: docs/architecture.md
-    categories: [reference]
+    category: reference
   - path: docs/api/**/*.md
     tags: [api, generated]
 ```
 
 Each entry declares a path or glob, plus optional `description`,
-`categories`, and `tags`. Citadels can use those hints to organise their
+`category`, and `tags`. Citadels can use those hints to organise their
 view; nothing about the publish manifest forces a particular consumer.
 
 ## What gets pulled

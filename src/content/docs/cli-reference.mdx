@@ -37,10 +37,12 @@ maester init
 
 Prompts cover:
 
-- One or more **maesters** to register, with optional `auth.type: token`
+- One or more **sources** to register, with optional `auth.type: token`
   env-var-name validation.
 - A configurable `baseDir` (default: `citadel`).
-- Optional **ravens** with `includes` lists.
+- An optional `includes` list per source. Sources without `includes`
+  rely on the remote's own `maester.yaml` manifest; sources with
+  `includes` let the citadel own the filter set directly.
 
 The walk-through is idempotent — re-running it on an existing
 `citadel.yaml` merges new sources without losing existing ones.
@@ -78,12 +80,14 @@ non-zero if any source failed, so the command is CI-safe.
 By default, sync prints one line per source as it lands:
 
 ```
-[maester] source-context  →  context/source-context/  (43 files, 218 KB)
-[raven]   third-party     →  context/third-party/     (12 files, 41 KB)
+source-context  →  context/source-context/  (43 files, 218 KB)
+third-party     →  context/third-party/     (12 files, 41 KB)
 ```
 
 With `--json`, each source emits NDJSON records suitable for piping to
-`jq` or another structured-log processor.
+`jq` or another structured-log processor. Each record includes the
+source's filter mode (`manifest` or `includes`) so consumers can
+distinguish the two without re-parsing `citadel.yaml`.
 
 ## Exit codes
 

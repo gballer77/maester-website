@@ -34,10 +34,12 @@ maester init
 
 It will:
 
-1. Prompt for one or more source repositories to register as **maesters**.
-2. Validate any `auth.type` env-var names so secrets never land in the
+1. Prompt for one or more source repositories to register.
+2. Per source, offer an optional `includes` list — leave it blank to
+   defer to the remote's own `maester.yaml`, or declare paths/globs
+   directly when the remote has no manifest (a third-party repo, say).
+3. Validate any `auth.type` env-var names so secrets never land in the
    `citadel.yaml`.
-3. Offer to register one or more unaffiliated source repos as **ravens**.
 4. Add an idempotent `maester:sync` script to `package.json` if one
    exists.
 

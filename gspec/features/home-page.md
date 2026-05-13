@@ -1,7 +1,7 @@
 ---
 name: home-page
 spec-version: v1
-description: Marketing landing page for an open-source developer tool — hero, concept overview, key benefits, install snippet, and primary CTAs
+description: Marketing landing page for an open-source developer tool — terminal-styled hero, problem framing, concept model, flow diagram, AI-workflows section, CLI taste, source-kind comparison, and three-step quick start
 ---
 
 # Home Page
@@ -10,7 +10,7 @@ description: Marketing landing page for an open-source developer tool — hero, 
 
 **Feature name:** Home Page
 
-**Summary:** The site's landing page — the first impression for visitors evaluating the developer tool. It introduces the tool, explains its concept model, lists its core benefits, shows a one-line install snippet, and provides primary calls-to-action to the source repository and package registry.
+**Summary:** The site's landing page — the first impression for visitors evaluating the developer tool. It introduces the tool with a terminal-styled hero, sets up the problem it addresses, teaches its source-and-aggregator concept model, illustrates the end-to-end flow, demonstrates its value for AI coding workflows, summarises its CLI surface, compares its source-kind options, and offers a copyable install command alongside a three-step quick start.
 
 **Problem being solved:** Developers evaluating an unfamiliar dev tool decide within seconds whether to read further or move on. A single page must communicate what the tool is, why it exists, and how to start using it — concisely and confidently. Without a focused landing page, the project relies on a README on a code-hosting site, which is poorly suited for first-impression marketing or for explaining a non-trivial concept model.
 
@@ -31,11 +31,15 @@ This matters now because the landing page is the entry point for every other pro
 
 **In scope:**
 
-- A hero section with the project name, tagline, a 1–2 sentence value statement, and primary CTAs.
-- A concept overview section explaining the tool's core model with brief prose and at least one supporting visual element (diagram or illustration).
-- A key benefits section listing 3–6 concrete benefits as short cards or list items.
-- An install/usage snippet section showing a one-line command (or equivalent minimal usage) the visitor can copy.
-- Primary CTAs linking out to the source repository and the package registry.
+- A hero section with an ASCII-art rendering of the project name, a tagline, a 1–2 sentence value statement, a copyable install-command primary CTA, a secondary jump-to-concept CTA, and a runtime status meta row.
+- A "problem" section presenting the pain points the tool addresses, with three cards and a supporting diagram.
+- A three-role model section introducing the tool's primary source and aggregator concepts (including a citadel-side source variant), each with an inline configuration snippet.
+- A flow/architecture diagram showing how sources feed into a central aggregator and out to consumers.
+- An AI-workflows section explaining the tool's value for AI coding agents, with numbered value-prop cards and a side-by-side before/after agent-transcript demonstration.
+- A CLI table giving a brief "taste" of the tool's commands, with a clear link to the full CLI reference.
+- A side-by-side comparison clarifying when to choose each source kind.
+- A three-step quick start section ending in a prominent install-command affordance.
+- Cross-cutting visual treatments that establish a terminal-flavored look-and-feel: a "kicker" tag above each major section heading, accent-coloured inline emphasis, a distinct accent colour for the citadel-side source variant, and a subtle scanline texture.
 - Responsive layout for desktop, tablet, and mobile.
 
 **Out of scope:**
@@ -46,9 +50,11 @@ This matters now because the landing page is the entry point for every other pro
 - Release notes (covered by `[[changelog-page]]`).
 - Site-wide header, footer, or navigation (covered by `[[site-shell]]`).
 - Per-page meta tags or social cards (covered by `[[seo-metadata]]`).
+- The full CLI reference (covered by `[[documentation-section]]`); the home page surfaces only a brief taste with a link to the full reference.
 
 **Deferred ideas:**
 
+- An interactive tabbed terminal demo (e.g. switching between `init`, `sync`, and `summary` panes).
 - A user/testimonial logos bar.
 - Animated scroll interactions or parallax effects.
 - A video demo or animated screencast in the hero.
@@ -63,20 +69,10 @@ This matters now because the landing page is the entry point for every other pro
   - A supporting 1–2 sentence value statement clarifies what the tool does and for whom
   - Primary CTAs are visible without scrolling on desktop viewports
 
-- [x] **P0**: Primary CTAs link to the source repository and the package registry
-  - One CTA links to the project's source repository
-  - One CTA links to the project's package registry listing (or equivalent install location)
-  - CTAs are visually distinct from secondary links and meet a minimum tap-target size for mobile
-
 - [x] **P0**: A concept overview section explains the tool's core model
   - Section presents the tool's primary concept(s) in brief prose
   - At least one supporting visual element accompanies the prose (diagram, illustration, or annotated example)
-  - Section is visually distinct from the hero and from the benefits section
-
-- [x] **P0**: A key benefits section lists 3–6 concrete benefits
-  - Each benefit has a short title and a 1–2 sentence description
-  - Benefits are presented in a consistent, repeatable layout pattern (e.g., a grid of cards)
-  - Benefits are scannable — a reader can absorb the full set in under 30 seconds
+  - Section is visually distinct from the hero
 
 - [x] **P0**: An install/usage snippet section shows a copyable one-line command
   - The snippet is rendered with monospaced styling and clear visual containment
@@ -95,7 +91,7 @@ This matters now because the landing page is the entry point for every other pro
   - No layout shift after initial render
 
 - [x] **P1**: The page structure supports scannability
-  - Clear visual hierarchy guides the visitor from name → tagline → concept → benefits → install
+  - Clear visual hierarchy guides the visitor from name → tagline → problem → concept → flow → AI value → CLI → compare → quick start
   - Sections are separated with adequate spacing to avoid a dense, text-heavy appearance
   - A first-time visitor can grasp the tool's purpose within 15 seconds of landing
 
@@ -105,13 +101,74 @@ This matters now because the landing page is the entry point for every other pro
   - Page is fully navigable via keyboard, with visible focus indicators
   - Color contrast meets WCAG AA for all text
 
+- [ ] **P0**: The hero presents an ASCII-figlet project mark, a copyable install-command primary CTA, a secondary jump-to-concept CTA, and a runtime status meta row
+  - The project name is rendered as multi-line ASCII art (a "figlet") styled with the accent colour, with a subtle accent-coloured glow
+  - The hero's primary CTA is a copyable install command (with a `$` prompt prefix and a visible copy affordance) — replacing any prior repo/registry CTA buttons
+  - A secondary "read the model" CTA links to the three-role-model section via an in-page anchor
+  - A meta row below the CTAs lists at minimum: runtime/license, AI-tool compatibility, and a hosted-infrastructure note, each prefixed with a small status glyph
+
+- [ ] **P0**: A "problem" section establishes the pain points the tool solves
+  - Section displays exactly three cards, each with a short title, a 1–2 sentence body, and a semantic glyph (error/warning)
+  - The three cards collectively cover: documentation scattered across multiple repositories, centralised portals going stale, and AI agents lacking system-wide context
+  - A supporting visual element (diagram or illustration) reinforces the "scattered" message with multiple disconnected source nodes
+  - Section is preceded by a "kicker" tag and visually distinct from the hero
+
+- [ ] **P0**: A three-role model section introduces the primary source, the central aggregator, and the citadel-side source variant
+  - Three role cards are presented in a consistent layout: glyph, role tag, h3 heading, short body, and an inline configuration snippet (e.g. YAML)
+  - The primary source and aggregator cards use the accent colour; the citadel-side source variant card uses the alt-purple colour to visually signal that its declaration lives on the aggregator side
+  - Each card's snippet shows the actual configuration file shape it represents (the primary source's manifest, the aggregator's manifest entry, and the aggregator's includes-style entry)
+  - The section is reachable via an in-page anchor (e.g. `#how`)
+
+- [ ] **P0**: A flow/architecture diagram visualises how sources feed into the aggregator and out to consumers
+  - Diagram shows multiple primary sources and at least one citadel-side source feeding into a single aggregator node
+  - The aggregator node shows a representative output directory tree
+  - Arrows visually differentiate the two source kinds via colour (accent vs. alt-purple) and line style (solid vs. dashed)
+  - At least one consumer destination (engineers, AI agents, CI) is shown on the receiving side
+
+- [ ] **P0**: An AI-workflows section explains the tool's value for AI coding agents and demonstrates it with a before/after comparison
+  - Section displays four numbered value-prop cards (01–04), each with a short title and a 1–2 sentence body
+  - A side-by-side "before / after" panel shows an agent transcript without the tool (agent guesses) vs. with the tool (agent reads the aggregated corpus), making the win concrete
+  - The "before" pane is visually tagged in an error/warning colour; the "after" pane is tagged in a success colour
+  - Section is reachable via an in-page anchor (e.g. `#ai`)
+
+- [ ] **P0**: A three-step quick start section shows the minimal init → publish → sync workflow
+  - Three numbered step cards explain the init / publish / sync sequence with a short description and a code snippet for each
+  - A prominent install-command affordance appears at the bottom of the section (mirroring the hero's install CTA)
+  - Together with the hero install CTA, this section satisfies the install/usage snippet capability; a standalone install-snippet section is no longer required
+
+- [ ] **P0**: A maester-vs-raven comparison section clarifies when to choose each source kind
+  - Two side-by-side columns are visually tagged for the primary-source kind (accent) and the citadel-side source kind (alt-purple)
+  - Each column includes a tagline, a short description, and a definition list of comparison points: who declares the file list, whether a manifest is required, fallback behaviour when configuration is missing, and when to reach for that kind
+  - The accent-vs-alt-purple visual distinction is consistent with the three-role-model section
+
+- [ ] **P1**: A CLI table on the home page gives a brief 5-verb taste with a link to the full reference
+  - Table displays the tool's primary commands in a 3-column layout: command, role, description
+  - A short "global flags" list accompanies the table (verbose / quiet / json / no-colour / theme)
+  - A clear link to the full CLI reference in the documentation section is present
+  - Section is reachable via an in-page anchor (e.g. `#cli`)
+
+- [ ] **P1**: Each major content section is preceded by a monospace "kicker" tag for scannability
+  - Each major section's h2 is preceded by a small monospace kicker label (e.g. `· the problem`, `· the model`, `· the flow`)
+  - Kicker uses the muted foreground colour with a single accent-coloured marker character
+  - Kicker style is consistent across every home-page section
+
+- [ ] **P1**: A subtle scanline texture establishes a terminal-flavoured atmosphere across the page
+  - A very low-contrast repeating horizontal scanline pattern is applied as a fixed-position decorative background overlay
+  - The texture sits below all content (does not interfere with text readability, focus rings, or click targets)
+  - The texture honours the `prefers-reduced-motion` setting where applicable and does not affect colour-contrast compliance
+
+- [ ] **P2**: Inline emphasis (`<em>`) within home-page body copy renders in the accent colour to draw the eye to product terms
+  - Within home-page prose, `<em>` styles in the accent colour, used to highlight the tool's named concepts (e.g. *maester*, *citadel*, *raven*)
+  - Underlying semantic emphasis remains correct — `<em>` is used only for genuinely emphasised terms, not as a styling shortcut
+  - The treatment is scoped to the home page (or applied site-wide if consistent with the design tokens)
+
 ## 5. Dependencies
 
 - **Feature dependencies:**
   - `[[site-shell]]` — the page renders inside the site's base layout, header, and footer.
   - `[[code-snippets]]` — the install snippet uses the shared code-block component with copy-to-clipboard.
   - `[[seo-metadata]]` — the page declares its own title, description, and social card metadata via the shared mechanism.
-- **External dependencies:** A source repository URL and a package registry URL for the CTAs. These are project metadata, not third-party services.
+- **External dependencies:** A package name for the install command and a source repository URL for the navigation link (the nav link itself is handled by `[[site-shell]]`). These are project metadata, not third-party services.
 
 ## 6. Assumptions & Risks
 
@@ -124,14 +181,16 @@ This matters now because the landing page is the entry point for every other pro
 **Key risks:**
 
 - **Concept doesn't land.** The hardest part of a dev-tool landing page is communicating a non-trivial concept model briefly. *Mitigation:* the concept section is required to include both prose and a visual; if either is missing, the section is incomplete.
-- **CTA ambiguity.** Two prominent CTAs (repo vs registry) can split the visitor's attention. *Mitigation:* one is styled as the primary action and the other as a secondary, but both remain easy to find.
+- **Information density.** The home page now spans many themed sections (problem, model, flow, AI workflows, CLI, compare, quick start). *Mitigation:* every section is preceded by a kicker tag and has a single dominant h2; sections are independently scannable, and primary value (hero install CTA, three-role model, AI before/after) is concentrated above the fold-cluster.
+- **CTA ambiguity.** A copyable install command as primary CTA and a "read the model" jump as secondary CTA must remain visually distinct. *Mitigation:* the install command uses a filled/bordered terminal-style affordance and the secondary CTA is rendered as a ghost button.
 - **Stale install snippet.** Install commands and package names change between releases. *Mitigation:* the snippet is sourced from the same configuration as `[[changelog-page]]` and the package metadata, not hardcoded in multiple places.
+- **Raven concept underrepresented.** The citadel-side source variant ("raven") is a new concept introduced visually via the alt-purple accent and inline YAML. *Mitigation:* the three-role section, flow diagram, and compare section reinforce it three times in different formats; the alt-purple colour is consistent across all three.
 
 ## 7. Success Metrics
 
 1. First-time visitors can identify the project name, what the tool does, and how to install it within 15 seconds of landing on the page.
 2. The page renders correctly and is fully usable across desktop, tablet, and mobile viewports.
-3. Primary CTAs receive measurable click-through (tracked via the project's analytics, if any) — a healthy floor would be > 10% of unique landing-page visitors clicking through to either the repository or the package registry.
+3. Primary actions receive measurable engagement (tracked via the project's analytics, if any) — a healthy floor would be > 10% of unique landing-page visitors either copying the install command or following a CTA into the documentation.
 4. Largest Contentful Paint is under 2 seconds on a standard broadband connection.
 
 ## 8. Implementation Context

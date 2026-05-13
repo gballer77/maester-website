@@ -10,32 +10,36 @@ source repositories. The directory has a `citadel.yaml` at its root
 listing the sources to pull from, and a destination tree (by default
 under `citadel/`) where the synced content materialises.
 
-## Two kinds of source
+## Two modes of source
 
-Citadels know two kinds of source:
+Every entry in a citadel's `sources` list is a git repository. What
+differs is *who decides which files materialise*:
 
-- **Maesters** — repositories that publish their own `maester.yaml`.
-  The citadel consumes whatever the maester publishes; the maester owns
-  the surface.
-- **Ravens** — git repositories without a `maester.yaml`. The citadel
-  declares its own `includes` list of paths and globs to materialise.
-  Use ravens for public third-party repos or for repos you have access
-  to but don't own.
+- **Manifest-driven** — the entry has no `includes` list. The remote
+  repo publishes its own `maester.yaml` declaring what it makes
+  available, and the citadel consumes exactly that surface. The source
+  owns the contract.
+- **Includes-driven** — the entry declares its own `includes` list of
+  paths and globs. The citadel owns the filter set directly. Use this
+  mode for public third-party repos or repos you have read access to
+  but don't own.
 
-Both kinds sync in a single `maester sync` pass. Output is labelled
-`[maester]` or `[raven]` so it's easy to tell them apart.
+Both modes are processed by the same `maester sync` command. If
+`includes` is set, the remote's `maester.yaml` is ignored even when
+present.
 
 ## Configuration example
 
 ```yaml
 # citadel.yaml
-schemaVersion: 2
+schemaVersion: 1
 baseDir: context
-maesters:
+sources:
+  # Manifest-driven: the remote owns the publish surface.
   - name: source-context
     url: https://github.com/your-org/your-source
     ref: main
-ravens:
+  # Includes-driven: the citadel owns the filter set.
   - name: external-style-guide
     url: https://github.com/another-org/style-guide
     ref: main
@@ -54,3 +58,8 @@ ravens:
 swapped in only after its checkout completes successfully. If one source
 fails, the others still land. A non-zero exit code at the end of the
 run signals "at least one source failed" — useful for CI.
+
+When an includes-driven source matches zero files at the resolved ref,
+sync prints a "no files matched" warning so you can spot drift after
+the upstream restructures. The run still succeeds; the destination is
+left in a clean empty state.

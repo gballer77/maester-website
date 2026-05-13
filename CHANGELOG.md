@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2026-05-13
 
 ### Added
-- Examples gallery at `/examples` with category filtering via URL state and three seed examples (multi-repo aggregator, CI-driven sync, raven-only citadel).
+- Examples gallery at `/examples` with category filtering via URL state and three seed examples (multi-repo aggregator, CI-driven sync, third-party docs via includes).
 - Documentation section at `/docs` with sidebar grouping, scroll-spy table of contents, prev/next navigation, and click-to-copy heading anchors.
 - Pagefind-powered docs search palette with `Cmd/Ctrl+K` shortcut.
 - Changelog page generated at build time from this `CHANGELOG.md` (Keep-a-Changelog format).

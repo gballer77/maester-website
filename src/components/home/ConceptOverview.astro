@@ -17,10 +17,12 @@ import { withBase } from '../../lib/url';
         the docs surface.
       </p>
       <p>
-        A <strong>citadel</strong> is an aggregator. It lists the maesters
-        (and optional unaffiliated git repos called <em>ravens</em>) it pulls
-        from, and surfaces them all in one directory tree. The citadel chooses
-        its sources; the sources choose what they expose.
+        A <strong>citadel</strong> is an aggregator. It lists the sources
+        it pulls from — maesters, or unaffiliated repos surfaced via an
+        <em>includes</em> list — and lays them all out in one directory tree.
+        The citadel chooses its sources; each source either chooses what it
+        exposes (manifest-driven) or hands that decision to the citadel
+        (includes-driven).
       </p>
       <p class="concept-summary">
         Source-owned configuration. Central aggregation. Zero magic.
