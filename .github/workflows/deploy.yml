@@ -46,20 +46,26 @@ jobs:
           mkdir -p _lychee
           ln -s ../dist _lychee/maester-website
 
+      # Install and run lychee directly rather than via lycheeverse/lychee-action.
+      # The released v2.x of that action can't open the v0.24.x tarball (the
+      # binary moved into a subfolder); the fix exists on master but isn't
+      # tagged yet. Owning these ~10 lines avoids further wrapper churn and
+      # keeps the lychee version aligned with our config schema (notably
+      # `include_fragments = "full"`, which is v0.24+).
       - name: Verify asset & link integrity (lychee)
-        uses: lycheeverse/lychee-action@v2
-        with:
-          # Pin lychee to v0.24.2 so the config schema used here (notably
-          # `include_fragments = "full"`) matches what runs in CI; the
-          # action's bundled default is v0.23.0, which expects the older
-          # boolean form of that field.
-          lycheeVersion: v0.24.2
-          args: >-
-            --config lychee.toml
-            --root-dir ${{ github.workspace }}/_lychee
-            --remap "https://baller-software.github.io file://${{ github.workspace }}/_lychee"
-            _lychee/maester-website
-          fail: true
+        env:
+          LYCHEE_VERSION: v0.24.2
+        run: |
+          set -euo pipefail
+          cd "${RUNNER_TEMP}"
+          curl -sfL -o lychee.tar.gz \
+            "https://github.com/lycheeverse/lychee/releases/download/lychee-${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz"
+          tar -xzf lychee.tar.gz
+          "${RUNNER_TEMP}/lychee-x86_64-unknown-linux-gnu/lychee" \
+            --config "${GITHUB_WORKSPACE}/lychee.toml" \
+            --root-dir "${GITHUB_WORKSPACE}/_lychee" \
+            --remap "https://baller-software.github.io file://${GITHUB_WORKSPACE}/_lychee" \
+            "${GITHUB_WORKSPACE}/_lychee/maester-website"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

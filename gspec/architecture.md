@@ -527,9 +527,9 @@ jobs:
       - run: npm test              # vitest unit tests on src/lib
       - run: npm run build         # astro build
       - run: npx pagefind --site dist
-      - uses: lycheeverse/lychee-action@v2
-        with:
-          args: --config lychee.toml dist
+      # Lychee is installed directly (curl + tar) rather than via
+      # lycheeverse/lychee-action — see deploy.yml for the exact step.
+      - run: ./lychee --config lychee.toml dist
       - uses: actions/upload-pages-artifact@v3
         with: { path: dist }
   deploy:
