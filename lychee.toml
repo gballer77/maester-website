@@ -21,7 +21,7 @@ max_retries = 2
 # The site is served from a base path on GitHub Pages — internal links in the
 # built HTML are prefixed with /maester-website. Tell lychee about it so that
 # relative-to-domain-root links resolve correctly when crawling the dist tree.
-base = "https://baller-software.github.io/maester-website"
+base_url = "https://baller-software.github.io/maester-website"
 
 # Skip well-known anchor-only fragments that don't correspond to real elements
 exclude_path = []
