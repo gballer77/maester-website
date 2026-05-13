@@ -623,7 +623,7 @@ This section captures gaps identified while reading the specs against an impleme
 
 **Why it matters:** The home page hero, the install snippet, the footer, and the About page's "Get involved" links all depend on these values. Without them, primary CTAs cannot be wired.
 
-**Resolution:** Product source repo: `https://github.com/baller-software/maester`. Package: `@baller-software/maester` (scoped). Install snippet: `npm install -g @baller-software/maester`. These values are recorded in `src/config/site.ts`.
+**Resolution:** Product source repo: `https://github.com/baller-software/maester`. Package: `baller-maester` (unscoped — the unscoped `maester` name was already taken on npm). Install snippet: `npm install -g baller-maester`. Run-without-install: `npx baller-maester`. These values are recorded in `src/config/site.ts`.
 
 #### 9.4 — Maintainership and governance
 

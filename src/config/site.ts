@@ -20,20 +20,20 @@ export const site = {
   // This website's source repository.
   websiteRepoUrl: 'https://github.com/baller-software/maester-website',
 
-  // The Maester CLI's source and distribution. The dot in the npm scope
-  // mirrors the org's domain (baller.software); the GitHub org uses the
-  // hyphenated form because GitHub org names cannot contain dots.
+  // The Maester CLI's source and distribution. Published under the
+  // unscoped name `baller-maester` because the `maester` name on npm was
+  // already taken.
   cliRepoUrl: 'https://github.com/baller-software/maester',
   cliIssuesUrl: 'https://github.com/baller-software/maester/issues',
   cliDiscussionsUrl: 'https://github.com/baller-software/maester/discussions',
-  cliRegistryUrl: 'https://www.npmjs.com/package/@baller.software/maester',
-  cliPackageName: '@baller.software/maester',
-  installCommand: 'npm install -g @baller.software/maester',
+  cliRegistryUrl: 'https://www.npmjs.com/package/baller-maester',
+  cliPackageName: 'baller-maester',
+  installCommand: 'npm install -g baller-maester',
   // Run-without-install bootstrap command, used as the home page's primary
   // hero CTA. The `npx` form is the friction-free first invocation the
   // marketing material leads with; `installCommand` is the durable install
   // for ongoing use.
-  runCommand: 'npx maester',
+  runCommand: 'npx baller-maester',
 
   // Default Open Graph image. Resolved through withBase() at emit time.
   // TODO: replace SVG placeholder with a designed 1200×630 PNG before

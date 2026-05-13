@@ -13,7 +13,7 @@ For prose explanations of how the commands fit together, start with
 
 There are two ways to invoke Maester:
 
-- `npx maester` — the **top-level interactive menu**. Detects whether
+- `npx baller-maester` — the **top-level interactive menu**. Detects whether
   the current repo is a citadel, a maester, both, or neither, and
   offers the relevant next step (initialize a citadel, configure this
   repo as a maester, view existing configuration, install or upgrade
@@ -46,7 +46,7 @@ The `MAESTER_NO_WELCOME=1` environment variable has the same effect as
 Interactive walk-through that creates a `citadel.yaml` at the current
 working directory and (if a `package.json` is present) adds a
 `maester:sync` script entry. Reachable directly via `maester init` or
-through the `npx maester` top-level menu.
+through the `npx baller-maester` top-level menu.
 
 ```bash
 maester init
@@ -262,7 +262,7 @@ own location, so removing one doesn't affect the others.
 To declare what your repo publishes (a "maester"), run:
 
 ```bash
-npx maester
+npx baller-maester
 ```
 
 …and pick **"Configure this repo as a maester"** from the menu. The
