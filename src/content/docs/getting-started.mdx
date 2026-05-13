@@ -1,14 +1,14 @@
 ---
 title: Getting started
-description: Install Maester, register a citadel, and pull docs from your first source repository.
+description: Install Maester, register a citadel, sync your sources, and (optionally) install the Grand Maester for your coding agent.
 group: Getting Started
 order: 1
 ---
 
 Maester is a Node CLI. You install it once, then use it to manage two
-kinds of configuration files: a `citadel.yaml` that lists the sources you
-pull from, and (optionally) a `maester.yaml` on each source that declares
-what it publishes.
+kinds of configuration files: a `citadel.yaml` that lists the sources
+you pull from, and (optionally) a `maester.yaml` on each source that
+declares what it publishes.
 
 ## Install
 
@@ -20,8 +20,13 @@ If you'd rather not install globally, every command below also works
 through `npx`:
 
 ```bash
-npx @baller.software/maester init
+npx @baller.software/maester
 ```
+
+`npx maester` is also the **top-level entry point** — running it with
+no subcommand opens an interactive menu that picks the right next step
+based on whether the current repo is a citadel, a maester, both, or
+neither.
 
 ## Register your first citadel
 
@@ -34,16 +39,42 @@ maester init
 
 It will:
 
-1. Prompt for one or more source repositories to register.
-2. Per source, offer an optional `includes` list — leave it blank to
+1. Prompt for a `baseDir` — the parent folder under which every
+   default-destination source lands (pre-filled with `citadel`).
+2. Prompt for one or more **source repositories** to register, each
+   with a name, git URL, and ref.
+3. Per source, offer an optional `includes` list — leave it blank to
    defer to the remote's own `maester.yaml`, or declare paths/globs
    directly when the remote has no manifest (a third-party repo, say).
-3. Validate any `auth.type` env-var names so secrets never land in the
-   `citadel.yaml`.
-4. Add an idempotent `maester:sync` script to `package.json` if one
+4. Validate any `auth.type` env-var names so secrets never land in
+   the `citadel.yaml`.
+5. Add an idempotent `maester:sync` script to `package.json` if one
    exists.
+6. Offer a final, recommended-by-default opt-in to install the
+   [Grand Maester](/docs/concepts/grand-maester) agent skill — see
+   below.
 
-When it's done, you'll have a `citadel.yaml` at the repo root. Commit it.
+When it's done, you'll have a `citadel.yaml` at the repo root. Commit
+it.
+
+### About the Grand Maester step
+
+The last prompt asks:
+
+```text
+Install the Grand Maester agent skill? (Y/n)
+```
+
+The Grand Maester is an optional integration that teaches your AI
+coding agent (Claude Code, Codex CLI, Cursor, or any agent that reads
+project-level `AGENTS.md`) where the citadel lives, which files are
+[`canon`](/docs/concepts/document-state) vs `draft`, and to run
+`maester status` before substantial reads so it never answers from a
+stale corpus.
+
+Accepting moves into target-agent selection (you can pick more than
+one). Declining is fine — you can run `maester skill install` later.
+Either way, init completes normally.
 
 ## Sync the citadel
 
@@ -60,10 +91,46 @@ maester sync source-context
 ```
 
 Sync uses partial clones and sparse checkouts — it only fetches the
-paths the source actually publishes.
+paths the source actually publishes. Each source's destination
+receives a small provenance marker recording the remote URL, ref,
+resolved commit SHA, and active filter set.
+
+## Check what's behind
+
+Before relying on the citadel — or before an agent reads from it —
+ask whether anything is behind:
+
+```bash
+maester status
+```
+
+Status is read-only. It uses the provenance markers to compare each
+configured source against its remote and prints `up-to-date`,
+`behind`, or `failed` for each. The exit code (`0` clean, `1`
+behind, `2` failed) makes it easy to call from CI or from an agent's
+pre-read hook.
+
+## Configure a source (optional)
+
+If you also want to declare what *this* repo publishes to other
+citadels, run:
+
+```bash
+npx maester
+```
+
+…and pick **"Configure this repo as a maester"** from the menu. The
+walkthrough writes a `maester.yaml` at the repo root. No scripts are
+scaffolded — the maester is purely a published manifest.
 
 ## Next steps
 
 - Learn the [maester / citadel model](/docs/concepts/maester).
-- See the [configuration reference](/docs/configuration).
+- Understand [document state](/docs/concepts/document-state) (canon
+  vs draft) and how it shapes what agents trust.
+- Meet the [Grand Maester](/docs/concepts/grand-maester) — the
+  optional agent skill that does the work of integrating the citadel
+  into your coding agent.
+- See the [configuration reference](/docs/configuration) for the
+  full `citadel.yaml` and `maester.yaml` schemas.
 - Look up command flags in the [CLI reference](/docs/cli-reference).

@@ -4,9 +4,12 @@
 //
 // Per gspec/features/home-page.md §4 P0 "An AI-workflows section explains
 // the tool's value for AI coding agents and demonstrates it with a
-// before/after comparison."
+// before/after comparison." and the follow-up P0 "introduces the optional
+// agent-skill integration (the Grand Maester)".
 
+import { Image } from 'astro:assets';
 import Kicker from './Kicker.astro';
+import grandMaesterIllustration from '../../assets/illustration/grand-maester.png';
 ---
 
 <section id="ai" class="section ai accent-em" aria-labelledby="ai-heading">
@@ -110,6 +113,39 @@ import Kicker from './Kicker.astro';
           <span aria-hidden="true">✓</span> agent reads the citadel and applies
           the system’s actual conventions.
         </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grand-maester">
+    <div class="gm-divider" aria-hidden="true"></div>
+    <div class="gm-layout">
+      <div class="gm-illustration">
+        <Image
+          src={grandMaesterIllustration}
+          alt="The Grand Maester — a cartoon character in a blue hooded robe with a gold chain and keyring, representing the installable agent skill"
+          widths={[200, 320, 480]}
+          sizes="(max-width: 920px) 200px, 280px"
+          loading="lazy"
+        />
+      </div>
+      <div class="gm-text">
+        <p class="gm-tag">Optional · ships with the CLI</p>
+        <h3>Meet the <span class="accent">Grand Maester</span>.</h3>
+        <p>
+          An installable agent skill that turns your citadel into a first-class
+          context surface for whichever coding agent you run. It teaches the
+          agent where the citadel lives, prefers <code>canon</code> files over
+          <code>draft</code>, and runs <code>maester status</code> before
+          substantial reads so it never answers from a stale corpus.
+        </p>
+        <p class="gm-agents-label">Supported agents</p>
+        <ul class="gm-agents" aria-label="Supported agents">
+          <li><span class="gm-chip">Claude Code</span></li>
+          <li><span class="gm-chip">Codex CLI</span></li>
+          <li><span class="gm-chip">Cursor</span></li>
+          <li><span class="gm-chip">any <code>AGENTS.md</code> agent</span></li>
+        </ul>
       </div>
     </div>
   </div>
@@ -283,6 +319,96 @@ import Kicker from './Kicker.astro';
     color: var(--accent);
   }
 
+  /* Grand Maester subsection — introduces the optional agent-skill
+     integration. Lives inside the AI-workflows section (no new top-level
+     section, no new in-page anchor); a thin divider sets it apart from
+     the before/after panel above. */
+  .grand-maester {
+    margin-top: 3rem;
+  }
+  .gm-divider {
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 2.5rem;
+  }
+  .gm-layout {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 2rem;
+    align-items: center;
+  }
+  .gm-illustration {
+    display: flex;
+    justify-content: center;
+  }
+  .gm-illustration :global(img) {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+  }
+  .gm-tag {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: lowercase;
+    color: var(--accent-alt);
+    margin: 0 0 0.5rem;
+  }
+  .gm-text h3 {
+    margin: 0 0 0.875rem;
+    font-size: clamp(1.375rem, 2vw + 0.6rem, 1.75rem);
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .gm-text > p {
+    margin: 0 0 1rem;
+    color: var(--fg-muted);
+    line-height: 1.55;
+    max-width: 60ch;
+  }
+  .gm-text code {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--fg);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 1px 5px;
+    border-radius: 2px;
+  }
+  .gm-agents-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: lowercase;
+    color: var(--fg-faint);
+    margin: 0.25rem 0 0.625rem !important;
+  }
+  .gm-agents {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .gm-chip {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: var(--fg);
+    border: 1px solid var(--border-strong);
+    background: var(--elevated);
+    padding: 0.25rem 0.625rem;
+    border-radius: 2px;
+  }
+  .gm-chip code {
+    font-size: 0.75rem;
+    background: transparent;
+    padding: 0;
+    color: var(--accent);
+  }
+
   @media (max-width: 920px) {
     .ai-grid,
     .before-after {
@@ -290,6 +416,20 @@ import Kicker from './Kicker.astro';
     }
     .section {
       padding: 4rem 1.375rem;
+    }
+    .gm-layout {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      text-align: left;
+    }
+    .gm-illustration :global(img) {
+      max-width: 160px;
+    }
+    .grand-maester {
+      margin-top: 2.25rem;
+    }
+    .gm-divider {
+      margin-bottom: 2rem;
     }
   }
 </style>

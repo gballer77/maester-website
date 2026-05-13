@@ -1,23 +1,29 @@
 ---
 title: Third-party docs via includes
 description: Aggregate documentation from third-party repos that don't publish their own maester.yaml by declaring an includes list on each source.
+date: 2026-04-10
 categories: [Configuration, Recipes]
-link: https://github.com/baller-software/maester/tree/main/examples/third-party-includes
 ---
 
-```yaml
-# citadel.yaml — pulling docs from third-party repos
-schemaVersion: 1
-sources:
-  - name: astro
-    url: https://github.com/withastro/docs
-    ref: main
-    includes:
-      - 'src/content/docs/en/**/*.mdx'
-      - 'README.md'
-  - name: tailwind
-    url: https://github.com/tailwindlabs/tailwindcss.com
-    ref: main
-    includes:
-      - 'src/pages/docs/**/*.mdx'
-```
+Your team's documentation is only half the story — the other half lives in the framework docs, library READMEs, and reference sites your code actually depends on. Most of those upstream projects have no reason to ship a Maester config for you.
+
+## The scenario
+
+The libraries and frameworks your team depends on usually have excellent documentation — but it lives in *their* repository, on *their* terms, and they have no reason to publish a Maester config for downstream consumers. Without a way to pull selectively from those repos, your aggregated context stops at the edge of code you control.
+
+## How this example handles it
+
+Each source declares an `includes` list of glob patterns. Maester resolves the upstream repo, matches the globs against its tree, and pulls only the files you actually want — for instance:
+
+- `src/content/docs/**/*.mdx` from the Astro docs
+- `src/pages/docs/**/*.mdx` from the Tailwind site
+
+Nothing else from those repositories enters the citadel.
+
+## What it gets you
+
+- **Canonical upstream references, on your terms.** AI agents and code search see the framework docs alongside your own, pinned to the version you choose.
+- **No forks, no vendoring, no upstream PRs.** Pull what you need without asking the maintainers for cooperation.
+- **One-line upgrades.** When a dependency moves, bumping the `ref` is the only change required to refresh its docs in your aggregation.
+
+> Think of `includes` as a polite way to depend on someone else's documentation: you take only what you need, and you take it explicitly.

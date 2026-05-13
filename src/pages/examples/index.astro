@@ -6,9 +6,8 @@ import { EXAMPLE_CATEGORIES } from '../../content/config';
 
 const entries = await getCollection('examples');
 
-// Sort by title for a stable order; tag filtering re-orders visually,
-// not in DOM.
-entries.sort((a, b) => a.data.title.localeCompare(b.data.title));
+// Newest-first stream, per gspec/features/examples-page.md §4 P0.
+entries.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
 // Compute which categories actually have at least one example so we can
 // omit empty filter pills.
@@ -18,15 +17,16 @@ const filters = EXAMPLE_CATEGORIES.filter((c) => used.has(c));
 
 const title = 'Examples';
 const description =
-  'Curated configurations and recipes for Maester — copy a starting point that matches your situation.';
+  'A chronological stream of Maester use cases — each post walks through the scenario, the approach, and the value it brings.';
 ---
 
 <BaseLayout title={title} description={description}>
   <header class="examples-header">
     <h1>Examples</h1>
     <p class="examples-lede">
-      Configurations and recipes drawn from real Maester setups. Pick the
-      one closest to your situation, copy the snippet, and adjust.
+      A running stream of Maester use cases, newest first. Each post
+      walks through the scenario, the approach, and what it gets you —
+      follow the link on any example to see the working configuration.
     </p>
   </header>
 
@@ -47,16 +47,16 @@ const description =
 
   {
     entries.length > 0 ? (
-      <ul class="examples-grid" id="examples-grid">
+      <ol class="examples-stream" id="examples-grid">
         {entries.map((entry) => (
-          <li class="examples-grid-item" data-categories={entry.data.categories.join(',')}>
+          <li class="examples-stream-item" data-categories={entry.data.categories.join(',')}>
             <ExampleCard entry={entry} />
           </li>
         ))}
-      </ul>
+      </ol>
     ) : (
       <p class="examples-empty">
-        No examples yet. Add MDX files under <code>src/content/examples/</code> to populate this gallery.
+        No examples yet. Add MDX files under <code>src/content/examples/</code> to populate this stream.
       </p>
     )
   }
@@ -68,13 +68,12 @@ const description =
 
 <script>
   // URL-state category filter. The category query param is the source of
-  // truth; pills + grid sync to it. Click a pill → push state → re-render.
-  // Per gspec/features/examples-page.md §4 P0:
+  // truth; pills + stream items sync to it. Per gspec/features/examples-page.md §4 P0:
   //   - filter state reflected in URL so view is shareable
   //   - no filter applied → all examples visible
 
   const pills = document.querySelectorAll<HTMLButtonElement>('.filter-pill');
-  const items = document.querySelectorAll<HTMLElement>('.examples-grid-item');
+  const items = document.querySelectorAll<HTMLElement>('.examples-stream-item');
   const noResults = document.getElementById('examples-no-results');
 
   function applyFilter(category: string) {
@@ -125,6 +124,7 @@ const description =
     padding: 1rem 0 2rem;
     border-bottom: 1px solid var(--border);
     margin-bottom: 2rem;
+    max-width: 48rem;
   }
 
   .examples-header h1 {
@@ -143,7 +143,8 @@ const description =
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    max-width: 48rem;
   }
 
   .filter-pill {
@@ -172,16 +173,17 @@ const description =
     font-weight: 600;
   }
 
-  .examples-grid {
+  .examples-stream {
     list-style: none;
     padding: 0;
     margin: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    max-width: 48rem;
   }
 
-  .examples-grid-item[hidden] {
+  .examples-stream-item[hidden] {
     display: none;
   }
 
@@ -190,17 +192,5 @@ const description =
     color: var(--fg-muted);
     font-size: 0.9375rem;
     padding: 2rem 0;
-  }
-
-  @media (max-width: 960px) {
-    .examples-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (max-width: 600px) {
-    .examples-grid {
-      grid-template-columns: 1fr;
-    }
   }
 </style>

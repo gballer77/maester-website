@@ -9,9 +9,13 @@ Maester is configured through two YAML files: `citadel.yaml` lives at
 the root of an aggregating repository, and `maester.yaml` lives at the
 root of each source repository.
 
+Both files carry a `schemaVersion` so future tooling can migrate them.
+Current version is `1`.
+
 ## citadel.yaml
 
-The aggregator's configuration. Lists the sources to pull from.
+The aggregator's configuration. Lists the sources to pull from and
+where their content lands.
 
 ```yaml
 schemaVersion: 1
@@ -30,41 +34,80 @@ sources:
     url: https://github.com/another/repo
     ref: main
     includes:
-      - 'README.md'
-      - 'docs/**/*.md'
+      - 'README.md'                              # bare string — state defaults to draft
+      - { path: 'docs/**/*.md', state: draft }   # object form with state
+      - { path: 'docs/v3/**/*.md', state: canon } # ratified subset
 ```
 
 ### Top-level fields
 
-| Field           | Type     | Required | Description                                                                 |
-| --------------- | -------- | -------- | --------------------------------------------------------------------------- |
-| `schemaVersion` | integer  | yes      | Schema version. Current version is `1`.                                     |
-| `baseDir`       | string   | no       | Parent folder for sources whose `destination` is unset. Default: `citadel`.  |
-| `sources`       | list     | yes      | The remote git repositories this citadel pulls from. At least one entry.    |
+| Field           | Type    | Required | Description                                                                  |
+| --------------- | ------- | -------- | ---------------------------------------------------------------------------- |
+| `schemaVersion` | integer | yes      | Schema version. Current version is `1`.                                       |
+| `baseDir`       | string  | no       | Parent folder for sources whose `destination` is unset. Default: `citadel`.    |
+| `sources`       | list    | yes      | The remote git repositories this citadel pulls from. At least one entry.      |
+
+`baseDir` is validated by the same path-safety rules as a per-source
+`destination`: it must be repo-relative, with no leading `/` and no
+`..` segments. Setting it does not affect sources that declare their
+own `destination` — those still land exactly where they're told.
+
+Changing `baseDir` after a previous sync is non-destructive: the new
+sync writes to the new location and leaves any previously-populated
+directories under the old base alone for you to remove manually.
 
 ### Per-source fields
 
 Every entry in `sources[]` accepts:
 
-- `name` — unique slug; becomes the destination folder name.
+- `name` — unique slug; becomes the destination folder name (unless
+  `destination` is set).
 - `url` — git URL (`https://`, `ssh://`, `file://`, or `git@host:path`).
-- `ref` — optional branch, tag, or commit SHA. Defaults to the remote's
-  default branch.
-- `includes` — optional list of glob patterns. **When set, the citadel
-  owns the filter set and the remote `maester.yaml` is not consulted.
-  When unset, sync looks for a `maester.yaml` on the remote and uses its
-  paths.** An empty `includes` array is rejected.
+- `ref` — optional branch, tag, or commit SHA. Defaults to the
+  remote's default branch.
+- `includes` — optional list of include entries. **When set, the
+  citadel owns the filter set and the remote `maester.yaml` is not
+  consulted. When unset, sync looks for a `maester.yaml` on the
+  remote and uses its paths.** An empty `includes` array is rejected.
 - `destination` — optional override for the output path. Wins over
   `baseDir`.
-- `auth` — optional credentials object. `auth.envVar` names the env var
-  that holds the token; the value itself never lands in YAML.
+- `auth` — optional credentials object. `auth.envVar` names the env
+  var that holds the token; the value itself never lands in YAML.
 - `description`, `tags` — optional metadata surfaced in `--verbose`
   output.
 
-The two source modes — manifest-driven (no `includes`) and includes-driven
-(`includes` set) — are processed by the same sync command. Use
-includes-driven sources for public third-party repos or repos you have
-read access to but do not own.
+The two source modes — manifest-driven (no `includes`) and
+includes-driven (`includes` set) — are processed by the same sync
+command. Use includes-driven sources for public third-party repos or
+repos you have read access to but do not own (see
+[traveling maesters](/docs/concepts/maester#resident-vs-traveling)).
+
+### `includes` entry forms
+
+Each entry in an `includes` list can take two shapes:
+
+```yaml
+includes:
+  - 'README.md'                              # bare string
+  - { path: 'docs/**/*.md', state: draft }   # object with state
+```
+
+The bare-string form is shorthand for `{ path: '<value>' }`. Use the
+object form when you want to tag the entry with a
+[document state](/docs/concepts/document-state) of `canon` or `draft`.
+Mixing the two forms in the same list is fine.
+
+### Destination resolution
+
+For each source, sync resolves the destination in this order:
+
+1. The source's explicit `destination` field, if set.
+2. `<baseDir>/<source-name>/`, if `baseDir` is set.
+3. `citadel/<source-name>/`, the default.
+
+Destination collisions across sources (two sources resolving to the
+same directory) are rejected at config-validation time, before any
+sync work begins.
 
 ## maester.yaml
 
@@ -77,27 +120,62 @@ documents:
   - path: README.md
     category: readme
     description: Project overview.
+    state: canon
   - path: docs/architecture.md
     category: reference
-  - path: docs/recipes/**/*.md
-    tags: [recipes, advanced]
+    state: draft
+  - path: docs/runbooks/**/*.md
+    state: canon
+    tags: [runbook, ops]
 ```
 
 ### Fields
 
-- `schemaVersion` — current version is `1`.
-- `documents[]` — the publish list. Each entry declares a `path` (file
-  or glob, repo-relative) and optional `description`, `category`, and
-  `tags`.
+| Field           | Type    | Required | Description                                                                  |
+| --------------- | ------- | -------- | ---------------------------------------------------------------------------- |
+| `schemaVersion` | integer | yes      | Current version is `1`.                                                       |
+| `documents`     | list    | yes      | The publish list. Each entry declares a `path` (file or glob, repo-relative). |
 
-The publish manifest doesn't enforce a category taxonomy. Citadels
-choose whether to surface those hints in their consumer.
+Each entry in `documents[]` accepts:
+
+- `path` — file or glob, repo-relative. Leading slashes and `..`
+  segments are rejected.
+- `description` — short free-text.
+- `category` — short identifier (e.g. `readme`, `runbook`, `adr`).
+  Citadels can use this to organise their view; the manifest does not
+  enforce a taxonomy.
+- `tags` — list of short identifiers.
+- `state` — optional. `canon` or `draft`. Applies to every file the
+  entry matches. Files can override inline. See
+  [Document state](/docs/concepts/document-state).
 
 ## Generating either file
 
-You don't have to write these by hand:
+You don't have to write these by hand. Run the top-level entry point
+and pick the option you want:
 
 ```bash
-maester init      # interactive citadel.yaml walk-through
-maester publish   # interactive maester.yaml walk-through
+npx maester
 ```
+
+The menu offers **"Initialize a citadel"** (writes `citadel.yaml` and
+scaffolds a sync entry) and **"Configure this repo as a maester"**
+(writes `maester.yaml`). `maester init` is also a direct subcommand
+for the citadel flow.
+
+## Validation
+
+Both files are validated before any work begins:
+
+- Unknown fields are tolerated (so older `maester` versions don't
+  break on a newer config) but flagged in `--verbose` output.
+- Required fields with the wrong shape fail validation with a clear,
+  field-named error pointing at the offending entry.
+- State values outside `{canon, draft}` are rejected at parse time.
+- Path safety rules (no `..` segments, no leading `/`) apply to
+  `baseDir`, `destination`, `path`, and every `includes.path`.
+- Auth env-var names that look like raw tokens (whitespace, length
+  heuristic) trigger a warning during the init walkthrough.
+
+When validation fails, sync exits with code `2` and no remote
+operations occur.

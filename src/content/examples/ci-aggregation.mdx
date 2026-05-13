@@ -1,28 +1,24 @@
 ---
 title: CI-driven docs sync
 description: Sync a citadel inside GitHub Actions so the aggregated tree is always rebuilt against the latest sources before publication.
+date: 2026-05-01
 categories: [CI]
-link: https://github.com/baller-software/maester/tree/main/examples/ci-aggregation
 ---
 
-```yaml
-# .github/workflows/sync-docs.yml
-name: Sync docs
-on:
-  schedule:
-    - cron: '0 6 * * *'
-  workflow_dispatch:
+Documentation goes stale the moment someone merges a change — and most teams notice only when an outdated answer surfaces in chat or a model hallucinates against a six-week-old README.
 
-jobs:
-  sync:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '20' }
-      - run: npx @baller.software/maester sync --json
-        env:
-          GH_TOKEN: ${{ secrets.READ_TOKEN }}
-      - uses: actions/upload-pages-artifact@v3
-        with: { path: context }
-```
+## The scenario
+
+Teams that publish documentation — or feed it to an AI assistant — usually share one problem: their canonical sources live in many repositories, and the published view drifts the moment something merges. Manual syncs work for a week and then quietly fall behind.
+
+## How this example handles it
+
+This recipe moves the sync into CI. A scheduled GitHub Actions workflow (plus a `workflow_dispatch` trigger for ad-hoc rebuilds) checks out the citadel definition, runs `maester sync`, and uploads the resulting tree as a build artifact. The aggregation runs against the latest commit on every source repo, every time the workflow fires.
+
+## What it gets you
+
+- **Always-fresh artifacts.** Docs sites, RAG indexes, and downstream pipelines see the freshest content without anyone remembering to push a button.
+- **Fully declarative, fully audited.** Every rebuild is a CI run with logs, diffs, and a permalink — drift is easy to spot and rollbacks are trivial.
+- **Plays well with what you already ship.** Slots cleanly next to whatever you publish from Actions: Pages, S3, a docs bucket, an embeddings job.
+
+> The pattern generalizes: any CI provider that can run `npx` on a cron schedule can drive a Maester sync the same way. GitHub Actions is just the most convenient default.

@@ -21,10 +21,21 @@ Maesters invert that. Each repository's maintainers decide what is
 "public" for documentation purposes, declare it in plain YAML, and review
 changes to that surface alongside their code changes.
 
-## The publish manifest
+## Generating the manifest
 
-Running `maester publish` from a source repository drops a `maester.yaml`
-with a structure like this:
+From the root of a source repo, run the top-level entry point and pick
+**"Configure this repo as a maester"** from the menu:
+
+```bash
+npx maester
+```
+
+The walkthrough collects one or more entries (path or glob, plus optional
+description, category, tags, and [state](/docs/concepts/document-state))
+and writes a `maester.yaml` at the repo root. It scaffolds no scripts —
+the maester is purely a published manifest.
+
+## The publish manifest
 
 ```yaml
 schemaVersion: 1
@@ -32,18 +43,48 @@ documents:
   - path: README.md
     category: readme
     description: Project overview and quickstart.
-  - path: docs/architecture.md
+    state: canon
+  - path: docs/architecture/**/*.md
     category: reference
-  - path: docs/api/**/*.md
-    tags: [api, generated]
+    state: draft
+  - path: docs/runbooks/**/*.md
+    state: canon
+    tags: [runbook, ops]
 ```
 
 Each entry declares a path or glob, plus optional `description`,
-`category`, and `tags`. Citadels can use those hints to organise their
-view; nothing about the publish manifest forces a particular consumer.
+`category`, `tags`, and `state`. Citadels can use those hints to organise
+their view; nothing about the publish manifest forces a particular
+consumer.
+
+## Resident vs traveling
+
+A maester can live in two places.
+
+- **Resident.** The source repo commits its own `maester.yaml`. The repo
+  controls its publish surface.
+- **Traveling.** The citadel declares an `includes` list for a source
+  whose remote does not (or will not) publish a manifest — a public
+  third-party repo, a repo you have read access to but don't own. The
+  citadel owns the filter set; the maester "travels" to the remote in
+  the form of an `includes` list back at the citadel.
+
+Both forms end up in the same place — files materialised in the citadel
+under the source's destination — and are processed by the same sync
+command. See [Citadels](/docs/concepts/citadel) for the citadel side.
 
 ## What gets pulled
 
-A citadel that registers this maester pulls only the files listed in
-the publish manifest — not the entire repository. That keeps sync
+A citadel that registers a resident maester pulls only the files listed
+in the publish manifest — not the entire repository. That keeps sync
 fast and avoids surfacing files that the source didn't intend to share.
+
+## Document state
+
+Each entry can carry an optional `state` of `canon` or `draft`. Every
+file matched by the entry inherits that state when sync materialises
+it in the citadel — so downstream readers can tell stable references
+from work in progress. Individual files can override the entry's state
+inline (markdown frontmatter, an HTML comment, a YAML key, or a
+plain-text first line). See [Document state](/docs/concepts/document-state)
+for the full resolution rules.

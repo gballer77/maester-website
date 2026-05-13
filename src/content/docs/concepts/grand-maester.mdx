@@ -1,0 +1,190 @@
+---
+title: The Grand Maester
+description: An optional, installable agent skill that turns a citadel into a first-class context surface for AI coding agents like Claude Code, Codex CLI, and Cursor.
+group: Concepts
+order: 4
+---
+
+The **Grand Maester** is an optional, installable integration that
+turns a citadel into a first-class context surface for whichever AI
+coding agent you run. After you install it, the agent reasons over
+the citadel's content with three behaviors baked in:
+
+- **Citadel awareness** — it knows where the citadel lives and how
+  it's organised, so it consults the right files without being asked.
+- **State awareness** — it prefers
+  [`canon`](/docs/concepts/document-state) files when answering
+  authoritatively, and marks `draft` citations as informational.
+- **Freshness awareness** — before substantial reads it runs
+  [`maester status`](/docs/cli-reference#maester-status) and surfaces
+  any `behind` verdict so the agent never answers from a stale corpus.
+
+Installing the Grand Maester is the difference between an agent that
+*could* read the citadel and one that *will* — every time, with the
+right policy.
+
+## Why this exists
+
+A citadel can be perfectly assembled and still go unused. Without an
+integration, the host agent has to be told manually about the
+citadel, has no way to distinguish ratified content from drafts, and
+will happily read whatever it finds — including stale snapshots from
+the last sync. The Grand Maester closes that gap by encoding the
+"how to use a citadel" policy in the agent's native integration
+surface (skills, rules, project instructions) and — where the
+platform supports it — wires the freshness check as an automatic
+pre-read hook.
+
+## Supported agents
+
+Four targets are supported in v1:
+
+| Agent | Integration                                                                       |
+| ----- | --------------------------------------------------------------------------------- |
+| Claude Code | A skill plus a `PreToolUse` hook that runs `maester status` before citadel reads. |
+| Codex CLI   | Managed region inside the repo's `AGENTS.md`. Instruction-only.                   |
+| Cursor      | A rules file under `.cursor/rules/grand-maester.mdc`. Instruction-only.           |
+| Generic     | The same managed `AGENTS.md` block — any agent that reads project-level instructions can use it. |
+
+You can install for one target or several in the same run. The
+artifacts go into the citadel-bearing repository and are safe to
+commit — they contain no secrets and no machine-local paths.
+
+## Installing
+
+Two paths reach the same install flow.
+
+### During citadel init (recommended)
+
+The very last step of `npx maester` init asks:
+
+```text
+Install the Grand Maester agent skill? (Y/n)
+```
+
+Yes is the default. Accepting moves you straight into target-agent
+selection. Declining completes init normally with zero skill artifacts
+written.
+
+### Standalone
+
+If you skipped the install step, or set up your citadel before this
+feature shipped, install at any time from the citadel repo root:
+
+```bash
+maester skill install
+```
+
+The command is interactive by default — multi-select the targets you
+want — and idempotent: re-running it for the same target leaves the
+artifacts byte-identical. Pass `--target` to skip the prompt:
+
+```bash
+maester skill install --target claude-code --target codex
+```
+
+See the [CLI reference](/docs/cli-reference#maester-skill) for every
+verb the `skill` command group supports.
+
+## How the three behaviors work
+
+### Citadel awareness
+
+Every installed artifact carries instruction text that tells the host
+agent:
+
+- where the citadel lives in the repo (under whatever
+  [`baseDir`](/docs/configuration#baseDir) you configured);
+- that content is organised per-source under that directory;
+- how to find the per-source layout (a recognisable subdirectory per
+  registered source).
+
+For agents whose platform supports a project-instructions surface,
+this is just text. The agent picks it up the same way it would any
+other repo-level guidance.
+
+### State awareness
+
+The artifacts tell the agent to:
+
+- treat files whose resolved
+  [state](/docs/concepts/document-state) is `canon` as authoritative;
+- treat `draft` files as informational context only, marking citations
+  as draft when used;
+- read state inline from each file (no external state index is
+  needed — sync writes the state into each file at import time).
+
+This is the same policy a careful human reader would apply. The
+Grand Maester just makes it a property of the agent rather than
+something each developer has to keep in mind.
+
+### Freshness awareness
+
+Before substantial reads of citadel content, the integration causes
+`maester status` to run. The behavior depends on the platform:
+
+- **Active where supported.** On Claude Code, the freshness check is
+  wired as a `PreToolUse` hook so it runs automatically before each
+  citadel read.
+- **Instruction elsewhere.** On Codex CLI, Cursor, and any
+  `AGENTS.md` agent, the same behavior is encoded as instruction the
+  host agent is expected to follow.
+
+Either way, the verdict drives behavior:
+
+- `up-to-date` → the agent proceeds silently.
+- `behind` or `failed` → the agent surfaces the verdict to you and
+  offers to run [`maester sync`](/docs/cli-reference#maester-sync)
+  before continuing.
+- `failed` with a network error → the read still proceeds; the agent
+  is told to flag potential staleness in its answer.
+
+The check is intentionally cheap. It uses status's documented
+exit-code contract (network only — no clone, no destination writes)
+so the cost of running it before every read is negligible.
+
+## Managed regions and upgrades
+
+Every artifact the Grand Maester writes contains a clearly marked
+**managed region**. Upgrades touch only that region; anything you
+add outside it survives. To refresh the installed artifacts to the
+shape of your current local `maester` install:
+
+```bash
+maester skill upgrade
+```
+
+This is the only way to "update" the Grand Maester — it ships with
+the `maester` package, not over the network. Upgrade `maester` itself,
+then run `skill upgrade` to refresh the artifacts.
+
+To add a new target to an existing install without reinstalling the
+others, use `add-target`:
+
+```bash
+maester skill add-target --target cursor
+```
+
+## What it isn't
+
+- **Not the agent.** The Grand Maester configures an agent you already
+  have. It does not install Claude Code, Codex CLI, or Cursor; it
+  installs *guidance* into the citadel repo that those agents read.
+- **Not a sync.** When `maester status` returns `behind`, the
+  Grand Maester surfaces the verdict and offers a sync — it does not
+  perform the sync itself.
+- **Not network-based.** The skill ships with the `maester` package.
+  "Upgrade" means re-installing against the local `maester` version,
+  not fetching from a remote registry.
+- **Not stateful across machines.** The installed artifacts live in
+  the citadel repository alongside the existing committed config, so
+  they're shared with every collaborator at no extra cost.
+
+## See also
+
+- [Document state](/docs/concepts/document-state) — what `canon` and
+  `draft` mean and how they get into each file.
+- [`maester status`](/docs/cli-reference#maester-status) — the
+  freshness check the Grand Maester runs before reads.
+- [`maester skill`](/docs/cli-reference#maester-skill) — the CLI
+  surface for installing, upgrading, and adjusting the skill.

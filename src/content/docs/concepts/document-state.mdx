@@ -1,0 +1,169 @@
+---
+title: Document state
+description: Every file in a citadel is tagged canon or draft so readers — humans and AI agents — can tell stable references from work in progress.
+group: Concepts
+order: 3
+---
+
+Every file in a citadel carries a **state** of either `canon` or `draft`.
+The state travels with the file: it's written into the file inline at sync
+time so any reader — a human, a coding agent, a CI job — can tell at a
+glance whether a document is a settled reference or a work in progress
+without consulting a separate index.
+
+## Why state matters
+
+A maester publishes a mix of documents. Some are stable enough to act on;
+others are still being figured out. Without a state signal, downstream
+readers treat every file the same. That has two failure modes:
+
+- **Humans over-trust drafts.** A `docs/architecture/event-bus-v2.md`
+  that is still under review reads the same as one that has shipped.
+- **Agents conflate the two.** An AI coding agent asked "how do we
+  handle webhook retries?" can't tell whether the runbook it found is
+  current or an old proposal.
+
+Tagging each file as `canon` or `draft` resolves both. Agents prefer
+`canon` files when answering authoritatively and mark `draft` citations
+as informational. Humans see the tag in the file itself.
+
+## The two values
+
+| State   | Meaning                                                                        |
+| ------- | ------------------------------------------------------------------------------ |
+| `canon` | Settled. Authoritative. Safe to act on without further confirmation.            |
+| `draft` | In progress. Useful as context but not yet ratified. Treat citations as soft.   |
+
+`draft` is the default. A file with no inline tag and no matching rule
+resolves to `draft`. That keeps the bar for `canon` deliberate — files
+become canon because someone said so, not by accident.
+
+## Three ways to declare state
+
+State can be declared in three places, in this order of authority:
+
+1. **Inline in the file itself** — wins over everything else.
+2. **A matching rule** — either the maester config (manifest-driven
+   sources) or the citadel config (includes-driven sources).
+3. **The default** — `draft`.
+
+### Inline
+
+The inline form depends on the file format. Sync recognises four:
+
+```yaml
+# Markdown — `state` in YAML frontmatter
+---
+title: Architecture notes
+state: canon
+---
+```
+
+```html
+<!-- HTML — first-content HTML comment -->
+<!-- state: draft -->
+<!DOCTYPE html>
+```
+
+```yaml
+# YAML / JSON — top-level `state` key
+state: canon
+schemaVersion: 1
+```
+
+```text
+state: canon
+A plain-text file's first line declares the state.
+```
+
+A file in a format outside this list (a PNG, a PDF, a binary asset)
+is materialised untagged. Sync doesn't fail — it just skips the
+tagging step for that file.
+
+### Rule in the maester config
+
+A maester can tag every file under a published entry by adding a
+`state` field to that entry:
+
+```yaml
+# maester.yaml
+schemaVersion: 1
+documents:
+  - path: docs/runbooks/**/*.md
+    state: canon            # everything under runbooks is authoritative
+  - path: docs/architecture/**/*.md
+    state: draft            # the architecture notes are still cooking
+```
+
+Every file matched by the entry inherits the entry's state — unless
+the file declares its own inline state, which wins.
+
+### Rule on a citadel-side `includes` entry
+
+For includes-driven sources (where the citadel owns the filter set)
+each entry can be an object carrying its own state:
+
+```yaml
+# citadel.yaml
+sources:
+  - name: external-style-guide
+    url: https://github.com/another-org/style-guide
+    ref: main
+    includes:
+      - 'README.md'                                # state defaults to draft
+      - { path: 'docs/**/*.md', state: draft }     # explicit draft tag
+      - { path: 'docs/v3/**/*.md', state: canon }  # v3 dir is ratified
+```
+
+The bare-string form (`'README.md'`) is still valid — it just inherits
+the default state.
+
+## Resolution at sync time
+
+For each file being materialised, sync resolves state in this order:
+
+1. **Inline state in the source file** — wins. Stamped through to
+   the destination unchanged.
+2. **A matching rule** — the maester-config entry (for manifest-driven
+   sources) or the citadel-side `includes` entry (for includes-driven
+   sources). If exactly one rule matches the file, the rule's state is
+   used.
+3. **Default** — `draft`.
+
+The resolved state is then written into the destination copy inline
+using the format-specific convention from the "Inline" section above.
+A markdown file that arrives with no frontmatter ends up with a
+`state:` field in newly-added frontmatter; an HTML file ends up with a
+`<!-- state: ... -->` comment near the top. The original source file
+is never modified.
+
+When a rule and inline state would have disagreed, sync may emit an
+informational warning so the discrepancy is diagnosable — but the
+inline value still wins. To see the source of truth for every file's
+state on a given run, pass `--verbose` to `maester sync`.
+
+## How agents use state
+
+When the [Grand Maester](/docs/concepts/grand-maester) skill is
+installed, the host AI coding agent is told to:
+
+- treat `canon` files as authoritative when answering;
+- treat `draft` files as informational context only, and mark citations
+  as draft when used;
+- read state inline from each file — no external index.
+
+The same convention works for humans and other tooling. Anything that
+can read a file can read its state.
+
+## Caveats
+
+- **Untagged binary content.** PDFs, images, and other formats without a
+  supported inline convention materialise without a state tag. A future
+  sidecar-metadata mechanism may close that gap.
+- **The default is `draft` on purpose.** Promoting something to `canon`
+  should be a deliberate act. A file that was never tagged anywhere is
+  almost certainly not yet canonical.
+- **Inline wins.** If your config says one thing and the file says
+  another, the file wins. That keeps individual documents in control of
+  their own state when an author has explicitly opted in or out of
+  whatever the surrounding rule would have said.

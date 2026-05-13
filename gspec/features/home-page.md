@@ -131,7 +131,7 @@ This matters now because the landing page is the entry point for every other pro
   - The "before" pane is visually tagged in an error/warning colour; the "after" pane is tagged in a success colour
   - Section is reachable via an in-page anchor (e.g. `#ai`)
 
-- [ ] **P0**: The AI-workflows section introduces the optional agent-skill integration (the Grand Maester) so visitors learn it exists and which agents it supports
+- [x] **P0**: The AI-workflows section introduces the optional agent-skill integration (the Grand Maester) so visitors learn it exists and which agents it supports
   - A short intro (1–2 sentences) inside the AI-workflows section explains that the tool ships an installable agent skill which turns the central aggregator into a first-class context surface for the host AI coding agent — so the agent reasons over aggregated content with citadel-, state-, and freshness-awareness instead of needing manual setup
   - A compact "supported agents" row lists the v1 target agents — Claude Code, Codex CLI, Cursor, and a generic `AGENTS.md` fallback — visually styled as small inline chips or badges
   - A character illustration of the Grand Maester accompanies the intro (sourced from `src/assets/illustration/grand-maester.png`), giving the subsection a clear visual anchor that personifies the agent-skill concept; the image has descriptive alt text and is sized to sit alongside the intro paragraph on desktop and stack above the prose on mobile

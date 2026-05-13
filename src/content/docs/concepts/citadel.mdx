@@ -8,7 +8,8 @@ order: 2
 A **citadel** is a directory that aggregates documentation from many
 source repositories. The directory has a `citadel.yaml` at its root
 listing the sources to pull from, and a destination tree (by default
-under `citadel/`) where the synced content materialises.
+under `citadel/`, configurable via `baseDir`) where the synced content
+materialises.
 
 ## Two modes of source
 
@@ -22,7 +23,8 @@ differs is *who decides which files materialise*:
 - **Includes-driven** — the entry declares its own `includes` list of
   paths and globs. The citadel owns the filter set directly. Use this
   mode for public third-party repos or repos you have read access to
-  but don't own.
+  but don't own (a [traveling
+  maester](/docs/concepts/maester#resident-vs-traveling)).
 
 Both modes are processed by the same `maester sync` command. If
 `includes` is set, the remote's `maester.yaml` is ignored even when
@@ -33,7 +35,7 @@ present.
 ```yaml
 # citadel.yaml
 schemaVersion: 1
-baseDir: context
+baseDir: context           # parent folder for every source's destination
 sources:
   # Manifest-driven: the remote owns the publish surface.
   - name: source-context
@@ -44,13 +46,29 @@ sources:
     url: https://github.com/another-org/style-guide
     ref: main
     includes:
-      - 'docs/**/*.md'
-      - 'README.md'
+      - 'README.md'                                # state defaults to draft
+      - { path: 'docs/**/*.md', state: draft }     # explicit draft
+      - { path: 'docs/v3/**/*.md', state: canon }  # v3 is ratified
 ```
 
-`baseDir` changes the parent folder once for every source. With
-`baseDir: context`, the example above would surface as
-`context/source-context/` and `context/external-style-guide/`.
+With `baseDir: context`, the example above surfaces as
+`context/source-context/` and `context/external-style-guide/`. Omitting
+`baseDir` uses the default `citadel/`. Per-source `destination`
+overrides win over both.
+
+`includes` entries accept the bare string form (`'README.md'`) or the
+object form (`{ path, state }`) — use the object form to tag the entry
+with a [document state](/docs/concepts/document-state) of `canon` or
+`draft`.
+
+## Where content lands
+
+By default, each source materialises under `<baseDir>/<source-name>/`.
+Setting a per-source `destination` overrides that for the one source.
+Changing `baseDir` after a previous sync is non-destructive — the new
+sync writes to the new location and leaves any previously-populated
+directories under the old base alone for you to remove with normal
+git operations.
 
 ## Sync semantics
 
@@ -63,3 +81,24 @@ When an includes-driven source matches zero files at the resolved ref,
 sync prints a "no files matched" warning so you can spot drift after
 the upstream restructures. The run still succeeds; the destination is
 left in a clean empty state.
+
+Each source's destination also carries a small provenance marker
+recording the remote URL, ref, resolved commit SHA, and active filter
+set — the same data
+[`maester status`](/docs/cli-reference#maester-status) uses to decide
+whether a source is behind.
+
+## Checking freshness
+
+Before relying on the citadel's content, you (or an agent reading it)
+can ask:
+
+```bash
+maester status
+```
+
+Status reads the provenance markers, resolves each source's configured
+ref against the remote, and reports `up-to-date`, `behind`, or
+`failed` for each. It never touches the working tree. Pair it with
+[`maester sync`](/docs/cli-reference#maester-sync) when something is
+behind.

@@ -1,13 +1,29 @@
 ---
 title: CLI reference
-description: Commands and flags for the maester CLI — init, publish, sync, and global options.
+description: Commands and flags for the maester CLI — the top-level menu, init, sync, status, skill, and global options.
 group: Reference
 order: 2
 ---
 
-This page lists every Maester subcommand and the flags they accept. For
-prose explanations of how the commands fit together, start with
+This page lists every Maester subcommand and the flags they accept.
+For prose explanations of how the commands fit together, start with
 [Getting started](/docs/getting-started).
+
+## Entry points
+
+There are two ways to invoke Maester:
+
+- `npx maester` — the **top-level interactive menu**. Detects whether
+  the current repo is a citadel, a maester, both, or neither, and
+  offers the relevant next step (initialize a citadel, configure this
+  repo as a maester, view existing configuration, install or upgrade
+  the [Grand Maester](/docs/concepts/grand-maester) skill).
+- `maester <subcommand>` — direct invocation of a named subcommand
+  (e.g. `maester sync`, `maester status`, `maester skill install`).
+  Useful for scripts, CI, and once you know which verb you want.
+
+The top-level menu is the friction-free first run; direct subcommands
+are the durable scriptable surface.
 
 ## Global flags
 
@@ -29,35 +45,35 @@ The `MAESTER_NO_WELCOME=1` environment variable has the same effect as
 
 Interactive walk-through that creates a `citadel.yaml` at the current
 working directory and (if a `package.json` is present) adds a
-`maester:sync` script entry.
+`maester:sync` script entry. Reachable directly via `maester init` or
+through the `npx maester` top-level menu.
 
 ```bash
 maester init
 ```
 
-Prompts cover:
+The walkthrough collects:
 
-- One or more **sources** to register, with optional `auth.type: token`
-  env-var-name validation.
-- A configurable `baseDir` (default: `citadel`).
-- An optional `includes` list per source. Sources without `includes`
-  rely on the remote's own `maester.yaml` manifest; sources with
-  `includes` let the citadel own the filter set directly.
+- One or more **sources** to register, each with a name, git URL, and
+  ref (defaulting to the remote's default branch).
+- An optional **`includes` list** per source. Sources without
+  `includes` rely on the remote's own `maester.yaml`; sources with
+  `includes` let the citadel own the filter set directly (a
+  [traveling maester](/docs/concepts/maester#resident-vs-traveling)).
+- Per-source **auth**, captured as the *name* of an environment
+  variable. The secret value never lands on disk.
+- An optional per-source **destination** override.
+- A top-level **`baseDir`** — the parent folder under which every
+  default-destination source lands. Pre-filled with `citadel` and one
+  keystroke to accept.
+- A final, recommended-by-default opt-in to **install the
+  [Grand Maester](/docs/concepts/grand-maester) agent skill** for one
+  or more target agents (Claude Code, Codex CLI, Cursor, generic
+  `AGENTS.md`). Declining writes zero skill artifacts.
 
-The walk-through is idempotent — re-running it on an existing
-`citadel.yaml` merges new sources without losing existing ones.
-
-## maester publish
-
-Interactive walk-through that creates a `maester.yaml` at the current
-working directory.
-
-```bash
-maester publish
-```
-
-It scans for likely-publishable files (READMEs, anything under `docs/`)
-and asks per-entry for description, categories, and tags.
+The walkthrough is idempotent — re-running it on a repo that already
+has a citadel shows the existing summary and offers safe options
+rather than silently overwriting.
 
 ## maester sync
 
@@ -70,10 +86,32 @@ maester sync source-context # one named source
 maester sync source-a source-b  # several
 ```
 
-Sync is atomic per source: each source's destination is swapped in only
-after its checkout completes successfully. Individual source failures
-are isolated — other sources still land — but the overall exit code is
-non-zero if any source failed, so the command is CI-safe.
+Sync is **atomic per source**: each source's destination is swapped in
+only after its checkout completes successfully. Individual source
+failures are isolated — other sources still land — but the overall
+exit code is non-zero if any source failed, so the command is
+CI-safe.
+
+Each source's destination receives a small **provenance marker**
+recording the remote URL, ref, resolved commit SHA, and active filter
+set. The marker is small enough to commit and is what
+[`maester status`](#maester-status) reads to decide whether the
+source is behind.
+
+### State tagging at sync time
+
+Sync resolves each file's
+[document state](/docs/concepts/document-state) (`canon` or `draft`)
+in the order **inline → rule → default** and writes the resolved
+state into the destination copy using the format-specific inline
+convention. The original source files are never modified. Files in
+unsupported formats (binary assets, images, PDFs) are materialised
+untagged.
+
+The per-source sync summary includes counts of `canon`, `draft`, and
+`untagged` files materialised. Pass `--verbose` to see the resolved
+state and source-of-truth (`inline` / `rule` / `default`) for every
+file.
 
 ### Sync output
 
@@ -81,15 +119,16 @@ By default, sync prints one line per source as it lands:
 
 ```
 source-context  →  context/source-context/  (43 files, 218 KB)
+                   canon: 28  draft: 12  untagged: 3
 third-party     →  context/third-party/     (12 files, 41 KB)
+                   canon: 0   draft: 12  untagged: 0
 ```
 
 With `--json`, each source emits NDJSON records suitable for piping to
 `jq` or another structured-log processor. Each record includes the
-source's filter mode (`manifest` or `includes`) so consumers can
-distinguish the two without re-parsing `citadel.yaml`.
+source's filter mode (`manifest` or `includes`) and the state counts.
 
-## Exit codes
+### Sync exit codes
 
 | Code | Meaning                                                          |
 | ---- | ---------------------------------------------------------------- |
@@ -97,3 +136,148 @@ distinguish the two without re-parsing `citadel.yaml`.
 | 1    | One or more sources failed; see logs for which.                  |
 | 2    | Invalid input — bad `citadel.yaml`, unknown flag, missing arg.   |
 | 3    | Environment problem — missing required env var, git not found.   |
+
+## maester status
+
+Read-only check that reports whether each configured source is up to
+date with its remote or behind and needs a sync. **Status never writes
+to the working tree** — agents and CI scripts can call it freely.
+
+```bash
+maester status                # check every source
+maester status source-context # check one named source
+```
+
+For each source, status checks three signals:
+
+| Reason                | Meaning                                                                          |
+| --------------------- | -------------------------------------------------------------------------------- |
+| `never-synced`        | The source has no provenance marker — no prior sync ran. No network call made.    |
+| `remote-ref-advanced` | The configured ref now resolves to a different commit than the recorded one.      |
+| `manifest-changed`    | (Manifest-driven sources only) The remote `maester.yaml` publish surface changed. |
+
+A source can be flagged for more than one reason in the same run.
+Includes-driven sources skip the `manifest-changed` check (their
+filter set is owned by the citadel, not the remote).
+
+### Status verdicts
+
+Each source is reported as one of:
+
+- `up-to-date` — matches the recorded provenance for every checked
+  signal.
+- `behind` — at least one signal indicates the source needs a sync.
+  The reason is included alongside the verdict.
+- `failed` — the check itself couldn't complete (missing env var,
+  network error, unreachable remote). Other sources continue.
+
+### Status exit codes
+
+Designed to be branchable in a single check:
+
+| Code | Meaning                                                       |
+| ---- | ------------------------------------------------------------- |
+| 0    | Every checked source is `up-to-date`.                          |
+| 1    | At least one source is `behind`, none are `failed`.            |
+| 2    | At least one source is `failed`, or status couldn't start.    |
+
+`2` takes precedence over `1` when both `behind` and `failed` sources
+appear in the same run.
+
+### Machine-readable output
+
+Pass `--json` for structured per-source results suitable for agent and
+CI consumption:
+
+```json
+{"source":"source-context","verdict":"behind","reasons":["remote-ref-advanced"],"recordedSha":"a1b2c3…","resolvedSha":"e4f5g6…"}
+{"source":"third-party","verdict":"up-to-date"}
+{"summary":{"upToDate":1,"behind":1,"failed":0}}
+```
+
+Exit-code semantics are identical in both output modes. The
+[Grand Maester](/docs/concepts/grand-maester) agent skill uses this
+interface — and the exit code — to decide whether to offer a sync
+before reading citadel content.
+
+## maester skill
+
+Manage the [Grand Maester](/docs/concepts/grand-maester) agent skill.
+Every verb runs from a citadel-bearing repo; running from outside one
+exits with a clear error.
+
+The supported v1 targets are `claude-code`, `codex`, `cursor`, and
+`generic` (any agent that reads project-root `AGENTS.md`).
+
+### maester skill install
+
+Install the Grand Maester into the current citadel.
+
+```bash
+maester skill install                                      # interactive
+maester skill install --target claude-code                 # one target
+maester skill install --target claude-code --target codex  # several
+```
+
+Interactive mode shows a multi-select of the v1 targets; flag mode
+skips the prompt. Running install when the skill is already installed
+for the chosen target performs an idempotent refresh — artifacts are
+left byte-identical, user-added content in managed regions is
+preserved.
+
+### maester skill upgrade
+
+Refresh installed artifacts to match the locally-installed `maester`
+version. Touches only the managed region of each artifact; anything
+you added outside it survives.
+
+```bash
+maester skill upgrade
+```
+
+Upgrade applies to every target that's already installed. If no
+targets are installed, the command reports that and exits without
+writing anything.
+
+### maester skill add-target
+
+Add a new target to an existing install without reinstalling the
+others.
+
+```bash
+maester skill add-target --target cursor
+```
+
+Useful when you started with one agent and want to layer in another.
+
+### Switching targets
+
+To switch from one target to another, install the new one and remove
+the old artifacts manually (a clean `uninstall` verb is deferred for
+v1). The targets are independent — each one's artifacts live in its
+own location, so removing one doesn't affect the others.
+
+## Configuring a repo as a maester
+
+To declare what your repo publishes (a "maester"), run:
+
+```bash
+npx maester
+```
+
+…and pick **"Configure this repo as a maester"** from the menu. The
+walkthrough collects path-or-glob entries with optional `description`,
+`category`, `tags`, and [`state`](/docs/concepts/document-state) and
+writes a `maester.yaml` at the repo root. No scripts are scaffolded —
+the maester is purely a published manifest.
+
+## See also
+
+- [Getting started](/docs/getting-started) — narrative walk-through
+  from install to first sync.
+- [Configuration](/docs/configuration) — full schema reference for
+  `citadel.yaml` and `maester.yaml`.
+- [Document state](/docs/concepts/document-state) — what `canon` and
+  `draft` mean and how they get resolved.
+- [Grand Maester](/docs/concepts/grand-maester) — the optional agent
+  skill the `skill` verbs install.

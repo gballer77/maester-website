@@ -1,5 +1,6 @@
 ---
-// Card rendering one example. Per gspec/features/examples-page.md §4 P0.
+// Blog-style post rendering one example entry. Per gspec/features/examples-page.md §4 P0
+// (newest-first stream, rich markdown bodies).
 
 import type { CollectionEntry } from 'astro:content';
 import { isExternal } from '../../lib/url';
@@ -9,61 +10,91 @@ interface Props {
 }
 
 const { entry } = Astro.props;
-const { title, description, categories, link } = entry.data;
+const { title, description, date, categories, link } = entry.data;
 const { Content } = await entry.render();
 
-const linkIsExternal = isExternal(link);
-const rel = linkIsExternal ? 'noopener external' : undefined;
+const rel = link && isExternal(link) ? 'noopener external' : undefined;
+
+// Render in UTC so a YYYY-MM-DD frontmatter date is shown verbatim
+// regardless of the build server's local timezone (Zod coerces it to
+// 00:00:00Z, which shifts a day backwards in negative-offset zones).
+const dateLabel = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+const dateMachine = date.toISOString().slice(0, 10);
 ---
 
-<article class="example-card" data-categories={categories.join(',')}>
-  <div class="example-card-header">
-    <h3>{title}</h3>
-    <ul class="example-card-tags" aria-label="Categories">
-      {categories.map((c) => <li>{c}</li>)}
-    </ul>
-  </div>
+<article class="example-post" data-categories={categories.join(',')}>
+  <header class="example-post-header">
+    <div class="example-post-meta">
+      <time datetime={dateMachine}>{dateLabel}</time>
+      <span class="example-post-meta-sep" aria-hidden="true">·</span>
+      <ul class="example-post-tags" aria-label="Categories">
+        {categories.map((c) => <li>{c}</li>)}
+      </ul>
+    </div>
+    <h2>{title}</h2>
+    <p class="example-post-dek">{description}</p>
+  </header>
 
-  <p class="example-card-desc">{description}</p>
-
-  <div class="example-card-snippet">
+  <div class="example-post-body">
     <Content />
   </div>
 
-  <a class="example-card-link" href={link} rel={rel}>
-    See full example
-    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
-    </svg>
-  </a>
+  {link && (
+    <footer class="example-post-footer">
+      <a class="example-post-link" href={link} rel={rel}>
+        See full example
+        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+        </svg>
+      </a>
+    </footer>
+  )}
 </article>
 
 <style>
-  .example-card {
-    display: flex;
-    flex-direction: column;
+  .example-post {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    overflow: hidden;
+    border-radius: var(--radius-lg);
+    padding: 2rem 2.25rem;
     transition: border-color 120ms ease;
   }
 
-  .example-card:hover {
+  .example-post:hover {
     border-color: var(--border-strong);
   }
 
-  .example-card-header {
-    padding: 1rem 1.25rem 0;
+  .example-post-header {
+    margin-bottom: 1.5rem;
   }
 
-  .example-card-header h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1.0625rem;
-    color: var(--fg);
+  .example-post-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--fg-muted);
+    margin-bottom: 0.75rem;
   }
 
-  .example-card-tags {
+  .example-post-meta time {
+    color: var(--fg-muted);
+  }
+
+  .example-post-meta-sep {
+    color: var(--border-strong);
+  }
+
+  .example-post-tags {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -72,70 +103,161 @@ const rel = linkIsExternal ? 'noopener external' : undefined;
     gap: 0.375rem;
   }
 
-  .example-card-tags li {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--fg-muted);
+  .example-post-tags li {
+    color: var(--accent);
     background: var(--elevated);
     border: 1px solid var(--border);
     padding: 0.125rem 0.5rem;
     border-radius: var(--radius-sm);
+    letter-spacing: 0.04em;
   }
 
-  .example-card-desc {
-    margin: 0.75rem 1.25rem 1rem;
-    color: var(--fg-muted);
-    font-size: 0.9375rem;
-    line-height: 1.6;
+  .example-post-header h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+    line-height: 1.25;
+    color: var(--fg);
   }
 
-  .example-card-snippet {
-    /* Bound the snippet preview height; longer content scrolls inside the card. */
-    max-height: 12.5rem;
-    overflow: auto;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
+  .example-post-dek {
     margin: 0;
-    background: var(--bg);
+    color: var(--fg-muted);
+    font-size: 1rem;
+    line-height: 1.55;
+    font-style: italic;
   }
 
-  /* Tame the global pre styling so it doesn't get a second border inside the card. */
-  .example-card-snippet :global(pre.astro-code),
-  .example-card-snippet :global(.code-block) {
-    border: 0 !important;
-    border-radius: 0 !important;
-    margin: 0 !important;
+  /* Rich markdown body — mirrors the docs prose styling so authors can use
+     the full markdown vocabulary (headings, lists, blockquotes, inline code). */
+  .example-post-body {
+    color: var(--fg);
+    font-size: 1rem;
+    line-height: 1.7;
   }
 
-  /* The site-wide Shiki config sets wrap:true, which yields white-space:
-     pre-wrap + word-break: break-all and mangles long tokens (URLs, paths)
-     inside the narrow card column. Force horizontal scrolling instead, per
-     gspec/features/code-snippets.md §4 P0. */
-  .example-card-snippet :global(pre.astro-code),
-  .example-card-snippet :global(pre.astro-code code),
-  .example-card-snippet :global(pre.shiki),
-  .example-card-snippet :global(pre.shiki code) {
-    white-space: pre !important;
-    word-wrap: normal !important;
-    word-break: normal !important;
-    overflow-wrap: normal !important;
+  .example-post-body :global(p) {
+    margin: 0 0 1rem;
   }
 
-  .example-card-link {
+  .example-post-body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .example-post-body :global(h2) {
+    margin: 1.75rem 0 0.625rem;
+    font-size: 1.125rem;
+    line-height: 1.3;
+    color: var(--fg);
+    letter-spacing: -0.005em;
+  }
+
+  .example-post-body :global(h3) {
+    margin: 1.5rem 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--fg);
+  }
+
+  .example-post-body :global(ul),
+  .example-post-body :global(ol) {
+    margin: 0 0 1rem 1.25rem;
+    padding: 0;
+  }
+
+  .example-post-body :global(li) {
+    margin: 0.375rem 0;
+  }
+
+  .example-post-body :global(li::marker) {
+    color: var(--accent);
+  }
+
+  .example-post-body :global(strong) {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  .example-post-body :global(em) {
+    color: var(--fg);
+  }
+
+  .example-post-body :global(blockquote) {
+    border-left: 3px solid var(--accent);
+    margin: 1.5rem 0;
+    padding: 0.625rem 1rem;
+    color: var(--fg-muted);
+    background: var(--elevated);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    font-size: 0.9375rem;
+  }
+
+  .example-post-body :global(blockquote p) {
+    margin: 0;
+  }
+
+  .example-post-body :global(:not(pre) > code) {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background: var(--elevated);
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-sm);
+    color: var(--fg);
+    border: 1px solid var(--border);
+  }
+
+  .example-post-body :global(a) {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
+
+  .example-post-body :global(a:hover) {
+    color: var(--accent-hover);
+  }
+
+  .example-post-body :global(hr) {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  /* rehype-autolink-headings is applied globally and injects a visible "#"
+     link into every subheading. In the docs that's a feature; on this
+     stream it's noise (and the IDs duplicate across posts since the
+     subheadings repeat). Hide the injected anchor inside example bodies. */
+  .example-post-body :global(.heading-anchor) {
+    display: none;
+  }
+
+  .example-post-footer {
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .example-post-link {
     display: inline-flex;
     align-items: center;
     gap: 0.4375rem;
-    padding: 0.875rem 1.25rem;
     color: var(--accent);
     font-weight: 600;
     font-size: 0.9375rem;
-    background: var(--surface);
   }
 
-  .example-card-link:hover {
-    background: var(--elevated);
+  .example-post-link:hover {
+    color: var(--accent-hover);
     text-decoration: none;
+  }
+
+  @media (max-width: 640px) {
+    .example-post {
+      padding: 1.5rem 1.25rem;
+      border-radius: var(--radius-md);
+    }
+
+    .example-post-header h2 {
+      font-size: 1.3125rem;
+    }
   }
 </style>

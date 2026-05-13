@@ -37,8 +37,13 @@ const examples = defineCollection({
   schema: z.object({
     title: z.string().min(1),
     description: z.string().min(1),
+    // Publication date for the example. Examples render newest-first as
+    // a blog-style stream, per gspec/features/examples-page.md §4 P0.
+    date: z.coerce.date(),
     categories: z.array(z.enum(EXAMPLE_CATEGORIES)).min(1),
-    link: z.string().url(),
+    // Optional outbound link to a fuller resource (sample repo, docs page).
+    // When omitted, the post renders without a "See full example" footer.
+    link: z.string().url().optional(),
   }),
 });
 

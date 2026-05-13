@@ -1,22 +1,24 @@
 ---
 title: Multi-repo docs aggregator
 description: Pull READMEs and docs trees from three sibling repositories into one local citadel for cross-repo reading.
+date: 2026-03-15
 categories: [Setup]
-link: https://github.com/baller-software/maester/tree/main/examples/multi-repo-docs
 ---
 
-```yaml
-# citadel.yaml
-schemaVersion: 1
-baseDir: context
-sources:
-  - name: api-service
-    url: https://github.com/your-org/api-service
-    ref: main
-  - name: web-app
-    url: https://github.com/your-org/web-app
-    ref: main
-  - name: shared-libs
-    url: https://github.com/your-org/shared-libs
-    ref: main
-```
+Reading a system that lives in three repositories shouldn't require three clones and an unreliable memory of which `main` is most recent. A single aggregated tree fixes that.
+
+## The scenario
+
+Most non-trivial systems span more than one repository — an API service, a web client, a shared library or two — and the documentation that explains them spans every one. Reading across that boundary normally means cloning each repo, remembering where each piece lives, and accepting that whatever you're looking at is some unknown amount behind `main`.
+
+## How this example handles it
+
+Three sibling repositories are listed as `sources` in a single `citadel.yaml`, each named, pinned to a branch, and dropped under a shared base directory. Once the citadel is synced, the codebase looks like one folder rather than three — and tools that operate on folders (grep, search, indexers, AI agents) operate on the whole system at once.
+
+## What it gets you
+
+- **One mental model for cross-repo work.** Onboarding engineers can read the whole system without juggling tabs.
+- **Tooling that just works.** Code search, grep, IDE indexes, and AI assistants get a coherent context window instead of a patchwork.
+- **Reproducible by design.** Anyone running the same `citadel.yaml` ends up with the same tree — useful for review, CI, and shared dev environments.
+
+> This is the simplest useful Maester configuration: three `sources`, no `includes`, no transforms. It's the starting point most teams grow from.
