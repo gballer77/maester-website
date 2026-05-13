@@ -3,6 +3,11 @@ import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
+import {
+  transformerMetaHighlight,
+  transformerNotationDiff,
+  transformerNotationHighlight,
+} from '@shikijs/transformers';
 import { site } from './src/config/site.ts';
 
 // https://astro.build/config
@@ -22,6 +27,13 @@ export default defineConfig({
       },
       wrap: true,
       defaultColor: false,
+      transformers: [
+        // Honors `js {2,4-6}` meta syntax on Markdown/MDX code fences.
+        // Per gspec/features/code-snippets.md §4 P1.
+        transformerMetaHighlight(),
+        transformerNotationHighlight(),
+        transformerNotationDiff(),
+      ],
     },
   },
 });

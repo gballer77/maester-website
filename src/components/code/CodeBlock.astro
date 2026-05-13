@@ -1,0 +1,288 @@
+---
+// Reusable code block with syntax highlighting + filename label + copy button.
+// Per gspec/features/code-snippets.md.
+//
+// Two usage shapes:
+//
+//   1. Imperative (Astro/MDX with explicit content):
+//      <CodeBlock code="npm install" lang="bash" filename="terminal" />
+//      <CodeBlock code={multilineString} lang="json" highlightLines="2,4-6" />
+//
+//   2. Markdown/MDX code fences are styled globally via global.css; they
+//      get the same filename/copy treatment when followed by the
+//      `title="filename.ext"` meta string or `{2,4-6}` highlight spec.
+//
+// Imperative usage builds on Astro's <Code> component (which runs Shiki at
+// build time). Both shapes emit the same wrapper structure so styles apply
+// uniformly.
+
+import { Code } from 'astro:components';
+
+interface Props {
+  code: string;
+  lang?: Parameters<typeof Code>[0]['lang'];
+  filename?: string;
+  /** Lines to visually highlight. Accepts "2,4-6" or [2, 4, 5, 6]. */
+  highlightLines?: string | number[];
+}
+
+const { code, lang = 'plaintext', filename, highlightLines } = Astro.props;
+
+function parseHighlightSpec(spec: string | number[] | undefined): Set<number> {
+  if (!spec) return new Set();
+  if (Array.isArray(spec)) return new Set(spec);
+  const out = new Set<number>();
+  for (const part of spec.split(',')) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    const [a, b] = trimmed.split('-').map((s) => parseInt(s.trim(), 10));
+    if (Number.isNaN(a)) continue;
+    if (b !== undefined && !Number.isNaN(b)) {
+      for (let n = a; n <= b; n++) out.add(n);
+    } else {
+      out.add(a);
+    }
+  }
+  return out;
+}
+
+const highlights = parseHighlightSpec(highlightLines);
+
+// Shiki transformer that decorates matching line numbers with the
+// `highlighted` class so global.css can style them.
+function lineHighlightTransformer() {
+  return {
+    name: 'maester:highlight-lines',
+    line(node: { properties: Record<string, unknown> }, line: number) {
+      if (highlights.has(line)) {
+        const existing = (node.properties.class as string | undefined) ?? '';
+        node.properties.class = (existing + ' highlighted').trim();
+      }
+      return node;
+    },
+  };
+}
+---
+
+<figure class="code-block">
+  {filename && <figcaption class="code-block-filename">{filename}</figcaption>}
+  <div class="code-block-body">
+    <Code
+      code={code}
+      lang={lang}
+      themes={{ light: 'github-light', dark: 'github-dark' }}
+      defaultColor={false}
+      wrap
+      transformers={highlights.size > 0 ? [lineHighlightTransformer()] : []}
+    />
+    <button
+      type="button"
+      class="copy-button"
+      aria-label="Copy code to clipboard"
+      data-copy-button
+    >
+      <svg class="icon-copy" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="9" y="9" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2" fill="none"></rect>
+        <path d="M5 15V5a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"></path>
+      </svg>
+      <svg class="icon-check" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 12l5 5L20 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+      </svg>
+      <span class="sr-only" data-copy-status aria-live="polite"></span>
+    </button>
+  </div>
+</figure>
+
+<script>
+  // Wire up every copy button on the page — both inside <CodeBlock> wrappers
+  // and on bare Markdown <pre class="astro-code"> elements (the latter get
+  // a button injected by this script).
+
+  function fallbackCopy(text: string): boolean {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'absolute';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+
+  function showCopied(button: HTMLButtonElement, status: HTMLElement | null) {
+    button.setAttribute('data-copied', 'true');
+    if (status) status.textContent = 'Copied to clipboard';
+    setTimeout(() => {
+      button.removeAttribute('data-copied');
+      if (status) status.textContent = '';
+    }, 1500);
+  }
+
+  function showUnavailable(button: HTMLButtonElement, status: HTMLElement | null) {
+    button.setAttribute('data-unavailable', 'true');
+    if (status) status.textContent = 'Copy unavailable';
+    setTimeout(() => {
+      button.removeAttribute('data-unavailable');
+      if (status) status.textContent = '';
+    }, 1500);
+  }
+
+  function wireButton(button: HTMLButtonElement, getText: () => string) {
+    const status = button.querySelector<HTMLElement>('[data-copy-status]');
+    button.addEventListener('click', async () => {
+      const text = getText();
+      if (!text) return;
+      let ok = false;
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(text);
+          ok = true;
+        }
+      } catch {
+        ok = false;
+      }
+      if (!ok) ok = fallbackCopy(text);
+      if (ok) showCopied(button, status);
+      else showUnavailable(button, status);
+    });
+  }
+
+  // Buttons explicitly placed inside .code-block wrappers.
+  document.querySelectorAll<HTMLButtonElement>('.code-block [data-copy-button]').forEach((button) => {
+    wireButton(button, () => {
+      const pre = button.closest('.code-block')?.querySelector('pre');
+      return pre?.innerText ?? '';
+    });
+  });
+
+  // Bare Markdown/MDX code blocks — inject a button so the docs body gets
+  // the same UX as the explicit <CodeBlock> component.
+  document.querySelectorAll<HTMLPreElement>('pre.astro-code').forEach((pre) => {
+    if (pre.closest('.code-block')) return; // already wrapped by CodeBlock
+    if (pre.querySelector('[data-copy-button]')) return; // already wired
+    pre.style.position = pre.style.position || 'relative';
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'copy-button';
+    button.setAttribute('aria-label', 'Copy code to clipboard');
+    button.setAttribute('data-copy-button', '');
+    button.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="9" y="9" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2" fill="none"></rect>
+        <path d="M5 15V5a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"></path>
+      </svg>
+      <span class="sr-only" data-copy-status aria-live="polite"></span>
+    `;
+    pre.appendChild(button);
+    wireButton(button, () => pre.innerText);
+  });
+</script>
+
+<style is:global>
+  /* ------------------------------------------------------------------
+     Code block container — applies to both <CodeBlock> wrapper and
+     bare <pre class="astro-code"> elements emitted by Markdown/MDX.
+     ------------------------------------------------------------------ */
+
+  .code-block {
+    margin: 1.5rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .code-block-filename {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--fg-muted);
+    padding: 0.5rem 1rem;
+    background: var(--elevated);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-block-body {
+    position: relative;
+  }
+
+  /* Tame Astro's default <pre> styling so it fits inside our container. */
+  .code-block pre.astro-code,
+  pre.astro-code {
+    margin: 0;
+    padding: 1rem 1.125rem;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.65;
+    background: var(--surface);
+  }
+
+  /* Standalone <pre> (outside a .code-block) — give it the same border
+     treatment so Markdown body code blocks look like CodeBlock outputs. */
+  pre.astro-code:not(.code-block pre.astro-code) {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin: 1.5rem 0;
+    position: relative;
+  }
+
+  .code-block code,
+  pre.astro-code code {
+    background: transparent;
+    padding: 0;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+  }
+
+  /* Shiki theme switching — Astro emits both light and dark color values
+     as CSS custom properties per token. Pick the right one based on the
+     <html data-theme> attribute. */
+
+  .astro-code,
+  .astro-code span {
+    color: var(--shiki-light, var(--shiki-default));
+    background-color: var(--shiki-light-bg, var(--shiki-default-bg)) !important;
+  }
+
+  [data-theme='dark'] .astro-code,
+  [data-theme='dark'] .astro-code span {
+    color: var(--shiki-dark);
+    background-color: var(--shiki-dark-bg) !important;
+  }
+
+  /* Force the pre background to follow our surface token, not Shiki's. */
+  .code-block pre.astro-code,
+  pre.astro-code {
+    background-color: var(--surface) !important;
+  }
+
+  /* Line highlighting (from transformerMetaHighlight and our line
+     transformer) — both apply the `highlighted` class to <span class="line">. */
+  .astro-code .line.highlighted {
+    background-color: color-mix(in srgb, var(--accent) 12%, transparent);
+    display: inline-block;
+    width: 100%;
+    box-shadow: inset 2px 0 0 var(--accent);
+    padding-left: 0.5rem;
+    margin-left: -0.5rem;
+    padding-right: 0.5rem;
+    margin-right: -0.5rem;
+  }
+
+  /* Diff transformer */
+  .astro-code .line.diff.add {
+    background-color: color-mix(in srgb, #16a34a 12%, transparent);
+  }
+  .astro-code .line.diff.remove {
+    background-color: color-mix(in srgb, var(--danger) 12%, transparent);
+  }
+</style>

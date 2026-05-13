@@ -57,43 +57,43 @@ This matters now because the home page's install snippet and every docs page's e
 
 ## 4. Capabilities
 
-- [ ] **P0**: Code blocks render with syntax highlighting for declared languages
+- [x] **P0**: Code blocks render with syntax highlighting for declared languages
   - When a code block declares a language, tokens are colored according to the project's design system
   - When no language is declared, the code is rendered as plain monospaced text with no highlighting
   - Unknown or unsupported languages fall back to plain monospaced text without raising a build error
   - Highlighting works for at least the languages relevant to the project (the build documents the supported list)
 
-- [ ] **P0**: Every code block has a copy-to-clipboard button
+- [x] **P0**: Every code block has a copy-to-clipboard button
   - The button is visually present on every code block, positioned consistently (e.g., top-right corner)
   - Clicking or tapping the button copies the code block's text content to the clipboard
   - The button provides clear feedback on successful copy (e.g., changes label or icon for a short interval)
   - The button is keyboard-accessible with a visible focus indicator
 
-- [ ] **P0**: A code block can display an optional filename label
+- [x] **P0**: A code block can display an optional filename label
   - When a filename is provided, it renders as a label above the code block
   - When no filename is provided, no label area is rendered (no empty space)
   - The filename label uses styling distinct from the code content but visually associated with it
 
-- [ ] **P1**: A code block supports optional line highlighting
+- [x] **P1**: A code block supports optional line highlighting
   - The component accepts a metadata syntax declaring which line numbers or ranges to highlight (e.g., `{2,4-6}`)
   - Highlighted lines are visually distinct from non-highlighted lines (e.g., background color or marker)
   - Out-of-range line numbers are ignored without error
 
-- [ ] **P0**: Long code blocks scroll horizontally within their container
+- [x] **P0**: Long code blocks scroll horizontally within their container
   - When code content is wider than the container, the code block scrolls horizontally within itself
   - Horizontal scrolling does not cause the page itself to overflow
   - The copy button remains accessible regardless of scroll position
 
-- [ ] **P0**: The component is fully responsive across common device sizes
+- [x] **P0**: The component is fully responsive across common device sizes
   - The code block adapts cleanly to desktop, tablet, and mobile viewports
   - The copy button remains tappable on mobile (meets minimum tap-target size)
   - Filename labels remain readable at all sizes
 
-- [ ] **P1**: Copy behavior degrades gracefully when clipboard access is unavailable
+- [x] **P1**: Copy behavior degrades gracefully when clipboard access is unavailable
   - If the clipboard API is unavailable (e.g., insecure context, restrictive browser policy), the button shows a clear fallback state
   - The component never throws an unhandled error on copy failure
 
-- [ ] **P2**: The component is accessible to assistive technologies
+- [x] **P2**: The component is accessible to assistive technologies
   - The code block is announced to screen readers as a code region
   - The copy button has a descriptive accessible name (e.g., "Copy code to clipboard")
   - Success feedback is communicated to assistive technologies (e.g., via a live region)

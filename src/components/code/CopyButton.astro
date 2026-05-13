@@ -1,0 +1,104 @@
+---
+// Copy-to-clipboard button. Rendered inside CodeBlock and on every Markdown
+// code fence (via the global selector in global.css).
+//
+// Per gspec/features/code-snippets.md §4:
+//   - P0: every code block has a copy button positioned consistently
+//   - P0: keyboard-accessible with visible focus indicator
+//   - P1: graceful fallback when Clipboard API is unavailable
+//   - P2: accessible name + live-region feedback
+---
+
+<button
+  type="button"
+  class="copy-button"
+  aria-label="Copy code to clipboard"
+  data-copy-button
+>
+  <svg class="icon-copy" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="9" y="9" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2" fill="none"></rect>
+    <path
+      d="M5 15V5a2 2 0 0 1 2-2h10"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      fill="none"></path>
+  </svg>
+  <svg class="icon-check" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+    <path
+      d="M4 12l5 5L20 6"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      fill="none"></path>
+  </svg>
+  <span class="sr-only" data-copy-status aria-live="polite"></span>
+</button>
+
+<style>
+  .copy-button {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--fg-muted);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition:
+      opacity 120ms ease,
+      color 120ms ease,
+      border-color 120ms ease;
+  }
+
+  /* Always reveal on touch where hover is unavailable. */
+  @media (hover: none) {
+    .copy-button {
+      opacity: 1;
+    }
+  }
+
+  /* Reveal copy button on hover/focus of the surrounding code container. */
+  :global(.code-block:hover) .copy-button,
+  :global(.code-block:focus-within) .copy-button,
+  :global(pre.astro-code:hover) .copy-button,
+  :global(pre.astro-code:focus-within) .copy-button,
+  .copy-button:focus-visible {
+    opacity: 1;
+  }
+
+  .copy-button:hover {
+    color: var(--fg);
+    border-color: var(--border-strong);
+  }
+
+  .copy-button .icon-check {
+    display: none;
+  }
+
+  .copy-button[data-copied='true'] {
+    color: var(--accent);
+    border-color: var(--accent);
+    opacity: 1;
+  }
+
+  .copy-button[data-copied='true'] .icon-copy {
+    display: none;
+  }
+
+  .copy-button[data-copied='true'] .icon-check {
+    display: block;
+  }
+
+  .copy-button[data-unavailable='true'] {
+    cursor: not-allowed;
+  }
+</style>
