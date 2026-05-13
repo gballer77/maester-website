@@ -1,0 +1,173 @@
+---
+// One release entry. Per gspec/features/changelog-page.md §4 P0.
+
+import type { ChangelogEntry } from '../../lib/changelog';
+
+interface Props {
+  release: ChangelogEntry;
+}
+
+const { release } = Astro.props;
+
+// Group changes by category so each category renders once with its bullets.
+const byCategory = new Map<string, string[]>();
+for (const change of release.changes) {
+  const list = byCategory.get(change.category) ?? [];
+  list.push(change.text);
+  byCategory.set(change.category, list);
+}
+
+// Display categories in the canonical Keep-a-Changelog order.
+const ORDER = ['Added', 'Changed', 'Fixed', 'Removed', 'Deprecated', 'Security'];
+
+const categoriesPresent = ORDER.filter((c) => byCategory.has(c));
+---
+
+<article class={`release release-${release.releaseType}`}>
+  <header class="release-header">
+    <h2 id={release.anchorId}>
+      <a class="release-anchor" href={`#${release.anchorId}`} aria-label={`Copy link to ${release.version}`}>
+        <span class="release-version">{release.version}</span>
+        <span class="release-anchor-mark" aria-hidden="true">#</span>
+      </a>
+      <span class={`release-badge release-badge-${release.releaseType}`}>
+        {release.releaseType}
+      </span>
+    </h2>
+    <time datetime={release.date} class="release-date">
+      {release.date}
+    </time>
+  </header>
+
+  {
+    categoriesPresent.map((cat) => (
+      <section class="release-category">
+        <h3>{cat}</h3>
+        <ul>
+          {(byCategory.get(cat) ?? []).map((text) => <li>{text}</li>)}
+        </ul>
+      </section>
+    ))
+  }
+</article>
+
+<style>
+  .release {
+    padding: 2rem 0 2.5rem;
+    border-bottom: 1px solid var(--border);
+    scroll-margin-top: 5rem;
+  }
+
+  .release:last-child {
+    border-bottom: none;
+  }
+
+  .release-header {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .release h2 {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+
+  .release-anchor {
+    color: var(--fg);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .release-anchor:hover {
+    text-decoration: none;
+    color: var(--fg);
+  }
+
+  .release-anchor-mark {
+    color: var(--fg-faint);
+    font-weight: 400;
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+
+  .release-anchor:hover .release-anchor-mark,
+  .release-anchor:focus-visible .release-anchor-mark {
+    opacity: 1;
+    color: var(--accent);
+  }
+
+  .release-badge {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    color: var(--fg-muted);
+    background: var(--elevated);
+  }
+
+  .release-badge-major {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+
+  .release-badge-minor {
+    color: var(--accent-alt);
+    border-color: var(--accent-alt);
+    background: color-mix(in srgb, var(--accent-alt) 10%, transparent);
+  }
+
+  .release-date {
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+  }
+
+  .release-category {
+    margin-bottom: 1.25rem;
+  }
+
+  .release-category h3 {
+    font-size: 0.875rem;
+    margin: 0 0 0.5rem;
+    color: var(--fg);
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .release-category ul {
+    list-style: disc;
+    margin: 0 0 0 1.25rem;
+    padding: 0;
+  }
+
+  .release-category li {
+    margin: 0.375rem 0;
+    color: var(--fg);
+    line-height: 1.6;
+  }
+
+  /* Inline code in release notes — uses the same chip style as docs. */
+  .release-category li :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background: var(--elevated);
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-sm);
+    color: var(--fg);
+    border: 1px solid var(--border);
+  }
+</style>

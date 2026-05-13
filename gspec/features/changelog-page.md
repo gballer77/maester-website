@@ -63,42 +63,42 @@ This matters now because the moment the project ships a second public release, u
 
 ## 4. Capabilities
 
-- [ ] **P0**: The changelog page lists releases in reverse-chronological order
+- [x] **P0**: The changelog page lists releases in reverse-chronological order
   - The newest release appears first
   - Each release is rendered as a discrete entry on the page
   - Older releases are reachable without pagination at the v1 release volume (a long page is acceptable); pagination is a future consideration
 
-- [ ] **P0**: Each release entry shows version, date, and categorized changes
+- [x] **P0**: Each release entry shows version, date, and categorized changes
   - Version is displayed prominently as the heading of the entry
   - Release date is displayed alongside the version
   - Changes are grouped under category headings: Added, Changed, Fixed, Removed, Deprecated, Security
   - Category headings appear only when the release has entries in that category — empty categories are omitted
   - Within each category, individual changes are rendered as a bulleted list
 
-- [ ] **P0**: Each release entry has a stable anchor link
+- [x] **P0**: Each release entry has a stable anchor link
   - The release's version is used as the anchor id (e.g., `#v1-2-0` or equivalent slug)
   - A "#" affordance on the version heading copies a direct link to that release
   - Loading the page with an anchor fragment scrolls to the corresponding release on initial render
 
-- [ ] **P0**: The changelog is generated from a single authoring source
+- [x] **P0**: The changelog is generated from a single authoring source
   - Changelog content lives in one well-defined source file or set of files (e.g., a Markdown file with a documented structure)
   - Adding a new release requires editing only that source — no template changes
   - Build fails with a clear error if a release entry is malformed (missing version, missing date, unknown category)
 
-- [ ] **P1**: Major, minor, and patch releases are visually distinguishable
+- [x] **P1**: Major, minor, and patch releases are visually distinguishable
   - The release heading style or an adjacent badge indicates whether the release is major, minor, or patch
   - The distinction is not relied on alone for accessibility — version numbers themselves remain the authoritative signal
 
-- [ ] **P0**: The page is fully responsive across common device sizes
+- [x] **P0**: The page is fully responsive across common device sizes
   - Layout adapts cleanly to desktop, tablet, and mobile viewports
   - No horizontal scrolling on any viewport
   - Long release entries remain readable on mobile
 
-- [ ] **P1**: Empty-state handling when no releases exist yet
+- [x] **P1**: Empty-state handling when no releases exist yet
   - When the project has zero published releases, the page shows a clear "no releases yet" message instead of an empty list
   - The page still renders inside the site shell with proper metadata
 
-- [ ] **P2**: Semantic structure supports accessibility
+- [x] **P2**: Semantic structure supports accessibility
   - Each release uses an appropriate heading level (e.g., h2 for the version)
   - Category names use sub-headings (h3) within each release
   - Anchor links on version headings have descriptive accessible names

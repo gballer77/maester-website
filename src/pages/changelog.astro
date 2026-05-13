@@ -1,0 +1,115 @@
+---
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ReleaseEntry from '../components/changelog/ReleaseEntry.astro';
+import { parseChangelog } from '../lib/changelog';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const CHANGELOG_PATH = path.resolve(__dirname, '../../CHANGELOG.md');
+
+let releases: ReturnType<typeof parseChangelog>;
+try {
+  const source = readFileSync(CHANGELOG_PATH, 'utf-8');
+  releases = parseChangelog(source);
+} catch (err) {
+  // Surface parser errors as a build failure with the offending file path.
+  throw new Error(
+    `Failed to parse ${CHANGELOG_PATH}: ${(err as Error).message}`,
+  );
+}
+
+const title = 'Changelog';
+const description =
+  'Release notes for the Maester website — every version, dated, with categorized changes and stable anchor links.';
+
+// Click-to-copy for release version anchors gets the same UX as the
+// docs heading anchors. Logic lives in a small inline script below.
+---
+
+<BaseLayout title={title} description={description}>
+  <header class="changelog-header">
+    <h1>Changelog</h1>
+    <p class="changelog-lede">
+      Releases are listed newest first. Each version is linkable — click the
+      <span class="changelog-hash">#</span> on a heading to copy a direct URL.
+    </p>
+  </header>
+
+  {
+    releases.length > 0 ? (
+      <div class="changelog-list">
+        {releases.map((release) => (
+          <ReleaseEntry release={release} />
+        ))}
+      </div>
+    ) : (
+      <p class="changelog-empty">
+        No releases yet. Add a release entry to <code>CHANGELOG.md</code> in
+        Keep-a-Changelog format and rebuild.
+      </p>
+    )
+  }
+</BaseLayout>
+
+<script>
+  // Copy a direct release URL to the clipboard when the user clicks the
+  // version anchor.
+  document.querySelectorAll<HTMLAnchorElement>('.release-anchor').forEach((a) => {
+    a.addEventListener('click', async (event) => {
+      const href = a.getAttribute('href');
+      if (!href || !href.startsWith('#')) return;
+      event.preventDefault();
+      const url = new URL(href, window.location.href).toString();
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(url);
+        }
+      } catch {
+        /* clipboard unavailable */
+      }
+      history.replaceState(null, '', href);
+      document.getElementById(href.slice(1))?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  });
+</script>
+
+<style>
+  .changelog-header {
+    padding: 1rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+  }
+
+  .changelog-header h1 {
+    margin: 0 0 0.5rem;
+  }
+
+  .changelog-lede {
+    color: var(--fg-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 40rem;
+  }
+
+  .changelog-hash {
+    font-family: var(--font-mono);
+    color: var(--accent);
+  }
+
+  .changelog-list {
+    max-width: 48rem;
+    margin: 0 auto;
+  }
+
+  .changelog-empty {
+    color: var(--fg-muted);
+    font-size: 0.9375rem;
+    padding: 2rem 0;
+  }
+</style>
