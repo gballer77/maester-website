@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://baller-software.github.io/maester-website/sitemap-index.xml
+Sitemap: https://maester.baller.software/sitemap-index.xml
