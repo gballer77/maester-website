@@ -2,14 +2,22 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { site } from '../config/site';
 import Hero from '../components/home/Hero.astro';
+import ProblemSection from '../components/home/ProblemSection.astro';
 import ConceptOverview from '../components/home/ConceptOverview.astro';
-import KeyBenefits from '../components/home/KeyBenefits.astro';
-import InstallSnippet from '../components/home/InstallSnippet.astro';
+import FlowDiagram from '../components/home/FlowDiagram.astro';
+import AiWorkflows from '../components/home/AiWorkflows.astro';
+import CliTable from '../components/home/CliTable.astro';
+import SourceModes from '../components/home/SourceModes.astro';
+import QuickStart from '../components/home/QuickStart.astro';
 ---
 
 <BaseLayout title={site.name} description={site.description}>
   <Hero />
+  <ProblemSection />
   <ConceptOverview />
-  <KeyBenefits />
-  <InstallSnippet />
+  <FlowDiagram />
+  <AiWorkflows />
+  <CliTable />
+  <SourceModes />
+  <QuickStart />
 </BaseLayout>

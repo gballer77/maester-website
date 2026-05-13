@@ -109,6 +109,20 @@ const rel = linkIsExternal ? 'noopener external' : undefined;
     margin: 0 !important;
   }
 
+  /* The site-wide Shiki config sets wrap:true, which yields white-space:
+     pre-wrap + word-break: break-all and mangles long tokens (URLs, paths)
+     inside the narrow card column. Force horizontal scrolling instead, per
+     gspec/features/code-snippets.md §4 P0. */
+  .example-card-snippet :global(pre.astro-code),
+  .example-card-snippet :global(pre.astro-code code),
+  .example-card-snippet :global(pre.shiki),
+  .example-card-snippet :global(pre.shiki code) {
+    white-space: pre !important;
+    word-wrap: normal !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+  }
+
   .example-card-link {
     display: inline-flex;
     align-items: center;

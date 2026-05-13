@@ -29,6 +29,11 @@ export const site = {
   cliRegistryUrl: 'https://www.npmjs.com/package/@baller.software/maester',
   cliPackageName: '@baller.software/maester',
   installCommand: 'npm install -g @baller.software/maester',
+  // Run-without-install bootstrap command, used as the home page's primary
+  // hero CTA. The `npx` form is the friction-free first invocation the
+  // marketing material leads with; `installCommand` is the durable install
+  // for ongoing use.
+  runCommand: 'npx maester',
 
   // Default Open Graph image. Resolved through withBase() at emit time.
   // TODO: replace SVG placeholder with a designed 1200×630 PNG before

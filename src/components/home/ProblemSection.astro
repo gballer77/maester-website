@@ -1,0 +1,219 @@
+---
+// Problem section: three pain-point cards + scattered-repos SVG illustrating
+// the "documentation scattered across repositories" lede.
+//
+// Per gspec/features/home-page.md §4 P0 "A problem section establishes the
+// pain points the tool solves."
+
+import Kicker from './Kicker.astro';
+---
+
+<section class="section problem accent-em" aria-labelledby="problem-heading">
+  <header class="section-head">
+    <Kicker label="The problem" />
+    <h2 id="problem-heading">Docs scatter. Context dies.</h2>
+    <p class="lede">
+      Across services and packages, the documentation that matters lives in
+      the repos that own it — where it’s easy for humans to miss and
+      impossible for an AI agent to reliably find.
+    </p>
+  </header>
+
+  <div class="problem-grid">
+    <article class="prob-card">
+      <span class="prob-glyph err" aria-hidden="true">✗</span>
+      <h3>Scattered across N repos</h3>
+      <p>
+        Architecture lives one place, API contracts another, runbooks a third.
+        Search is brittle, link-rot is rampant, ownership is unclear.
+      </p>
+    </article>
+    <article class="prob-card">
+      <span class="prob-glyph warn" aria-hidden="true">!</span>
+      <h3>Centralized docs go stale</h3>
+      <p>
+        Copy-paste portals drift the day they’re built. Engineers update
+        READMEs; the portal keeps showing last year’s reality.
+      </p>
+    </article>
+    <article class="prob-card">
+      <span class="prob-glyph err" aria-hidden="true">✗</span>
+      <h3>AI agents start from zero</h3>
+      <p>
+        Every prompt rediscovers the codebase. Coding agents guess at
+        conventions, miss decisions, and ship plausible nonsense.
+      </p>
+    </article>
+  </div>
+
+  <figure
+    class="scatter"
+    aria-label="Diagram of documentation scattered across seven repositories with six broken connections"
+  >
+    <svg viewBox="0 0 900 220" preserveAspectRatio="xMidYMid meet" role="img">
+      <defs>
+        <pattern id="prob-grid" width="22" height="22" patternUnits="userSpaceOnUse">
+          <path d="M22 0H0V22" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.35"
+          ></path>
+        </pattern>
+      </defs>
+      <rect width="900" height="220" fill="url(#prob-grid)" class="grid-host"></rect>
+      <g font-family="var(--font-mono)" font-size="11" fill="currentColor" class="nodes">
+        <g transform="translate(60,40)">
+          <rect width="120" height="36" rx="2" fill="none" stroke="currentColor"
+            stroke-dasharray="2 3"></rect>
+          <text x="60" y="22" text-anchor="middle">api-gateway</text>
+        </g>
+        <g transform="translate(230,90)">
+          <rect width="120" height="36" rx="2" fill="none" stroke="currentColor"
+            stroke-dasharray="2 3"></rect>
+          <text x="60" y="22" text-anchor="middle">design-tokens</text>
+        </g>
+        <g transform="translate(140,150)">
+          <rect width="120" height="36" rx="2" fill="none" stroke="currentColor"
+            stroke-dasharray="2 3"></rect>
+          <text x="60" y="22" text-anchor="middle">billing-service</text>
+        </g>
+        <g transform="translate(420,50)">
+          <rect width="120" height="36" rx="2" fill="none" stroke="currentColor"
+            stroke-dasharray="2 3"></rect>
+          <text x="60" y="22" text-anchor="middle">platform-runbooks</text>
+        </g>
+        <g transform="translate(610,120)">
+          <rect width="120" height="36" rx="2" fill="none" stroke="currentColor"
+            stroke-dasharray="2 3"></rect>
+          <text x="60" y="22" text-anchor="middle">auth-service</text>
+        </g>
+        <g transform="translate(760,30)">
+          <rect width="120" height="36" rx="2" fill="none" stroke="currentColor"
+            stroke-dasharray="2 3"></rect>
+          <text x="60" y="22" text-anchor="middle">adr-archive</text>
+        </g>
+        <g transform="translate(740,170)">
+          <rect width="120" height="36" rx="2" fill="none" stroke="currentColor"
+            stroke-dasharray="2 3"></rect>
+          <text x="60" y="22" text-anchor="middle">vendor-spec</text>
+        </g>
+      </g>
+      <g stroke="var(--danger)" stroke-width="1" opacity="0.55" fill="none">
+        <path d="M180 58 L 230 100" stroke-dasharray="1 5"></path>
+        <path d="M350 108 L 420 70" stroke-dasharray="1 5"></path>
+        <path d="M260 168 L 420 80" stroke-dasharray="1 5"></path>
+        <path d="M540 70 L 610 130" stroke-dasharray="1 5"></path>
+        <path d="M730 50 L 760 50" stroke-dasharray="1 5"></path>
+        <path d="M670 156 L 740 184" stroke-dasharray="1 5"></path>
+      </g>
+      <g fill="var(--danger)" font-size="10">
+        <text x="208" y="84">✗</text>
+        <text x="392" y="92">✗</text>
+        <text x="340" y="124">✗</text>
+        <text x="578" y="104">✗</text>
+        <text x="744" y="46">✗</text>
+        <text x="708" y="174">✗</text>
+      </g>
+    </svg>
+    <figcaption>seven repos, six broken paths, zero source of truth</figcaption>
+  </figure>
+</section>
+
+<style>
+  .section {
+    position: relative;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 5.5rem 2rem;
+    z-index: 1;
+  }
+
+  .section-head {
+    max-width: 760px;
+    margin: 0 0 3.5rem;
+  }
+
+  .section-head h2 {
+    font-size: clamp(2rem, 4.2vw, 3.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 1.125rem;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+
+  .lede {
+    font-size: 1.125rem;
+    color: var(--fg-muted);
+    max-width: 65ch;
+    margin: 0;
+    text-wrap: pretty;
+    line-height: 1.55;
+  }
+
+  .problem-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .prob-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.75rem 1.5rem;
+    position: relative;
+  }
+  .prob-card h3 {
+    margin: 1rem 0 0.625rem;
+    font-size: 1.1875rem;
+    line-height: 1.3;
+    color: var(--fg);
+  }
+  .prob-card p {
+    margin: 0;
+    color: var(--fg-muted);
+    line-height: 1.55;
+  }
+  .prob-glyph {
+    font-family: var(--font-mono);
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+  .prob-glyph.err {
+    color: var(--danger);
+  }
+  .prob-glyph.warn {
+    color: var(--warn);
+  }
+
+  .scatter {
+    margin: 0;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0.5rem;
+  }
+  .scatter svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .scatter .grid-host {
+    color: var(--border);
+  }
+  .scatter .nodes {
+    color: var(--fg-muted);
+  }
+  .scatter figcaption {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--fg-faint);
+    padding: 0.625rem 0.875rem 0.375rem;
+  }
+
+  @media (max-width: 920px) {
+    .problem-grid {
+      grid-template-columns: 1fr;
+    }
+    .section {
+      padding: 4rem 1.375rem;
+    }
+  }
+</style>

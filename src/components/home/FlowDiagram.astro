@@ -1,0 +1,212 @@
+---
+// Flow diagram: many sources (resident maesters + traveling maesters)
+// feed into one citadel which exposes content to engineers, AI agents,
+// and CI. "Traveling" is the website-facing term for the includes-driven
+// source mode.
+//
+// Per gspec/features/home-page.md §4 P0 "A flow/architecture diagram
+// visualises how sources feed into the aggregator and out to consumers."
+
+import Kicker from './Kicker.astro';
+---
+
+<section class="section flow accent-em" aria-labelledby="flow-heading">
+  <header class="section-head">
+    <Kicker label="The flow" />
+    <h2 id="flow-heading">Source-owned. Centrally composed.</h2>
+    <p class="lede">
+      Each <em>maester</em> declares its publish surface in its own repo. The
+      <em>citadel</em> decides which sources to pull and where to put them.
+      Re-run <code>maester sync</code> any time to refresh.
+    </p>
+  </header>
+
+  <figure
+    class="flow-diagram"
+    aria-label="Many source repositories feed into one citadel which exposes content to humans and AI agents"
+  >
+    <svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet" role="img">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7"
+          markerHeight="7" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"></path>
+        </marker>
+        <marker id="arrAlt" viewBox="0 0 10 10" refX="9" refY="5"
+          markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent-alt)"></path>
+        </marker>
+      </defs>
+
+      <g font-family="var(--font-mono)" font-size="11">
+        <g transform="translate(40,40)">
+          <rect width="180" height="44" rx="2" fill="none" stroke="var(--accent)"
+            stroke-width="1"></rect>
+          <text x="14" y="20" fill="var(--accent)">maester</text>
+          <text x="14" y="34" fill="var(--fg)">design-system</text>
+        </g>
+        <g transform="translate(40,108)">
+          <rect width="180" height="44" rx="2" fill="none" stroke="var(--accent)"
+            stroke-width="1"></rect>
+          <text x="14" y="20" fill="var(--accent)">maester</text>
+          <text x="14" y="34" fill="var(--fg)">api-contracts</text>
+        </g>
+        <g transform="translate(40,176)">
+          <rect width="180" height="44" rx="2" fill="none" stroke="var(--accent)"
+            stroke-width="1"></rect>
+          <text x="14" y="20" fill="var(--accent)">maester</text>
+          <text x="14" y="34" fill="var(--fg)">ops-playbooks</text>
+        </g>
+        <g transform="translate(40,256)">
+          <rect width="180" height="44" rx="2" fill="none"
+            stroke="var(--accent-alt)" stroke-width="1" stroke-dasharray="3 3"
+          ></rect>
+          <text x="14" y="20" fill="var(--accent-alt)">traveling</text>
+          <text x="14" y="34" fill="var(--fg)">astro-docs</text>
+        </g>
+        <g transform="translate(40,316)">
+          <rect width="180" height="44" rx="2" fill="none"
+            stroke="var(--accent-alt)" stroke-width="1" stroke-dasharray="3 3"
+          ></rect>
+          <text x="14" y="20" fill="var(--accent-alt)">traveling</text>
+          <text x="14" y="34" fill="var(--fg)">vendor-api-spec</text>
+        </g>
+      </g>
+
+      <g transform="translate(400,80)">
+        <rect width="220" height="220" rx="2" fill="none" stroke="var(--fg)"
+          stroke-width="1.2"></rect>
+        <text x="110" y="22" text-anchor="middle" font-family="var(--font-sans)"
+          font-size="13" fill="var(--fg-muted)">citadel.yaml</text>
+        <line x1="14" y1="34" x2="206" y2="34" stroke="var(--border-strong)"
+        ></line>
+        <g font-family="var(--font-mono)" font-size="11" fill="var(--fg)">
+          <text x="14" y="56">citadel/</text>
+          <text x="14" y="74"
+            ><tspan fill="var(--fg-muted)">├─</tspan> design-system/</text
+          >
+          <text x="14" y="92"
+            ><tspan fill="var(--fg-muted)">├─</tspan> api-contracts/</text
+          >
+          <text x="14" y="110"
+            ><tspan fill="var(--fg-muted)">├─</tspan> ops-playbooks/</text
+          >
+          <text x="14" y="128"
+            ><tspan fill="var(--fg-muted)">├─</tspan> astro-docs/</text
+          >
+          <text x="14" y="146"
+            ><tspan fill="var(--fg-muted)">└─</tspan> vendor-api-spec/</text
+          >
+          <text x="14" y="180" fill="var(--accent)">✓ sync · idempotent</text>
+          <text x="14" y="196" fill="var(--accent)">✓ provenance-tracked</text>
+        </g>
+      </g>
+
+      <g font-family="var(--font-mono)" font-size="11">
+        <g transform="translate(780,80)">
+          <rect width="180" height="60" rx="2" fill="none"
+            stroke="var(--fg-muted)"></rect>
+          <text x="14" y="22" fill="var(--fg)">Engineers</text>
+          <text x="14" y="42" fill="var(--fg-muted)">read · grep · onboard</text>
+        </g>
+        <g transform="translate(780,160)">
+          <rect width="180" height="60" rx="2" fill="none"
+            stroke="var(--fg-muted)"></rect>
+          <text x="14" y="22" fill="var(--fg)">AI coding agents</text>
+          <text x="14" y="42" fill="var(--fg-muted)">whole-system context</text>
+        </g>
+        <g transform="translate(780,240)">
+          <rect width="180" height="60" rx="2" fill="none"
+            stroke="var(--fg-muted)"></rect>
+          <text x="14" y="22" fill="var(--fg)">CI · scripts</text>
+          <text x="14" y="42" fill="var(--fg-muted)">freshness checks</text>
+        </g>
+      </g>
+
+      <g fill="none" stroke="var(--accent)" stroke-width="1.2">
+        <path d="M225 62 Q310 62 400 130" marker-end="url(#arr)"></path>
+        <path d="M225 130 L400 170" marker-end="url(#arr)"></path>
+        <path d="M225 198 L400 210" marker-end="url(#arr)"></path>
+      </g>
+      <g fill="none" stroke="var(--accent-alt)" stroke-width="1.2"
+        stroke-dasharray="4 3">
+        <path d="M225 278 L400 250" marker-end="url(#arrAlt)"></path>
+        <path d="M225 338 Q310 338 400 290" marker-end="url(#arrAlt)"></path>
+      </g>
+
+      <g fill="none" stroke="var(--accent)" stroke-width="1.2">
+        <path d="M625 130 L780 110" marker-end="url(#arr)"></path>
+        <path d="M625 190 L780 190" marker-end="url(#arr)"></path>
+        <path d="M625 250 L780 270" marker-end="url(#arr)"></path>
+      </g>
+
+      <g font-family="var(--font-mono)" font-size="10" fill="var(--fg-faint)">
+        <text x="310" y="56">declares own surface</text>
+        <text x="310" y="246">citadel picks paths</text>
+        <text x="660" y="118">read</text>
+        <text x="660" y="182">context</text>
+        <text x="660" y="244">check</text>
+      </g>
+    </svg>
+  </figure>
+</section>
+
+<style>
+  .section {
+    position: relative;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 5.5rem 2rem;
+    z-index: 1;
+  }
+  .section-head {
+    max-width: 760px;
+    margin: 0 0 3.5rem;
+  }
+  .section-head h2 {
+    font-size: clamp(2rem, 4.2vw, 3.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 1.125rem;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+  .lede {
+    font-size: 1.125rem;
+    color: var(--fg-muted);
+    max-width: 65ch;
+    margin: 0;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+  .lede code {
+    font-family: var(--font-mono);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--fg);
+    font-size: 0.9em;
+  }
+
+  .flow-diagram {
+    margin: 0;
+    border: 1px solid var(--border);
+    background:
+      radial-gradient(600px 300px at 50% 0%, rgba(124, 231, 199, 0.06), transparent 70%),
+      var(--surface);
+    padding: 1.5rem;
+  }
+  .flow-diagram svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  @media (max-width: 920px) {
+    .section {
+      padding: 4rem 1.375rem;
+    }
+    .flow-diagram {
+      padding: 0.75rem;
+    }
+  }
+</style>

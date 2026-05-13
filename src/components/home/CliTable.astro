@@ -1,0 +1,237 @@
+---
+// CLI surface taste: 5 primary commands + global flags, with a link to the
+// full CLI reference in the docs. Not a duplicate of the reference page —
+// the goal is to convey the shape of the surface at a glance.
+//
+// Per gspec/features/home-page.md §4 P1 "A CLI table on the home page
+// gives a brief 5-verb taste with a link to the full reference."
+
+import Kicker from './Kicker.astro';
+import { withBase } from '../../lib/url';
+
+interface Verb {
+  cmd: string;
+  role: string;
+  desc: string;
+}
+
+const verbs: Verb[] = [
+  {
+    cmd: 'maester',
+    role: 'menu',
+    desc: 'Interactive top-level menu. Detects your repo’s existing role and adapts.',
+  },
+  {
+    cmd: 'maester init',
+    role: 'citadel',
+    desc: 'Walk through registering resident and traveling maesters. Writes <code>citadel.yaml</code>.',
+  },
+  {
+    cmd: 'maester publish',
+    role: 'maester',
+    desc: 'Declare which documents this repo publishes. Writes <code>maester.yaml</code>.',
+  },
+  {
+    cmd: 'maester sync',
+    role: 'citadel',
+    desc: 'Fetch every configured source. Idempotent, atomic, parallelised. Honours <code>--json</code>.',
+  },
+  {
+    cmd: 'maester sync <name>',
+    role: 'scoped',
+    desc: 'Sync a single source by name. Useful for fast iteration on one connection.',
+  },
+];
+
+interface Flag {
+  flag: string;
+  desc: string;
+}
+
+const flags: Flag[] = [
+  { flag: '--verbose', desc: 'raise log detail' },
+  { flag: '--quiet', desc: 'errors only' },
+  { flag: '--json', desc: 'one JSON object per line, for CI & agents' },
+  { flag: '--no-color', desc: 'pure monochrome' },
+  { flag: '--theme=light', desc: 'accent swaps for light terminal themes' },
+];
+---
+
+<section id="cli" class="section cli accent-em" aria-labelledby="cli-heading">
+  <header class="section-head">
+    <Kicker label="The CLI surface" />
+    <h2 id="cli-heading">Five verbs. Nothing else to learn.</h2>
+  </header>
+
+  <div class="cli-table" role="table" aria-label="Maester CLI commands">
+    <div class="cli-row cli-head" role="row">
+      <span role="columnheader">command</span>
+      <span role="columnheader">role</span>
+      <span role="columnheader">what it does</span>
+    </div>
+    {
+      verbs.map((v) => (
+        <div class="cli-row" role="row">
+          <span class="cli-cmd" role="cell">
+            <span class="ac" aria-hidden="true">
+              $
+            </span>{' '}
+            {v.cmd}
+          </span>
+          <span class="cli-role" role="cell">
+            {v.role}
+          </span>
+          <span class="cli-desc" role="cell" set:html={v.desc} />
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="cli-flags">
+    <p class="kicker-sm">Global flags</p>
+    <ul>
+      {
+        flags.map((f) => (
+          <li>
+            <code>{f.flag}</code>
+            <span> · {f.desc}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <p class="cli-link">
+    <a href={withBase('/docs/cli-reference')}
+      >Full CLI reference <span aria-hidden="true">→</span></a
+    >
+  </p>
+</section>
+
+<style>
+  .section {
+    position: relative;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 5.5rem 2rem;
+    z-index: 1;
+  }
+  .section-head {
+    max-width: 760px;
+    margin: 0 0 3.5rem;
+  }
+  .section-head h2 {
+    font-size: clamp(2rem, 4.2vw, 3.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 1.125rem;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+
+  .cli-table {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-family: var(--font-mono);
+    font-size: 0.84375rem;
+  }
+  .cli-row {
+    display: grid;
+    grid-template-columns: 240px 100px 1fr;
+    gap: 1.5rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .cli-row:last-child {
+    border-bottom: none;
+  }
+  .cli-head {
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-faint);
+    background: var(--elevated);
+  }
+  .cli-cmd {
+    color: var(--fg);
+  }
+  .ac {
+    color: var(--accent);
+    margin-right: 0.375rem;
+  }
+  .cli-role {
+    color: var(--accent-alt);
+    font-size: 0.75rem;
+  }
+  .cli-desc {
+    color: var(--fg-muted);
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+  .cli-desc :global(code) {
+    background: rgba(255, 255, 255, 0.04);
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-size: 0.78125rem;
+    color: var(--fg);
+    font-family: var(--font-mono);
+  }
+
+  .cli-flags {
+    margin-top: 2rem;
+  }
+  .kicker-sm {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: lowercase;
+    color: var(--fg-muted);
+    margin: 0 0 0.75rem;
+  }
+  .cli-flags ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem 2rem;
+  }
+  .cli-flags li {
+    font-family: var(--font-mono);
+    font-size: 0.84375rem;
+    color: var(--fg-muted);
+  }
+  .cli-flags code {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    background: none;
+  }
+
+  .cli-link {
+    margin: 2rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+  }
+  .cli-link a {
+    color: var(--accent);
+  }
+
+  @media (max-width: 920px) {
+    .cli-row {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+      padding: 0.875rem 1.125rem;
+    }
+    .cli-head {
+      display: none;
+    }
+    .cli-flags ul {
+      grid-template-columns: 1fr;
+    }
+    .section {
+      padding: 4rem 1.375rem;
+    }
+  }
+</style>

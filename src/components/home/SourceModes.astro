@@ -1,0 +1,212 @@
+---
+// Resident maester vs traveling maester: same publish contract, the
+// difference is where it's defined. Resident maesters live in the
+// source repo via `maester.yaml`; traveling maesters live in the
+// citadel via an `includes` list on the source entry.
+//
+// Per gspec/features/home-page.md §4 P0 "A side-by-side comparison
+// clarifies when to define a maester resident vs traveling."
+
+import Kicker from './Kicker.astro';
+---
+
+<section
+  class="section compare accent-em"
+  aria-labelledby="compare-heading"
+>
+  <header class="section-head">
+    <Kicker label="Resident or traveling" />
+    <h2 id="compare-heading">A maester can live anywhere.</h2>
+    <p class="lede">
+      Same publish contract, same destination, same provenance. The
+      difference is <em>where the maester is defined</em> — at the source,
+      or at the citadel.
+    </p>
+  </header>
+
+  <div class="compare-grid">
+    <article class="compare-col">
+      <header>
+        <span class="cmp-tag ac">resident maester</span>
+        <h3>Defined at the source</h3>
+      </header>
+      <p class="cmp-desc">
+        For repos you maintain. The source publishes its own
+        <code>maester.yaml</code> and your citadel consumes whatever it
+        declares — full stop.
+      </p>
+      <dl>
+        <div>
+          <dt>Who declares the file list?</dt>
+          <dd>the source repo</dd>
+        </div>
+        <div>
+          <dt>Where does the maester live?</dt>
+          <dd>
+            <code>maester.yaml</code> at the source repo root
+          </dd>
+        </div>
+        <div>
+          <dt>If the source has no manifest?</dt>
+          <dd>the citadel falls back to the full tree</dd>
+        </div>
+        <div>
+          <dt>Reach for it when…</dt>
+          <dd>
+            your team owns the source and you want it to control its publish
+            surface
+          </dd>
+        </div>
+      </dl>
+    </article>
+
+    <article class="compare-col compare-traveler">
+      <header>
+        <span class="cmp-tag alt">traveling maester</span>
+        <h3>Defined at the citadel</h3>
+      </header>
+      <p class="cmp-desc">
+        For repos you don’t control — vendor specs, third-party docs, public
+        projects. Declare an <code>includes</code> list on the source entry
+        in your <code>citadel.yaml</code>; the remote needs nothing.
+      </p>
+      <dl>
+        <div>
+          <dt>Who declares the file list?</dt>
+          <dd>the citadel</dd>
+        </div>
+        <div>
+          <dt>Where does the maester live?</dt>
+          <dd>
+            <code>includes</code> on the source entry in
+            <code>citadel.yaml</code>
+          </dd>
+        </div>
+        <div>
+          <dt>If a glob matches zero files?</dt>
+          <dd>warning surfaces upstream drift</dd>
+        </div>
+        <div>
+          <dt>Reach for it when…</dt>
+          <dd>
+            you need docs from a repo that doesn’t publish a manifest of its own
+          </dd>
+        </div>
+      </dl>
+    </article>
+  </div>
+</section>
+
+<style>
+  .section {
+    position: relative;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 5.5rem 2rem;
+    z-index: 1;
+  }
+  .section-head {
+    max-width: 760px;
+    margin: 0 0 3.5rem;
+  }
+  .section-head h2 {
+    font-size: clamp(2rem, 4.2vw, 3.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 1.125rem;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+  .lede {
+    font-size: 1.125rem;
+    color: var(--fg-muted);
+    max-width: 65ch;
+    margin: 0;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .compare-col {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 1.75rem 1.75rem 1.5rem;
+  }
+  .compare-col > header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.875rem;
+    margin-bottom: 0.875rem;
+  }
+  .cmp-tag {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: lowercase;
+    border: 1px solid currentColor;
+    padding: 2px 0.5rem;
+  }
+  .cmp-tag.ac {
+    color: var(--accent);
+  }
+  .cmp-tag.alt {
+    color: var(--accent-alt);
+  }
+  .compare-col h3 {
+    margin: 0;
+    font-size: 1.1875rem;
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .cmp-desc {
+    color: var(--fg-muted);
+    margin: 0;
+    line-height: 1.55;
+  }
+  .compare-col code {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--fg);
+  }
+  .compare-col dl {
+    margin: 1.125rem 0 0;
+    padding: 1.125rem 0 0;
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
+  .compare-col dl > div {
+    display: block;
+  }
+  .compare-col dt {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--fg-faint);
+    text-transform: lowercase;
+    margin-bottom: 0.125rem;
+  }
+  .compare-col dd {
+    margin: 0;
+    color: var(--fg);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 920px) {
+    .compare-grid {
+      grid-template-columns: 1fr;
+    }
+    .section {
+      padding: 4rem 1.375rem;
+    }
+  }
+</style>

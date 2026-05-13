@@ -1,0 +1,295 @@
+---
+// AI workflows: four numbered value-prop cards + before/after agent
+// transcript comparison. Anchor `#ai` is referenced from nav and footer.
+//
+// Per gspec/features/home-page.md §4 P0 "An AI-workflows section explains
+// the tool's value for AI coding agents and demonstrates it with a
+// before/after comparison."
+
+import Kicker from './Kicker.astro';
+---
+
+<section id="ai" class="section ai accent-em" aria-labelledby="ai-heading">
+  <div class="ai-bg" aria-hidden="true"></div>
+
+  <header class="section-head">
+    <Kicker label="Supercharge AI workflows" />
+    <h2 id="ai-heading">
+      Stop letting your agents <span class="accent">guess</span>.
+    </h2>
+    <p class="lede">
+      AI coding tools are powerful — but only as good as the context you give
+      them. A citadel is a single, current, structured corpus your agents can
+      <em>actually</em> read.
+    </p>
+  </header>
+
+  <div class="ai-grid">
+    <article class="ai-card">
+      <p class="ai-num">01</p>
+      <h3>One folder. Whole system.</h3>
+      <p>
+        Point Claude Code, Cursor, Codex, or Antigravity at
+        <code>citadel/</code> and the agent inherits architecture decisions,
+        API contracts, and runbooks from every repo at once — not just the
+        one it’s editing.
+      </p>
+    </article>
+    <article class="ai-card">
+      <p class="ai-num">02</p>
+      <h3>Provenance you can trust.</h3>
+      <p>
+        Every directory carries a <code>.maester-source.json</code> marker —
+        source URL, ref, commit SHA, sync time. When an agent quotes a doc,
+        you can trace it back to its origin.
+      </p>
+    </article>
+    <article class="ai-card">
+      <p class="ai-num">03</p>
+      <h3>Fresh by construction.</h3>
+      <p>
+        Run <code>maester sync</code> before any agent session — or wire it
+        into CI. The corpus reflects the actual current state of every
+        source, not last quarter’s snapshot.
+      </p>
+    </article>
+    <article class="ai-card">
+      <p class="ai-num">04</p>
+      <h3>Selective, by contract.</h3>
+      <p>
+        Either the source publishes its own <code>maester.yaml</code>, or
+        your citadel sends a <em>traveling maester</em> to do the publishing
+        in its stead. Agents see the deliberately curated surface — not the
+        noise of a full clone.
+      </p>
+    </article>
+  </div>
+
+  <div class="before-after">
+    <div class="ba-col ba-before">
+      <header><span class="ba-tag err">without maester</span></header>
+      <div class="ba-msg ba-user">
+        <span class="ba-who">you</span>
+        <p>Add rate limiting to the billing webhook handler.</p>
+      </div>
+      <div class="ba-msg ba-bot">
+        <span class="ba-who">agent</span>
+        <p>
+          I’ll add a token-bucket middleware. Where do you want the limits
+          configured?
+        </p>
+        <p class="ba-hint">
+          <span aria-hidden="true">›</span> agent doesn’t know your platform’s
+          standard middleware, env-var conventions, or ADR-014 on retry
+          policy. It guesses.
+        </p>
+      </div>
+    </div>
+    <div class="ba-col ba-after">
+      <header><span class="ba-tag ok">with maester</span></header>
+      <div class="ba-msg ba-user">
+        <span class="ba-who">you</span>
+        <p>Add rate limiting to the billing webhook handler.</p>
+      </div>
+      <div class="ba-msg ba-bot">
+        <span class="ba-who">agent</span>
+        <p>
+          Reading <code class="ac"
+            >citadel/platform-runbooks/middleware.md</code
+          > and
+          <code class="ac">citadel/architecture-notes/adr-014-retry.md</code
+          >…
+        </p>
+        <p>
+          Using <code class="ac">@platform/limiter</code> at 100 req/min per
+          tenant, matching ADR-014. Env var:
+          <code class="ac">BILLING_WEBHOOK_RPS</code>. Adding the runbook
+          entry too.
+        </p>
+        <p class="ba-hint">
+          <span aria-hidden="true">✓</span> agent reads the citadel and applies
+          the system’s actual conventions.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .section {
+    position: relative;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 5.5rem 2rem;
+    z-index: 1;
+  }
+  .ai {
+    overflow: hidden;
+  }
+  .ai-bg {
+    position: absolute;
+    inset: 4rem 0;
+    background:
+      linear-gradient(180deg, transparent, rgba(124, 231, 199, 0.03) 40%, transparent),
+      radial-gradient(900px 500px at 70% 50%, rgba(177, 151, 252, 0.05), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .section > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-head {
+    max-width: 760px;
+    margin: 0 0 3.5rem;
+  }
+  .section-head h2 {
+    font-size: clamp(2rem, 4.2vw, 3.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 1.125rem;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+  .accent {
+    color: var(--accent);
+  }
+  .lede {
+    font-size: 1.125rem;
+    color: var(--fg-muted);
+    max-width: 65ch;
+    margin: 0;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .ai-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+  .ai-card {
+    position: relative;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 1.75rem 1.75rem 1.5rem;
+  }
+  .ai-num {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    margin: 0 0 0.875rem;
+    letter-spacing: 0.08em;
+  }
+  .ai-card h3 {
+    margin: 0 0 0.625rem;
+    font-size: 1.1875rem;
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .ai-card p {
+    margin: 0 0 0.5rem;
+    color: var(--fg-muted);
+    line-height: 1.55;
+  }
+  .ai-card code {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--fg);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 1px 5px;
+    border-radius: 2px;
+  }
+
+  .before-after {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .ba-col {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    min-height: 320px;
+  }
+  .ba-col > header {
+    padding: 0.75rem 1.125rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--elevated);
+  }
+  .ba-tag {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: lowercase;
+  }
+  .ba-tag.err {
+    color: var(--danger);
+  }
+  .ba-tag.ok {
+    color: var(--accent);
+  }
+
+  .ba-msg {
+    padding: 1.125rem 1.375rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .ba-msg:last-child {
+    border-bottom: none;
+  }
+  .ba-msg.ba-bot {
+    background: rgba(255, 255, 255, 0.012);
+  }
+  .ba-who {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--fg-faint);
+    margin-bottom: 0.375rem;
+    letter-spacing: 0.06em;
+    text-transform: lowercase;
+  }
+  .ba-msg p {
+    margin: 0 0 0.375rem;
+    color: var(--fg);
+    line-height: 1.55;
+  }
+  .ba-msg p:last-child {
+    margin-bottom: 0;
+  }
+  .ba-msg code {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  .ac {
+    color: var(--accent);
+  }
+  .ba-hint {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+    margin-top: 0.625rem !important;
+    padding-top: 0.625rem;
+    border-top: 1px dashed var(--border-strong);
+  }
+  .ba-before .ba-hint span {
+    color: var(--danger);
+  }
+  .ba-after .ba-hint span {
+    color: var(--accent);
+  }
+
+  @media (max-width: 920px) {
+    .ai-grid,
+    .before-after {
+      grid-template-columns: 1fr;
+    }
+    .section {
+      padding: 4rem 1.375rem;
+    }
+  }
+</style>

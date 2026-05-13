@@ -1,0 +1,258 @@
+---
+// Quick start: init → publish → sync as three numbered step cards, ending
+// in a prominent install affordance. Anchor `#start` is referenced from
+// nav and footer. Replaces the previous standalone InstallSnippet.
+//
+// Per gspec/features/home-page.md §4 P0 "A three-step quick start section
+// shows the minimal init → publish → sync workflow."
+
+import Kicker from './Kicker.astro';
+import { site } from '../../config/site';
+---
+
+<section
+  id="start"
+  class="section start accent-em"
+  aria-labelledby="start-heading"
+>
+  <header class="section-head">
+    <Kicker label="Quick start" />
+    <h2 id="start-heading">Three commands. One citadel.</h2>
+  </header>
+
+  <div class="start-steps">
+    <article class="step">
+      <header>
+        <span class="step-num">01</span>
+        <h3>Set up the citadel</h3>
+      </header>
+      <p>In the repo that should aggregate your docs.</p>
+      <pre class="snippet snippet-lg"><span class="mut">$</span> <span class="bold">npx maester init</span>
+<span class="mut"># answers a few questions, writes citadel.yaml</span></pre>
+    </article>
+
+    <article class="step">
+      <header>
+        <span class="step-num">02</span>
+        <h3>Publish from each source</h3>
+      </header>
+      <p>In any repo that should publish docs to the citadel.</p>
+      <pre class="snippet snippet-lg"><span class="mut">$</span> <span class="bold">npx maester publish</span>
+<span class="mut"># pick the files this repo publishes, writes maester.yaml</span></pre>
+    </article>
+
+    <article class="step">
+      <header>
+        <span class="step-num">03</span>
+        <h3>Sync — and keep syncing</h3>
+      </header>
+      <p>From the citadel, any time you want a fresh snapshot.</p>
+      <pre class="snippet snippet-lg"><span class="mut">$</span> <span class="bold">maester sync</span>
+<span class="ok">✓</span> 5 sources · 68 docs · 0 errors</pre>
+    </article>
+  </div>
+
+  <div class="start-cta">
+    <button
+      type="button"
+      class="install install-lg"
+      data-install-copy={site.runCommand}
+      aria-label={`Copy install command: ${site.runCommand}`}
+    >
+      <span class="prompt" aria-hidden="true">$</span>
+      <code>{site.runCommand}</code>
+      <span class="copy" aria-hidden="true">
+        <span class="copy-label">copy</span>
+      </span>
+    </button>
+    <p class="start-note">
+      <span class="mut">·</span> Node 24+ · works in Claude Code, Cursor, Codex,
+      Antigravity, Open Code
+    </p>
+  </div>
+</section>
+
+<script>
+  // The hero defines the primary copy handler against [data-install-copy].
+  // This component re-uses the same attribute, but the script in Hero.astro
+  // is module-scoped to its own component instance — so attach a handler
+  // here as well, covering the case where the user scrolls past the hero
+  // and copies from the quick-start CTA.
+  const buttons = document.querySelectorAll<HTMLButtonElement>(
+    '.start [data-install-copy]'
+  );
+  for (const button of buttons) {
+    const cmd = button.getAttribute('data-install-copy') ?? '';
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(cmd);
+        button.classList.add('copied');
+        window.setTimeout(() => button.classList.remove('copied'), 1500);
+      } catch {
+        /* clipboard unavailable — leave the visible text for manual copy */
+      }
+    });
+  }
+</script>
+
+<style>
+  .section {
+    position: relative;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 5.5rem 2rem;
+    z-index: 1;
+  }
+  .section-head {
+    max-width: 760px;
+    margin: 0 auto 3.5rem;
+    text-align: center;
+  }
+  .section-head h2 {
+    font-size: clamp(2rem, 4.2vw, 3.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 1.125rem;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+
+  .start-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+  .step {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 1.625rem 1.5rem;
+  }
+  .step > header {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    margin-bottom: 0.625rem;
+  }
+  .step-num {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 2px 0.5rem;
+    border-radius: 2px;
+  }
+  .step h3 {
+    margin: 0;
+    font-size: 1.1875rem;
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .step > p {
+    margin: 0 0 1rem;
+    color: var(--fg-muted);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+
+  .snippet {
+    font-family: var(--font-mono);
+    font-size: 0.78125rem;
+    line-height: 1.55;
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    padding: 0.875rem 1rem;
+    margin: 0;
+    color: var(--fg);
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .snippet-lg {
+    font-size: 0.84375rem;
+    padding: 1rem 1.125rem;
+  }
+  .snippet .mut {
+    color: var(--fg-faint);
+  }
+  .snippet .bold {
+    font-weight: 700;
+    color: var(--fg);
+  }
+  .snippet .ok {
+    color: var(--accent);
+  }
+
+  .start-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+  .install {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    padding: 0.875rem 1.125rem 0.875rem 1rem;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--fg);
+    cursor: pointer;
+    transition: border-color 150ms ease;
+  }
+  .install:hover {
+    border-color: var(--accent);
+  }
+  .install-lg {
+    font-size: 1.0625rem;
+    padding: 1.125rem 1.5rem;
+  }
+  .install-lg code {
+    font-size: 1.0625rem;
+    color: var(--fg);
+    background: none;
+    font-family: var(--font-mono);
+  }
+  .install .prompt {
+    color: var(--accent);
+  }
+  .install .copy {
+    color: var(--fg-muted);
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
+    transition: color 150ms ease;
+  }
+  .install:hover .copy {
+    color: var(--accent);
+  }
+  .install.copied .copy-label {
+    font-size: 0;
+  }
+  .install.copied .copy-label::before {
+    content: 'copied ✓';
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+  .start-note {
+    font-family: var(--font-mono);
+    font-size: 0.78125rem;
+    color: var(--fg-muted);
+    margin: 0;
+  }
+  .mut {
+    color: var(--fg-faint);
+  }
+
+  @media (max-width: 920px) {
+    .start-steps {
+      grid-template-columns: 1fr;
+    }
+    .section {
+      padding: 4rem 1.375rem;
+    }
+  }
+</style>

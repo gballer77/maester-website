@@ -123,6 +123,38 @@ const { title, description, currentSlug, headings = [] } = Astro.props;
     border: 1px solid var(--border);
   }
 
+  /* Fenced code blocks. Astro's Shiki integration emits <pre class="astro-code">
+     with token colors as --astro-code-light / --astro-code-dark custom
+     properties (Shiki's defaultColor: false). The rules below resolve the
+     right one per active theme and give the container a terminal-flavoured
+     surface treatment that matches the rest of the site. */
+  .docs-content pre.astro-code {
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 2px;
+    padding: 1rem 1.125rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    font-size: 0.84375rem;
+    line-height: 1.6;
+    color: var(--astro-code-light);
+  }
+  .docs-content pre.astro-code code {
+    display: block;
+    background: none;
+    border: 0;
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+  }
+  .docs-content pre.astro-code span {
+    color: var(--astro-code-light);
+  }
+  [data-theme='dark'] .docs-content pre.astro-code,
+  [data-theme='dark'] .docs-content pre.astro-code span {
+    color: var(--astro-code-dark);
+  }
+
   /* Heading anchor (from rehype-autolink-headings). */
   .docs-content :is(h2, h3, h4) .heading-anchor {
     color: var(--fg-faint);

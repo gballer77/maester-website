@@ -1,148 +1,384 @@
 ---
-// Hero section: project name (h1), tagline, value statement, primary CTAs.
-// Per gspec/features/home-page.md §4 P0.
+// Hero: terminal-flavoured opening — ASCII figlet logo, hero title,
+// supporting prose, primary install-command CTA with copy affordance,
+// secondary jump-to-concept CTA, and a runtime status meta row.
+//
+// Per gspec/features/home-page.md §4 P0 (figlet hero, install CTA, status row)
+// and gspec/design/Maester.html.
 
+import { Image } from 'astro:assets';
 import { site } from '../../config/site';
-import { withBase } from '../../lib/url';
+import citadelIllustration from '../../assets/illustration/citadel.png';
 ---
 
-<section class="hero" aria-labelledby="hero-heading">
-  <p class="hero-eyebrow">Open-source CLI · v0.x</p>
-  <h1 id="hero-heading">{site.name}</h1>
-  <p class="hero-tagline">
-    Aggregate documentation from many repositories into one central knowledge home —
-    built for developers and AI&nbsp;agents.
-  </p>
-  <p class="hero-supporting">
-    Source repositories publish what they want to share. A central aggregator
-    pulls them together. No platform, no lock-in — just configuration files
-    that the same review process owns as your code.
-  </p>
+<section class="hero accent-em" aria-labelledby="hero-heading">
+  <div class="hero-grid" aria-hidden="true"></div>
 
-  <div class="hero-ctas">
-    <a class="cta cta-primary" href={site.cliRepoUrl} rel="noopener external">
-      View on GitHub
-      <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
-      </svg>
-    </a>
-    <a class="cta cta-secondary" href={site.cliRegistryUrl} rel="noopener external">
-      View on npm
-      <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
-      </svg>
-    </a>
+  <div class="hero-layout">
+    <div class="hero-text">
+      <pre class="figlet" aria-label={site.name}>{`                       __
+    __ _  ___ ____ ___ / /____ ____
+   /  ' \\/ _ \`/ -_|_-</ __/ -_) __/
+  /_/_/_/\\_,_/\\__/___/\\__/\\__/_/   `}</pre>
+      <p class="figlet-sub">
+        <span class="dim">·</span> living specs <span class="dim">·</span> v0.1.0
+        <span class="dim">·</span>
+      </p>
+
+      <h1 id="hero-heading" class="hero-title">
+        Knowledge, kept where it’s made.<br />
+        <span class="accent">Gathered where it’s needed.</span>
+      </h1>
+
+      <p class="hero-sub">
+        Maester is a Node CLI for aggregating documentation from many Git
+        repositories into one central knowledge home — a <em>citadel</em> — so
+        humans and AI agents can reason over your whole system from a single,
+        current corpus.
+      </p>
+
+      <div class="hero-cta">
+        <button
+          type="button"
+          class="install"
+          data-install-copy={site.runCommand}
+          aria-label={`Copy install command: ${site.runCommand}`}
+        >
+          <span class="prompt" aria-hidden="true">$</span>
+          <code>{site.runCommand}</code>
+          <span class="copy" aria-hidden="true">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+            >
+              <rect x="4" y="4" width="9" height="9" rx="1"></rect>
+              <path d="M11 4 V3 a1 1 0 0 0-1-1 H3 a1 1 0 0 0-1 1 v7 a1 1 0 0 0 1 1 h1"
+              ></path>
+            </svg>
+            <span class="copy-label">copy</span>
+          </span>
+        </button>
+        <a class="btn btn-ghost" href="#how">
+          <span class="caret" aria-hidden="true">▸</span> Read the model
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-illustration" aria-hidden="true">
+      <Image
+        src={citadelIllustration}
+        alt=""
+        widths={[360, 560, 720, 920, 1200, 1600, 2000, 2400, 3000]}
+        sizes="(max-width: 768px) 360px, (max-width: 1400px) 720px, (max-width: 1800px) 1000px, (max-width: 2400px) 1300px, (max-width: 3000px) 1600px, 1800px"
+        format="webp"
+        quality={82}
+        loading="eager"
+      />
+    </div>
   </div>
 
-  <p class="hero-docs-link">
-    Or <a href={withBase('/docs/getting-started')}>read the getting-started guide</a>.
-  </p>
+  <ul class="hero-meta">
+    <li><span class="status ok" aria-hidden="true">✓</span> Node 24 · ESM · MIT</li>
+    <li>
+      <span class="status info" aria-hidden="true">›</span> Works in Claude Code,
+      Cursor, Codex, Antigravity
+    </li>
+    <li>
+      <span class="status info" aria-hidden="true">›</span> Zero hosted infrastructure
+    </li>
+  </ul>
 </section>
+
+<script>
+  // Copy the hero install command to the clipboard. Falls back silently
+  // if the Clipboard API is unavailable (older browsers, insecure context).
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-install-copy]');
+  for (const button of buttons) {
+    const cmd = button.getAttribute('data-install-copy') ?? '';
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(cmd);
+        button.classList.add('copied');
+        window.setTimeout(() => button.classList.remove('copied'), 1500);
+      } catch {
+        // Clipboard unavailable — leave the visible command as-is so the
+        // user can still select and copy it manually.
+      }
+    });
+  }
+</script>
 
 <style>
   .hero {
-    padding: 4rem 0 3rem;
-    max-width: 56rem;
+    position: relative;
+    max-width: 1180px;
     margin: 0 auto;
-    text-align: center;
+    padding: 6rem 2rem 4.5rem;
+    z-index: 1;
   }
 
-  .hero-eyebrow {
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    color: var(--accent);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin: 0 0 1rem;
+  .hero-grid {
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(900px 480px at 20% 0%, rgba(124, 231, 199, 0.07), transparent 70%),
+      radial-gradient(700px 400px at 90% 30%, rgba(177, 151, 252, 0.05), transparent 70%);
+    pointer-events: none;
+    z-index: -1;
   }
 
-  .hero h1 {
-    font-family: var(--font-mono);
-    font-size: clamp(2.5rem, 5vw + 1rem, 4.5rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1;
-    margin: 0 0 1.25rem;
-    color: var(--fg);
+  .hero-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: center;
+  }
+  @media (min-width: 960px) {
+    .hero-layout {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+      gap: 3rem;
+    }
   }
 
-  .hero-tagline {
-    font-size: clamp(1.0625rem, 1vw + 0.85rem, 1.375rem);
-    line-height: 1.5;
-    color: var(--fg);
-    max-width: 42rem;
-    margin: 0 auto 1.25rem;
+  .hero-text {
+    min-width: 0;
   }
 
-  .hero-supporting {
-    font-size: 1rem;
-    color: var(--fg-muted);
-    max-width: 42rem;
-    margin: 0 auto 2rem;
-    line-height: 1.65;
-  }
-
-  .hero-ctas {
+  .hero-illustration {
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
+    align-items: center;
+    min-width: 0;
+  }
+  .hero-illustration :global(img) {
+    width: 100%;
+    height: auto;
+    max-width: 560px;
+    filter: drop-shadow(0 24px 48px rgba(0, 0, 0, 0.45))
+      drop-shadow(0 0 60px rgba(124, 231, 199, 0.08));
   }
 
-  .hero-docs-link {
-    margin-top: 1.25rem;
-    font-size: 0.9375rem;
+  .figlet {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.15;
+    color: var(--accent);
+    margin: 0;
+    white-space: pre;
+    overflow-x: auto;
+    text-shadow: 0 0 24px rgba(124, 231, 199, 0.18);
+  }
+
+  .figlet-sub {
+    font-family: var(--font-mono);
+    color: var(--fg-muted);
+    font-size: 13px;
+    margin: 0.25rem 0 3.5rem;
+  }
+
+  .dim {
     color: var(--fg-muted);
   }
 
-  .cta {
+  .accent {
+    color: var(--accent);
+  }
+
+  .hero-title {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    margin: 0 0 1.5rem;
+    max-width: 18ch;
+    text-wrap: balance;
+  }
+
+  .hero-sub {
+    font-size: 1.1875rem;
+    color: var(--fg-muted);
+    max-width: 60ch;
+    margin: 0 0 2.25rem;
+    text-wrap: pretty;
+    line-height: 1.55;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 0.875rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  /* Install command — primary CTA shaped like a terminal prompt. */
+  .install {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    padding: 0.875rem 1.125rem 0.875rem 1rem;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--fg);
+    position: relative;
+    cursor: pointer;
+    transition: border-color 150ms ease;
+  }
+  .install:hover {
+    border-color: var(--accent);
+  }
+  .install .prompt {
+    color: var(--accent);
+  }
+  .install code {
+    color: var(--fg);
+    background: none;
+    font-size: 0.875rem;
+    font-family: var(--font-mono);
+  }
+  .install .copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
+    transition: color 150ms ease;
+  }
+  .install:hover .copy {
+    color: var(--accent);
+  }
+  .install.copied .copy {
+    color: var(--accent);
+  }
+  .install.copied .copy-label {
+    font-size: 0;
+  }
+  .install.copied .copy-label::before {
+    content: 'copied ✓';
+    font-size: 0.75rem;
+  }
+
+  .btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.6875rem 1.25rem;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    font-size: 0.9375rem;
-    text-decoration: none;
-    min-height: 44px;
-    transition:
-      background 120ms ease,
-      color 120ms ease,
-      border-color 120ms ease;
-  }
-
-  .cta:hover {
-    text-decoration: none;
-  }
-
-  .cta-primary {
-    background: var(--accent);
-    color: var(--accent-fg);
-    border: 1px solid var(--accent);
-  }
-
-  .cta-primary:hover {
-    background: var(--accent-hover);
-    border-color: var(--accent-hover);
-    color: var(--accent-fg);
-  }
-
-  .cta-secondary {
-    background: transparent;
-    color: var(--fg);
+    padding: 0.875rem 1.125rem;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
     border: 1px solid var(--border-strong);
+    color: var(--fg);
+    background: transparent;
+    cursor: pointer;
+    transition:
+      border-color 150ms ease,
+      color 150ms ease;
+  }
+  .btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .btn .caret {
+    color: var(--accent);
   }
 
-  .cta-secondary:hover {
-    background: var(--elevated);
-    color: var(--fg);
-    border-color: var(--fg-muted);
+  .hero-meta {
+    list-style: none;
+    padding: 0;
+    margin: 3rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--fg-muted);
+  }
+  .hero-meta li {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .status.ok {
+    color: var(--accent);
+  }
+  .status.info {
+    color: var(--accent-alt);
+  }
+
+  @media (min-width: 1400px) {
+    .hero {
+      max-width: 1380px;
+    }
+    .hero-layout {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    }
+    .hero-illustration :global(img) {
+      max-width: 880px;
+    }
+  }
+  @media (min-width: 1800px) {
+    .hero {
+      max-width: 1700px;
+    }
+    .hero-layout {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    }
+    .hero-illustration :global(img) {
+      max-width: 1150px;
+    }
+  }
+  @media (min-width: 2400px) {
+    .hero {
+      max-width: 2100px;
+    }
+    .hero-layout {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+    }
+    .hero-illustration :global(img) {
+      max-width: 1500px;
+    }
+  }
+  @media (min-width: 3000px) {
+    .hero {
+      max-width: 2700px;
+    }
+    .hero-layout {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.85fr);
+    }
+    .hero-illustration :global(img) {
+      max-width: 1900px;
+    }
   }
 
   @media (max-width: 768px) {
     .hero {
-      padding: 2.5rem 0 2rem;
+      padding: 3.5rem 1.375rem 3rem;
+    }
+    .hero-layout {
+      gap: 1.75rem;
+    }
+    .hero-illustration :global(img) {
+      max-width: 360px;
+    }
+    .figlet {
+      font-size: 10px;
+    }
+    .hero-title {
+      font-size: 2.5rem;
+    }
+    .hero-meta {
+      gap: 1rem;
+      font-size: 0.75rem;
     }
   }
 </style>

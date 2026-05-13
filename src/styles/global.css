@@ -202,6 +202,40 @@ h3 {
   margin-bottom: 0.75rem;
 }
 
+/* Subtle scanline overlay for the dark theme — purely decorative,
+   establishes a terminal-flavoured atmosphere. Sits below all content
+   (z-index 0; sections lift above with their own positioning).
+   Disabled when prefers-reduced-motion is set, since it can flicker
+   for motion-sensitive viewers. */
+[data-theme='dark'] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0,
+    transparent 3px,
+    rgba(255, 255, 255, 0.012) 3px,
+    rgba(255, 255, 255, 0.012) 4px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='dark'] body::before {
+    background: none;
+  }
+}
+
+/* Opt-in accent treatment for inline emphasis. Scoped to the home page
+   (and any other section that opts in via the .accent-em class) so the
+   rest of the site keeps the standard italic <em>. */
+.accent-em em {
+  font-style: normal;
+  color: var(--accent);
+}
+
 /* Utility: visually hidden but accessible */
 .sr-only {
   position: absolute;

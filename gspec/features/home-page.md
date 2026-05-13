@@ -33,9 +33,9 @@ This matters now because the landing page is the entry point for every other pro
 
 - A hero section with an ASCII-art rendering of the project name, a tagline, a 1–2 sentence value statement, a copyable install-command primary CTA, a secondary jump-to-concept CTA, and a runtime status meta row.
 - A "problem" section presenting the pain points the tool addresses, with three cards and a supporting diagram.
-- A three-role model section introducing the tool's primary source and aggregator concepts (including a citadel-side source variant), each with an inline configuration snippet.
+- A two-role model section introducing the tool's primary source (maester) and aggregator (citadel) concepts, noting that a maester can be defined either at the source (resident) or at the citadel (traveling) — illustrated with inline configuration snippets.
 - A flow/architecture diagram showing how sources feed into a central aggregator and out to consumers.
-- An AI-workflows section explaining the tool's value for AI coding agents, with numbered value-prop cards and a side-by-side before/after agent-transcript demonstration.
+- An AI-workflows section explaining the tool's value for AI coding agents, with numbered value-prop cards, a side-by-side before/after agent-transcript demonstration, and a short subsection introducing the optional agent-skill integration with a row of supported-agent badges.
 - A CLI table giving a brief "taste" of the tool's commands, with a clear link to the full CLI reference.
 - A side-by-side comparison clarifying when to choose each source kind.
 - A three-step quick start section ending in a prominent install-command affordance.
@@ -101,64 +101,72 @@ This matters now because the landing page is the entry point for every other pro
   - Page is fully navigable via keyboard, with visible focus indicators
   - Color contrast meets WCAG AA for all text
 
-- [ ] **P0**: The hero presents an ASCII-figlet project mark, a copyable install-command primary CTA, a secondary jump-to-concept CTA, and a runtime status meta row
+- [x] **P0**: The hero presents an ASCII-figlet project mark, a copyable install-command primary CTA, a secondary jump-to-concept CTA, and a runtime status meta row
   - The project name is rendered as multi-line ASCII art (a "figlet") styled with the accent colour, with a subtle accent-coloured glow
   - The hero's primary CTA is a copyable install command (with a `$` prompt prefix and a visible copy affordance) — replacing any prior repo/registry CTA buttons
-  - A secondary "read the model" CTA links to the three-role-model section via an in-page anchor
+  - A secondary "read the model" CTA links to the model section via an in-page anchor
   - A meta row below the CTAs lists at minimum: runtime/license, AI-tool compatibility, and a hosted-infrastructure note, each prefixed with a small status glyph
 
-- [ ] **P0**: A "problem" section establishes the pain points the tool solves
+- [x] **P0**: A "problem" section establishes the pain points the tool solves
   - Section displays exactly three cards, each with a short title, a 1–2 sentence body, and a semantic glyph (error/warning)
   - The three cards collectively cover: documentation scattered across multiple repositories, centralised portals going stale, and AI agents lacking system-wide context
   - A supporting visual element (diagram or illustration) reinforces the "scattered" message with multiple disconnected source nodes
   - Section is preceded by a "kicker" tag and visually distinct from the hero
 
-- [ ] **P0**: A three-role model section introduces the primary source, the central aggregator, and the citadel-side source variant
-  - Three role cards are presented in a consistent layout: glyph, role tag, h3 heading, short body, and an inline configuration snippet (e.g. YAML)
-  - The primary source and aggregator cards use the accent colour; the citadel-side source variant card uses the alt-purple colour to visually signal that its declaration lives on the aggregator side
-  - Each card's snippet shows the actual configuration file shape it represents (the primary source's manifest, the aggregator's manifest entry, and the aggregator's includes-style entry)
+- [x] **P0**: A model section introduces the two roles (primary source and central aggregator) and notes that a maester can be defined either at the source or from the citadel
+  - Two role cards are presented in a consistent layout: glyph, role tag, h3 heading, short body, and an inline configuration snippet (e.g. YAML)
+  - The maester card explicitly calls out the two definition locations — at the source (a "resident" maester via `maester.yaml`) and at the citadel (a "traveling" maester via an `includes` list); the alt-purple accent marks the traveling variant for visual consistency with the source-modes section further down
+  - Each card's snippet shows the canonical shape it represents — the source's `maester.yaml`, and the aggregator's `citadel.yaml` listing both a resident and a traveling source
   - The section is reachable via an in-page anchor (e.g. `#how`)
 
-- [ ] **P0**: A flow/architecture diagram visualises how sources feed into the aggregator and out to consumers
-  - Diagram shows multiple primary sources and at least one citadel-side source feeding into a single aggregator node
+- [x] **P0**: A flow/architecture diagram visualises how sources feed into the aggregator and out to consumers
+  - Diagram shows multiple resident maesters and at least one traveling maester feeding into a single aggregator node
   - The aggregator node shows a representative output directory tree
-  - Arrows visually differentiate the two source kinds via colour (accent vs. alt-purple) and line style (solid vs. dashed)
+  - Arrows visually differentiate resident vs traveling maesters via colour (accent vs. alt-purple) and line style (solid vs. dashed)
   - At least one consumer destination (engineers, AI agents, CI) is shown on the receiving side
 
-- [ ] **P0**: An AI-workflows section explains the tool's value for AI coding agents and demonstrates it with a before/after comparison
+- [x] **P0**: An AI-workflows section explains the tool's value for AI coding agents and demonstrates it with a before/after comparison
   - Section displays four numbered value-prop cards (01–04), each with a short title and a 1–2 sentence body
   - A side-by-side "before / after" panel shows an agent transcript without the tool (agent guesses) vs. with the tool (agent reads the aggregated corpus), making the win concrete
   - The "before" pane is visually tagged in an error/warning colour; the "after" pane is tagged in a success colour
   - Section is reachable via an in-page anchor (e.g. `#ai`)
 
-- [ ] **P0**: A three-step quick start section shows the minimal init → publish → sync workflow
+- [ ] **P0**: The AI-workflows section introduces the optional agent-skill integration (the Grand Maester) so visitors learn it exists and which agents it supports
+  - A short intro (1–2 sentences) inside the AI-workflows section explains that the tool ships an installable agent skill which turns the central aggregator into a first-class context surface for the host AI coding agent — so the agent reasons over aggregated content with citadel-, state-, and freshness-awareness instead of needing manual setup
+  - A compact "supported agents" row lists the v1 target agents — Claude Code, Codex CLI, Cursor, and a generic `AGENTS.md` fallback — visually styled as small inline chips or badges
+  - A character illustration of the Grand Maester accompanies the intro (sourced from `src/assets/illustration/grand-maester.png`), giving the subsection a clear visual anchor that personifies the agent-skill concept; the image has descriptive alt text and is sized to sit alongside the intro paragraph on desktop and stack above the prose on mobile
+  - The subsection lives inside the existing AI-workflows section (no new top-level section, no new in-page anchor), placed after the before/after panel and visually separated from it by a sub-heading or small divider so it does not crowd the transcript demo
+  - No copyable install snippet appears in this subsection; the install affordance remains the hero install CTA and the quick-start section, and install detail is deferred to the documentation section
+  - The subsection is preceded by no new kicker tag (the section's existing kicker already covers the AI-workflows theme), preserving the home page's one-kicker-per-section rhythm
+
+- [x] **P0**: A three-step quick start section shows the minimal init → publish → sync workflow
   - Three numbered step cards explain the init / publish / sync sequence with a short description and a code snippet for each
   - A prominent install-command affordance appears at the bottom of the section (mirroring the hero's install CTA)
   - Together with the hero install CTA, this section satisfies the install/usage snippet capability; a standalone install-snippet section is no longer required
 
-- [ ] **P0**: A maester-vs-raven comparison section clarifies when to choose each source kind
-  - Two side-by-side columns are visually tagged for the primary-source kind (accent) and the citadel-side source kind (alt-purple)
-  - Each column includes a tagline, a short description, and a definition list of comparison points: who declares the file list, whether a manifest is required, fallback behaviour when configuration is missing, and when to reach for that kind
-  - The accent-vs-alt-purple visual distinction is consistent with the three-role-model section
+- [x] **P0**: A resident-vs-traveling maester comparison section clarifies when to define a maester at the source vs at the citadel
+  - Two side-by-side columns are visually tagged for the resident-maester variant (accent) and the traveling-maester variant (alt-purple)
+  - Each column includes a tagline, a short description, and a definition list of comparison points: who declares the file list, where the maester lives, fallback behaviour when configuration is missing, and when to reach for that variant
+  - The accent-vs-alt-purple visual distinction is consistent with the maester card's resident-vs-traveling sub-list in the model section
 
-- [ ] **P1**: A CLI table on the home page gives a brief 5-verb taste with a link to the full reference
+- [x] **P1**: A CLI table on the home page gives a brief 5-verb taste with a link to the full reference
   - Table displays the tool's primary commands in a 3-column layout: command, role, description
   - A short "global flags" list accompanies the table (verbose / quiet / json / no-colour / theme)
   - A clear link to the full CLI reference in the documentation section is present
   - Section is reachable via an in-page anchor (e.g. `#cli`)
 
-- [ ] **P1**: Each major content section is preceded by a monospace "kicker" tag for scannability
+- [x] **P1**: Each major content section is preceded by a monospace "kicker" tag for scannability
   - Each major section's h2 is preceded by a small monospace kicker label (e.g. `· the problem`, `· the model`, `· the flow`)
   - Kicker uses the muted foreground colour with a single accent-coloured marker character
   - Kicker style is consistent across every home-page section
 
-- [ ] **P1**: A subtle scanline texture establishes a terminal-flavoured atmosphere across the page
+- [x] **P1**: A subtle scanline texture establishes a terminal-flavoured atmosphere across the page
   - A very low-contrast repeating horizontal scanline pattern is applied as a fixed-position decorative background overlay
   - The texture sits below all content (does not interfere with text readability, focus rings, or click targets)
   - The texture honours the `prefers-reduced-motion` setting where applicable and does not affect colour-contrast compliance
 
-- [ ] **P2**: Inline emphasis (`<em>`) within home-page body copy renders in the accent colour to draw the eye to product terms
-  - Within home-page prose, `<em>` styles in the accent colour, used to highlight the tool's named concepts (e.g. *maester*, *citadel*, *raven*)
+- [x] **P2**: Inline emphasis (`<em>`) within home-page body copy renders in the accent colour to draw the eye to product terms
+  - Within home-page prose, `<em>` styles in the accent colour, used to highlight the tool's named concepts (e.g. *maester*, *citadel*, *includes*)
   - Underlying semantic emphasis remains correct — `<em>` is used only for genuinely emphasised terms, not as a styling shortcut
   - The treatment is scoped to the home page (or applied site-wide if consistent with the design tokens)
 
@@ -181,10 +189,10 @@ This matters now because the landing page is the entry point for every other pro
 **Key risks:**
 
 - **Concept doesn't land.** The hardest part of a dev-tool landing page is communicating a non-trivial concept model briefly. *Mitigation:* the concept section is required to include both prose and a visual; if either is missing, the section is incomplete.
-- **Information density.** The home page now spans many themed sections (problem, model, flow, AI workflows, CLI, compare, quick start). *Mitigation:* every section is preceded by a kicker tag and has a single dominant h2; sections are independently scannable, and primary value (hero install CTA, three-role model, AI before/after) is concentrated above the fold-cluster.
+- **Information density.** The home page now spans many themed sections (problem, model, flow, AI workflows, CLI, compare, quick start). *Mitigation:* every section is preceded by a kicker tag and has a single dominant h2; sections are independently scannable, and primary value (hero install CTA, model section, AI before/after) is concentrated above the fold-cluster.
 - **CTA ambiguity.** A copyable install command as primary CTA and a "read the model" jump as secondary CTA must remain visually distinct. *Mitigation:* the install command uses a filled/bordered terminal-style affordance and the secondary CTA is rendered as a ghost button.
 - **Stale install snippet.** Install commands and package names change between releases. *Mitigation:* the snippet is sourced from the same configuration as `[[changelog-page]]` and the package metadata, not hardcoded in multiple places.
-- **Raven concept underrepresented.** The citadel-side source variant ("raven") is a new concept introduced visually via the alt-purple accent and inline YAML. *Mitigation:* the three-role section, flow diagram, and compare section reinforce it three times in different formats; the alt-purple colour is consistent across all three.
+- **Traveling-maester concept underrepresented.** The citadel-side way to define a maester (a "traveling maester", backed by `includes:` in the source entry) is less obvious than the in-source case. *Mitigation:* the maester card's resident-vs-traveling sub-list, the flow diagram, the AI-workflows section, and the source-modes compare section each reinforce it in a different format; the alt-purple colour marks "traveling" consistently across all of them. The technical docs (`/docs/concepts/citadel`) keep the underlying `includes`-driven terminology for completeness.
 
 ## 7. Success Metrics
 
