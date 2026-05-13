@@ -1,0 +1,181 @@
+---
+// Mobile navigation as a disclosure menu (per gspec/features/site-shell.md §6
+// risk: "prefer a disclosure-style sidebar over a modal drawer"). Visible only
+// below the tablet breakpoint. The button toggles aria-expanded; the menu is
+// visible when expanded, hidden otherwise. No focus trap (it's a disclosure,
+// not a modal), but tapping a link closes the menu so state doesn't leak.
+
+import { site } from '../../config/site';
+import { withBase } from '../../lib/url';
+
+function normalize(path: string): string {
+  return path.replace(/\/+$/, '') || '/';
+}
+
+function stripBase(path: string): string {
+  const base = site.basePath.replace(/\/+$/, '');
+  if (base && path.startsWith(base)) {
+    return normalize(path.slice(base.length) || '/');
+  }
+  return normalize(path);
+}
+
+const currentPath = stripBase(Astro.url.pathname);
+
+function isActive(href: string): boolean {
+  const target = normalize(href);
+  if (target === '/') return currentPath === '/';
+  return currentPath === target || currentPath.startsWith(target + '/');
+}
+---
+
+<div class="mobile-nav">
+  <button
+    type="button"
+    class="mobile-nav-trigger"
+    aria-controls="mobile-nav-menu"
+    aria-expanded="false"
+    aria-label="Open navigation menu"
+  >
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M4 7h16M4 12h16M4 17h16"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        fill="none"
+      ></path>
+    </svg>
+  </button>
+
+  <nav id="mobile-nav-menu" class="mobile-nav-menu" aria-label="Primary" hidden>
+    <ul>
+      {
+        site.nav.map((item) => {
+          const active = isActive(item.href);
+          return (
+            <li>
+              <a
+                href={withBase(item.href)}
+                aria-current={active ? 'page' : undefined}
+                class:list={[{ active }]}
+              >
+                {item.label}
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </nav>
+</div>
+
+<script>
+  const trigger = document.querySelector<HTMLButtonElement>('.mobile-nav-trigger');
+  const menu = document.querySelector<HTMLElement>('#mobile-nav-menu');
+
+  function setOpen(open: boolean) {
+    if (!trigger || !menu) return;
+    trigger.setAttribute('aria-expanded', String(open));
+    trigger.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+    if (open) {
+      menu.removeAttribute('hidden');
+    } else {
+      menu.setAttribute('hidden', '');
+    }
+  }
+
+  trigger?.addEventListener('click', () => {
+    const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+    setOpen(!isOpen);
+  });
+
+  // Close when a link is tapped so the menu state does not leak across pages.
+  menu?.querySelectorAll('a').forEach((a) => {
+    a.addEventListener('click', () => setOpen(false));
+  });
+
+  // Close on Escape for keyboard users.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && trigger?.getAttribute('aria-expanded') === 'true') {
+      setOpen(false);
+      trigger.focus();
+    }
+  });
+</script>
+
+<style>
+  .mobile-nav {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .mobile-nav {
+      display: block;
+      position: relative;
+    }
+  }
+
+  .mobile-nav-trigger {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--fg);
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .mobile-nav-trigger:hover {
+    background: var(--elevated);
+  }
+
+  .mobile-nav-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 200px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    z-index: 50;
+  }
+
+  .mobile-nav-menu[hidden] {
+    display: none;
+  }
+
+  .mobile-nav-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+  }
+
+  .mobile-nav-menu li {
+    margin: 0;
+  }
+
+  .mobile-nav-menu a {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: var(--fg-muted);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .mobile-nav-menu a:hover {
+    background: var(--elevated);
+    color: var(--fg);
+    text-decoration: none;
+  }
+
+  .mobile-nav-menu a.active {
+    color: var(--fg);
+    background: var(--elevated);
+  }
+</style>

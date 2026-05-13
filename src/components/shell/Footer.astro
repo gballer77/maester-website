@@ -1,0 +1,82 @@
+---
+import { site } from '../../config/site';
+import { withBase } from '../../lib/url';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <strong>{site.name}</strong>
+      <span class="footer-copy">© {year} {site.maintainer.name}. Released as open source.</span>
+    </div>
+    <nav class="footer-links" aria-label="Footer">
+      <a href={site.cliRepoUrl} rel="noopener external">Source repository</a>
+      <a href={site.cliRegistryUrl} rel="noopener external">npm package</a>
+      <a href={withBase('/changelog')}>Changelog</a>
+      <a href={withBase('/about')}>About</a>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    margin-top: 6rem;
+    padding: 2rem 0;
+    color: var(--fg-muted);
+    font-size: 0.875rem;
+  }
+
+  .footer-inner {
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .footer-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .footer-brand strong {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  .footer-copy {
+    color: var(--fg-faint);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .footer-links a {
+    color: var(--fg-muted);
+    text-decoration: none;
+  }
+
+  .footer-links a:hover {
+    color: var(--fg);
+    text-decoration: underline;
+  }
+
+  @media (max-width: 600px) {
+    .footer-inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

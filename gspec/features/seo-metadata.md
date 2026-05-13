@@ -61,46 +61,46 @@ This matters now because every page-level feature in the site depends on a worki
 
 ## 4. Capabilities
 
-- [ ] **P0**: Every page declares its own title and description via a shared mechanism
+- [x] **P0**: Every page declares its own title and description via a shared mechanism
   - Each page provides a title and a description through a single, consistent API (e.g., frontmatter, layout prop, or component slot)
   - The shared mechanism emits these as `<title>` and `<meta name="description">` in the rendered HTML
   - If a page omits the title or description, the build fails with a clear error identifying the offending page
   - The title pattern follows a site-wide template (e.g., `<page title> — <site name>`)
 
-- [ ] **P0**: Open Graph and Twitter card meta tags are emitted on every page
+- [x] **P0**: Open Graph and Twitter card meta tags are emitted on every page
   - Each page emits `og:title`, `og:description`, `og:url`, `og:image`, and `og:type` tags
   - Each page emits the equivalent Twitter card tags (`twitter:card`, `twitter:title`, `twitter:description`, `twitter:image`)
   - Values are derived from the page's own title and description, falling back to site-wide defaults where appropriate
   - Tag emission happens automatically — pages do not have to author OG/Twitter tags by hand
 
-- [ ] **P0**: A site-wide default social card image is used when a page does not provide its own
+- [x] **P0**: A site-wide default social card image is used when a page does not provide its own
   - The site declares a default social card image in one place (e.g., a config file)
   - Pages may override the default by providing a custom image path
   - The default image is used on every page that does not override it
   - The image's URL is absolute (not relative) in the emitted tags
 
-- [ ] **P0**: A canonical URL is emitted on every page
+- [x] **P0**: A canonical URL is emitted on every page
   - Each page emits a `<link rel="canonical">` with its absolute URL
   - Canonical URLs use the site's production hostname, not a build-environment hostname
   - URLs include the project's base path if the site is served from a subpath
 
-- [ ] **P0**: A sitemap.xml is generated at build time
+- [x] **P0**: A sitemap.xml is generated at build time
   - The sitemap lists every public page rendered by the build
   - URLs in the sitemap are absolute and use the production hostname
   - The sitemap conforms to the standard sitemap.xml schema
   - The sitemap is available at `/sitemap.xml` (or the equivalent path with the project's base path applied)
 
-- [ ] **P0**: A robots.txt is served at the site root
+- [x] **P0**: A robots.txt is served at the site root
   - The robots.txt allows indexing of the site (no global disallow)
   - The robots.txt includes a `Sitemap:` directive pointing at the absolute sitemap URL
   - The robots.txt is available at `/robots.txt` (or the equivalent path with the project's base path applied)
 
-- [ ] **P1**: Site-wide fallback metadata is defined in one place
+- [x] **P1**: Site-wide fallback metadata is defined in one place
   - The site declares a default title, description, and social card image in a single configuration source
   - Pages inherit these defaults unless they explicitly override
   - Changing a default updates every page that does not override it without per-page edits
 
-- [ ] **P2**: Per-page metadata is visible during preview / development
+- [x] **P2**: Per-page metadata is visible during preview / development
   - In a development or preview build, the rendered metadata can be inspected via standard browser developer tools without obfuscation
   - The build does not strip comments or attributes that aid metadata debugging
 

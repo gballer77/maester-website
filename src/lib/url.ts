@@ -57,6 +57,13 @@ export function withBase(pathOrUrl: string): string {
   if (pathOrUrl.startsWith('mailto:') || pathOrUrl.startsWith('tel:')) return pathOrUrl;
 
   const base = resolveBase();
+
+  // Idempotent — when the input already begins with the base path (for
+  // example, `Astro.url.pathname` on a built page), don't prefix again.
+  if (base && (pathOrUrl === base || pathOrUrl === base + '/' || pathOrUrl.startsWith(base + '/'))) {
+    return pathOrUrl;
+  }
+
   const cleanPath = stripLeading(pathOrUrl);
   if (cleanPath === '') {
     // base only — keep a trailing slash for the root

@@ -1,19 +1,36 @@
 ---
-// Placeholder home page — replaced in Phase 3 with the real landing content.
-// For Phase 0 we just need a route so `astro build` produces output.
+// Phase 1 placeholder — replaced in Phase 3 with the real landing content.
+// Renders inside BaseLayout so the site shell, theme runtime, and metadata
+// can be verified end-to-end.
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../config/site';
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Maester</title>
-  </head>
-  <body>
-    <main>
-      <h1>Maester</h1>
-      <p>Site under construction.</p>
-    </main>
-  </body>
-</html>
+<BaseLayout title={site.name} description={site.description}>
+  <section class="placeholder">
+    <h1>{site.name}</h1>
+    <p class="tagline">{site.tagline}</p>
+    <p class="note">Site under construction — phase-by-phase build in progress.</p>
+  </section>
+</BaseLayout>
+
+<style>
+  .placeholder {
+    text-align: center;
+    padding: 4rem 0;
+  }
+
+  .tagline {
+    color: var(--fg-muted);
+    font-size: 1.125rem;
+    margin-top: 0.5rem;
+  }
+
+  .note {
+    color: var(--fg-faint);
+    font-size: 0.875rem;
+    margin-top: 2rem;
+    font-family: var(--font-mono);
+  }
+</style>

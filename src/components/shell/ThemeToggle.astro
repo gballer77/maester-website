@@ -1,0 +1,155 @@
+---
+// Three-state theme toggle: light → dark → system → light → …
+//
+// On click, the toggle updates localStorage and the <html data-theme> attribute.
+// In "system" mode, the stored value is removed so the inline theme-init script
+// (in BaseLayout) re-reads the OS preference on subsequent page loads.
+//
+// Per gspec/features/dark-mode.md §4:
+//   - P0: toggle in header, keyboard-accessible, descriptive accessible name
+//   - P0: toggling persists across navigation and reload
+//   - P1: option to revert to "follow system"
+//   - P2: graceful handling when localStorage is unavailable
+---
+
+<button
+  type="button"
+  class="theme-toggle"
+  aria-label="Theme: light. Click to change."
+  data-theme-state="light"
+>
+  <svg class="icon icon-light" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"></circle>
+    <path
+      d="M12 2v2M12 20v2M4 12H2M22 12h-2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      fill="none"></path>
+  </svg>
+  <svg class="icon icon-dark" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+    <path
+      d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linejoin="round"
+      fill="none"></path>
+  </svg>
+  <svg class="icon icon-system" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+    <rect
+      x="2"
+      y="4"
+      width="20"
+      height="14"
+      rx="2"
+      stroke="currentColor"
+      stroke-width="2"
+      fill="none"></rect>
+    <path d="M9 22h6M12 18v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"></path>
+  </svg>
+</button>
+
+<script>
+  const KEY = 'maester-theme';
+  const ORDER = ['light', 'dark', 'system'] as const;
+  type Mode = (typeof ORDER)[number];
+
+  const button = document.querySelector<HTMLButtonElement>('.theme-toggle');
+  if (button) {
+    function readStored(): Mode {
+      try {
+        const v = localStorage.getItem(KEY);
+        if (v === 'light' || v === 'dark') return v;
+      } catch {
+        /* localStorage unavailable */
+      }
+      return 'system';
+    }
+
+    function applyToHtml(mode: Mode) {
+      const root = document.documentElement;
+      let effective: 'light' | 'dark';
+      if (mode === 'system') {
+        effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      } else {
+        effective = mode;
+      }
+      root.setAttribute('data-theme', effective);
+    }
+
+    function syncButton(mode: Mode) {
+      if (!button) return;
+      button.setAttribute('data-theme-state', mode);
+      const next = ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length];
+      const stateLabel = mode === 'system' ? 'system (follows OS)' : mode;
+      button.setAttribute(
+        'aria-label',
+        `Theme: ${stateLabel}. Click to switch to ${next}.`,
+      );
+    }
+
+    let current: Mode = readStored();
+    syncButton(current);
+
+    button.addEventListener('click', () => {
+      current = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length];
+      try {
+        if (current === 'system') {
+          localStorage.removeItem(KEY);
+        } else {
+          localStorage.setItem(KEY, current);
+        }
+      } catch {
+        /* localStorage unavailable; behavior degrades to current-page only */
+      }
+      applyToHtml(current);
+      syncButton(current);
+    });
+
+    // When in "system" mode, react to OS changes.
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    mql.addEventListener('change', () => {
+      if (current === 'system') applyToHtml('system');
+    });
+  }
+</script>
+
+<style>
+  .theme-toggle {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--fg-muted);
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+    transition:
+      color 120ms ease,
+      background 120ms ease;
+  }
+
+  .theme-toggle:hover {
+    background: var(--elevated);
+    color: var(--fg);
+  }
+
+  .theme-toggle .icon {
+    display: none;
+  }
+
+  .theme-toggle[data-theme-state='light'] .icon-light {
+    display: block;
+  }
+
+  .theme-toggle[data-theme-state='dark'] .icon-dark {
+    display: block;
+  }
+
+  .theme-toggle[data-theme-state='system'] .icon-system {
+    display: block;
+  }
+</style>

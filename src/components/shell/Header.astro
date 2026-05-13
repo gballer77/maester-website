@@ -1,0 +1,103 @@
+---
+import { site } from '../../config/site';
+import { withBase } from '../../lib/url';
+import PrimaryNav from './PrimaryNav.astro';
+import MobileNav from './MobileNav.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import SearchTrigger from './SearchTrigger.astro';
+---
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href={withBase('/')} class="brand" aria-label={`${site.name} home`}>
+      <svg
+        class="brand-mark"
+        width="28"
+        height="28"
+        viewBox="0 0 32 32"
+        aria-hidden="true"
+      >
+        <path
+          d="M5 24 V8 L11 13 L16 6 L21 13 L27 8 V24 H22 V16 L16 22 L10 16 V24 Z"
+          fill="currentColor"
+          stroke="currentColor"
+          stroke-width="0.5"
+          stroke-linejoin="round"></path>
+      </svg>
+      <span class="brand-name">{site.name}</span>
+    </a>
+
+    <div class="header-right">
+      <PrimaryNav />
+      <div class="header-actions">
+        <SearchTrigger />
+        <ThemeToggle />
+        <MobileNav />
+      </div>
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    backdrop-filter: saturate(180%) blur(6px);
+  }
+
+  .header-inner {
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 0.875rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--fg);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.0625rem;
+    letter-spacing: -0.01em;
+    flex-shrink: 0;
+  }
+
+  .brand:hover {
+    text-decoration: none;
+    color: var(--fg);
+  }
+
+  .brand-mark {
+    color: var(--accent);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .header-inner {
+      padding: 0.75rem 1rem;
+    }
+
+    .header-right {
+      gap: 0.5rem;
+    }
+  }
+</style>

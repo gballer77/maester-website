@@ -1,0 +1,74 @@
+---
+import '../styles/global.css';
+import { site } from '../config/site';
+import { withBase } from '../lib/url';
+import { themeInitScript } from '../scripts/theme-init';
+import MetaTags from '../components/seo/MetaTags.astro';
+import SkipLink from '../components/shell/SkipLink.astro';
+import Header from '../components/shell/Header.astro';
+import Footer from '../components/shell/Footer.astro';
+
+interface Props {
+  /** Page title. Required — build fails per gspec/features/seo-metadata.md §4 P0. */
+  title: string;
+  /** Page description. Required for SEO; pass site.description for the default. */
+  description: string;
+  ogImage?: string;
+  type?: 'website' | 'article';
+  /** Add wide gutters on the main content. Set false for full-bleed pages like docs. */
+  contained?: boolean;
+}
+
+const { title, description, ogImage, type = 'website', contained = true } = Astro.props;
+
+// Runtime validation. TS guards at build time when strict mode is on, but
+// the requirement is "build fails with a clear error identifying the
+// offending page" — make sure that happens loudly regardless of TS strictness.
+if (!title || !description) {
+  throw new Error(
+    `BaseLayout: missing required SEO metadata on ${Astro.url.pathname}. ` +
+      `title=${JSON.stringify(title)} description=${JSON.stringify(description)}. ` +
+      `Every page must declare both — see gspec/features/seo-metadata.md §4.`,
+  );
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
+    <script is:inline set:html={themeInitScript} />
+    <MetaTags title={title} description={description} ogImage={ogImage} type={type} />
+    <slot name="head" />
+  </head>
+  <body>
+    <SkipLink />
+    <Header />
+    <slot name="headerSlot" />
+    <main id="main" class:list={['site-main', { contained }]}>
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style is:global>
+  .site-main.contained {
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem;
+  }
+
+  .site-main:not(.contained) {
+    width: 100%;
+  }
+
+  @media (max-width: 768px) {
+    .site-main.contained {
+      padding: 2rem 1rem;
+    }
+  }
+</style>

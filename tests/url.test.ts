@@ -33,6 +33,12 @@ describe('withBase', () => {
   it('leaves tel: URLs unchanged', () => {
     expect(withBase('tel:+15555550100')).toBe('tel:+15555550100');
   });
+
+  it('is idempotent on already-base-prefixed paths', () => {
+    expect(withBase('/maester-website/about')).toBe('/maester-website/about');
+    expect(withBase('/maester-website')).toBe('/maester-website');
+    expect(withBase('/maester-website/')).toBe('/maester-website/');
+  });
 });
 
 describe('absoluteUrl', () => {

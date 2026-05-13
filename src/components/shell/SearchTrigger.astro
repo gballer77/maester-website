@@ -1,0 +1,103 @@
+---
+// Header search trigger. Phase 1 stub — the button is visible with the
+// ⌘K / Ctrl+K hint, but pressing it does not open anything yet.
+// The palette and shortcut handler are wired in Phase 8 (docs-search).
+//
+// We render the button now (rather than later) so the header layout
+// is final from Phase 1 onward and doesn't shift when search lands.
+---
+
+<button
+  type="button"
+  class="search-trigger"
+  aria-label="Search documentation"
+  data-search-trigger
+  disabled
+>
+  <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"></circle>
+    <path
+      d="m20 20-3.5-3.5"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      fill="none"></path>
+  </svg>
+  <span class="search-trigger-label">Search</span>
+  <kbd class="search-trigger-kbd"><span class="kbd-mac">⌘</span><span class="kbd-pc">Ctrl</span>K</kbd>
+</button>
+
+<script>
+  // Show the correct modifier hint based on platform. Done client-side
+  // because the server-rendered HTML is the same for everyone.
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.test(navigator.platform);
+  document.documentElement.classList.toggle('is-mac', isMac);
+</script>
+
+<style>
+  .search-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--elevated);
+    border: 1px solid var(--border);
+    color: var(--fg-muted);
+    padding: 0.4375rem 0.625rem 0.4375rem 0.5rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    cursor: not-allowed;
+    min-height: 40px;
+    transition:
+      color 120ms ease,
+      background 120ms ease,
+      border-color 120ms ease;
+  }
+
+  .search-trigger:not([disabled]) {
+    cursor: pointer;
+  }
+
+  .search-trigger:not([disabled]):hover {
+    color: var(--fg);
+    border-color: var(--border-strong);
+  }
+
+  .search-trigger-label {
+    margin-right: 1.5rem;
+  }
+
+  .search-trigger-kbd {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--fg-muted);
+    padding: 0.125rem 0.4375rem;
+    border-radius: var(--radius-sm);
+    line-height: 1;
+  }
+
+  /* Mac users see ⌘; everyone else sees Ctrl. Toggled by the platform script. */
+  .kbd-pc {
+    display: inline;
+  }
+  .kbd-mac {
+    display: none;
+  }
+  :global(html.is-mac) .kbd-pc {
+    display: none;
+  }
+  :global(html.is-mac) .kbd-mac {
+    display: inline;
+  }
+
+  @media (max-width: 768px) {
+    .search-trigger-label,
+    .search-trigger-kbd {
+      display: none;
+    }
+    .search-trigger {
+      padding: 0.5rem;
+    }
+  }
+</style>

@@ -56,49 +56,49 @@ This matters now because the site's first deliverables (landing page, about, doc
 
 ## 4. Capabilities
 
-- [ ] **P0**: Every page renders inside a consistent shell with a header at the top and a footer at the bottom
+- [x] **P0**: Every page renders inside a consistent shell with a header at the top and a footer at the bottom
   - Navigating between any two pages preserves the header and footer without flicker or relayout
   - The shell's structure is defined in one base layout, not duplicated per page
   - Pages declare their main content area; the shell wraps it
 
-- [ ] **P0**: The header displays the project name and primary navigation
+- [x] **P0**: The header displays the project name and primary navigation
   - Project name (and optional icon/wordmark) is visible on every page and links to the home page
   - Primary navigation lists the site's top-level sections — at minimum: Home, Docs, Examples, Changelog, About
   - Clicking a nav item navigates to that section without a full page rebuild artifact (i.e., no flash of missing nav)
 
-- [ ] **P0**: The current section is visually indicated in the primary nav
+- [x] **P0**: The current section is visually indicated in the primary nav
   - When the user is on a page belonging to a top-level section, that section's nav item shows an active state (e.g., underline, bold, color change)
   - Active state is determined by the page's URL path, not hardcoded per page
   - Only one nav item is active at a time
 
-- [ ] **P0**: Navigation is fully usable on mobile viewports
+- [x] **P0**: Navigation is fully usable on mobile viewports
   - Below a defined breakpoint, the inline nav collapses into a menu trigger (e.g., a button)
   - Activating the trigger opens a touch-friendly menu surface that lists all primary nav items
   - The menu can be closed via the trigger, an explicit close affordance, or by tapping a nav item
   - Menu state does not leak between pages
 
-- [ ] **P0**: The footer shows project credits and external links
+- [x] **P0**: The footer shows project credits and external links
   - Footer includes project name, copyright/license line, and a link out to the source repository
   - Footer includes a link to the package registry listing for the project
   - Footer remains visible at the bottom of every page
 
-- [ ] **P0**: The shell is fully responsive across common device sizes
+- [x] **P0**: The shell is fully responsive across common device sizes
   - Layout adapts cleanly to desktop (1024px+), tablet (768px), and mobile (375px) viewports
   - No horizontal scrolling on any viewport
   - Header and footer remain readable and usable at all sizes
 
-- [ ] **P1**: Keyboard users can skip directly to main content
+- [x] **P1**: Keyboard users can skip directly to main content
   - A "skip to main content" link is the first focusable element on every page
   - The link is visually hidden until focused, then becomes clearly visible
   - Activating the link moves focus and scrolls to the page's main content region
 
-- [ ] **P1**: The shell uses semantic HTML landmarks
+- [x] **P1**: The shell uses semantic HTML landmarks
   - The header uses a `<header>` element with a `role` or implicit landmark
   - The primary nav uses a `<nav>` element with an accessible name
   - The footer uses a `<footer>` element
   - The main content region uses a `<main>` element with a stable id
 
-- [ ] **P2**: The shell exposes a slot or mechanism for per-page extensions
+- [x] **P2**: The shell exposes a slot or mechanism for per-page extensions
   - A page can inject content into a defined slot (e.g., a sub-header, breadcrumb area) without modifying the shell itself
   - When a page does not use the slot, the slot collapses cleanly without visual artifacts
 

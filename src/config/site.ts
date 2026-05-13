@@ -31,9 +31,10 @@ export const site = {
   installCommand: 'npm install -g @baller.software/maester',
 
   // Default Open Graph image. Resolved through withBase() at emit time.
-  // TODO: replace placeholder with a designed 1200×630 asset before
-  //       public promotion (see gspec/architecture.md §9.10).
-  defaultOgImage: '/og-default.png',
+  // TODO: replace SVG placeholder with a designed 1200×630 PNG before
+  //       public promotion. SVG works on most major social platforms but
+  //       PNG is more universally supported. See gspec/architecture.md §9.10.
+  defaultOgImage: '/og-default.svg',
 
   // Top-level navigation order. Active state in PrimaryNav.astro matches
   // the longest prefix of Astro.url.pathname against each item's href.

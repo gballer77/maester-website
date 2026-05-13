@@ -1,0 +1,41 @@
+---
+// Per gspec/features/seo-metadata.md: every page emits title, description,
+// canonical URL, Open Graph tags, and Twitter card tags. Pages declare
+// title and description via Astro.props; OG image and other tags fall back
+// to site-wide defaults from src/config/site.ts.
+
+import { site } from '../../config/site';
+import { absoluteUrl } from '../../lib/url';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  type?: 'website' | 'article';
+}
+
+const { title, description, ogImage, type = 'website' } = Astro.props;
+
+// Site-wide title pattern: "<page title> — Maester". Home page passes
+// site.name as its title and uses it bare (no "— Maester" suffix).
+const fullTitle = title === site.name ? title : `${title} — ${site.name}`;
+
+const canonical = absoluteUrl(Astro.url.pathname);
+const image = absoluteUrl(ogImage ?? site.defaultOgImage);
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={image} />
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content={site.name} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={image} />

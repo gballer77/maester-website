@@ -25,6 +25,6 @@ schemaVersion: 2
 baseDir: context
 maesters:
   - name: source-context
-    url: file://~/workspace/baller/maester
+    url: file:///Users/gregoryball/workspace/baller/maester
     ref: main
 ravens: []

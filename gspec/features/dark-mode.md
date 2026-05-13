@@ -56,39 +56,39 @@ This matters now because the theme system shapes the design tokens used by every
 
 ## 4. Capabilities
 
-- [ ] **P0**: The site detects and applies the visitor's system theme preference on first visit
+- [x] **P0**: The site detects and applies the visitor's system theme preference on first visit
   - On a fresh visit (no stored preference), the site reads the operating system's color-scheme preference
   - The applied theme matches the system preference (light or dark)
   - If the OS preference changes during a session and no explicit choice has been stored, the site updates to match
 
-- [ ] **P0**: The header exposes a theme toggle control
+- [x] **P0**: The header exposes a theme toggle control
   - A theme toggle is visible in the header on every page (provided by `[[site-shell]]`)
   - The toggle is keyboard-accessible with a visible focus indicator
   - The toggle has a descriptive accessible name (e.g., "Toggle theme")
   - The toggle's current state is communicated to assistive technologies
 
-- [ ] **P0**: Toggling the theme persists the choice across navigation and reload
+- [x] **P0**: Toggling the theme persists the choice across navigation and reload
   - When the visitor changes the theme via the toggle, the choice is stored locally
   - Subsequent navigations and reloads load the page with the stored choice applied
   - The stored choice persists across browser sessions (subject to standard local-storage retention rules)
 
-- [ ] **P0**: Pages load in the correct theme with no visible flash of the wrong theme
+- [x] **P0**: Pages load in the correct theme with no visible flash of the wrong theme
   - On initial page load, the document renders in the correct theme before paint
   - There is no perceptible flash of light theme on a dark-preferred device (or vice versa)
   - The mechanism that prevents the flash runs without requiring large client-side JavaScript
 
-- [ ] **P0**: Both themes are fully supported across the entire site
+- [x] **P0**: Both themes are fully supported across the entire site
   - Every page renders correctly in both themes
   - All design tokens (colors, borders, shadows) have light and dark variants
   - Text contrast meets WCAG AA in both themes
   - Images and visual elements remain legible in both themes (or are explicitly noted as theme-neutral)
 
-- [ ] **P1**: The toggle exposes a way to revert to "follow system"
+- [x] **P1**: The toggle exposes a way to revert to "follow system"
   - The toggle allows the visitor to clear their explicit choice and return to system-preference mode
   - This may be exposed as a third toggle state (light / dark / system) or via a secondary control
   - When in "follow system" mode, no preference is stored locally
 
-- [ ] **P2**: The theme system gracefully handles storage restrictions
+- [x] **P2**: The theme system gracefully handles storage restrictions
   - If local storage is unavailable (e.g., private browsing modes that disallow it), the toggle still works for the current page but the choice is not persisted
   - The site does not raise unhandled errors when persistence fails
 

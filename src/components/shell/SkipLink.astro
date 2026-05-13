@@ -1,0 +1,28 @@
+---
+// First focusable element on every page. Visually hidden until focused.
+// Per gspec/features/site-shell.md §4 (P1): keyboard users can skip
+// directly to main content.
+---
+
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<style>
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 9999;
+    background: var(--accent);
+    color: var(--accent-fg);
+    padding: 0.625rem 1rem;
+    border-radius: 0 0 var(--radius-md) 0;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .skip-link:focus-visible {
+    left: 0;
+    outline: 2px solid var(--fg);
+    outline-offset: 2px;
+  }
+</style>

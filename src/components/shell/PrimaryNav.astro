@@ -1,0 +1,93 @@
+---
+// Desktop primary navigation. The active state matches the longest prefix
+// of Astro.url.pathname against each item's href, so /docs/concepts/x
+// highlights "Docs". Home matches only on the exact root path.
+//
+// Per gspec/features/site-shell.md §4 P0: "Active state is determined by
+// the page's URL path, not hardcoded per page. Only one nav item is active
+// at a time."
+
+import { site } from '../../config/site';
+import { withBase } from '../../lib/url';
+
+function normalize(path: string): string {
+  return path.replace(/\/+$/, '') || '/';
+}
+
+// Strip the configured base path so we compare nav hrefs (which are written
+// without the base) against the same shape of path.
+function stripBase(path: string): string {
+  const base = site.basePath.replace(/\/+$/, '');
+  if (base && path.startsWith(base)) {
+    const remainder = path.slice(base.length);
+    return normalize(remainder || '/');
+  }
+  return normalize(path);
+}
+
+const currentPath = stripBase(Astro.url.pathname);
+
+function isActive(href: string): boolean {
+  const target = normalize(href);
+  if (target === '/') return currentPath === '/';
+  return currentPath === target || currentPath.startsWith(target + '/');
+}
+---
+
+<nav class="primary-nav" aria-label="Primary">
+  <ul>
+    {
+      site.nav.map((item) => {
+        const active = isActive(item.href);
+        return (
+          <li>
+            <a
+              href={withBase(item.href)}
+              aria-current={active ? 'page' : undefined}
+              class:list={[{ active }]}
+            >
+              {item.label}
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</nav>
+
+<style>
+  .primary-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .primary-nav a {
+    color: var(--fg-muted);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    padding: 0.375rem 0;
+    border-bottom: 2px solid transparent;
+    transition: color 120ms ease;
+    text-decoration: none;
+  }
+
+  .primary-nav a:hover {
+    color: var(--fg);
+    text-decoration: none;
+  }
+
+  .primary-nav a.active {
+    color: var(--fg);
+    border-bottom-color: var(--accent);
+  }
+
+  @media (max-width: 768px) {
+    .primary-nav {
+      display: none;
+    }
+  }
+</style>
