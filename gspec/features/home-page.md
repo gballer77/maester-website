@@ -139,8 +139,8 @@ This matters now because the landing page is the entry point for every other pro
   - No copyable install snippet appears in this subsection; the install affordance remains the hero install CTA and the quick-start section, and install detail is deferred to the documentation section
   - The subsection is preceded by no new kicker tag (the section's existing kicker already covers the AI-workflows theme), preserving the home page's one-kicker-per-section rhythm
 
-- [x] **P0**: A three-step quick start section shows the minimal init → publish → sync workflow
-  - Three numbered step cards explain the init / publish / sync sequence with a short description and a code snippet for each
+- [x] **P0**: A two-step quick start section shows the minimal init → sync workflow
+  - Two numbered step cards explain the init / sync sequence with a short description and a code snippet for each; the init card notes that the same command writes either `citadel.yaml` or `maester.yaml` depending on which repo it is run in
   - A prominent install-command affordance appears at the bottom of the section (mirroring the hero's install CTA)
   - Together with the hero install CTA, this section satisfies the install/usage snippet capability; a standalone install-snippet section is no longer required
 
