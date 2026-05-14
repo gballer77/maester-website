@@ -24,5 +24,5 @@ schemaVersion: 1
 baseDir: context
 sources:
   - name: source-context
-    url: file:///Users/gregoryball/workspace/baller/maester
+    url: https://github.com/gballer77/maester
     ref: main
