@@ -73,7 +73,7 @@ import citadelIllustration from '../../assets/illustration/citadel.png';
         src={citadelIllustration}
         alt=""
         widths={[360, 560, 720, 920, 1200, 1600, 2000, 2400, 3000]}
-        sizes="(max-width: 768px) 360px, (max-width: 1399px) 560px, (max-width: 1800px) 900px, (max-width: 2400px) 1200px, (max-width: 3000px) 1500px, 1700px"
+        sizes="(max-width: 768px) 100vw, (max-width: 1399px) 560px, (max-width: 1800px) 900px, (max-width: 2400px) 1200px, (max-width: 3000px) 1500px, 1700px"
         format="webp"
         quality={82}
         loading="eager"
@@ -353,8 +353,12 @@ import citadelIllustration from '../../assets/illustration/citadel.png';
       gap: 1.75rem;
       padding-inline: 1.375rem;
     }
+    .hero-illustration {
+      margin-inline: -1.375rem;
+    }
     .hero-illustration :global(img) {
-      max-width: 360px;
+      max-width: none;
+      width: 100%;
     }
     .figlet {
       font-size: 10px;
