@@ -147,6 +147,21 @@ import citadelIllustration from '../../assets/illustration/citadel.png';
 
   .hero-text {
     min-width: 0;
+    position: relative;
+    isolation: isolate;
+  }
+  .hero-text::before {
+    content: '';
+    position: absolute;
+    inset: -2.5rem -4rem;
+    z-index: -1;
+    background: radial-gradient(
+      ellipse 70% 80% at 50% 55%,
+      var(--bg) 0%,
+      color-mix(in srgb, var(--bg) 75%, transparent) 38%,
+      transparent 72%
+    );
+    pointer-events: none;
   }
 
   .hero-illustration {
