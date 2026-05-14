@@ -1,0 +1,32 @@
+---
+title: System docs for a spec-driven SOA
+description: Aggregate per-service specs and changelogs from many service repos into one citadel so system-wide documentation, release notes, and architecture summaries can be generated against the whole platform.
+date: 2026-05-14
+categories: [Advanced, Recipes]
+---
+
+A service-oriented system splits cleanly into deployables — and every artifact that explains the *system* (rather than one service) ends up scattered across the same number of repositories.
+
+## The scenario
+
+A team running a service-oriented architecture ships each service from its own repository, with its own deploy cycle and its own spec-driven workflow — a `specs/` (or `gspec/`) directory describing what the service does, plus a `CHANGELOG.md` tracking what it has done. The discipline is healthy at the service level: every change has a spec, every release has a note.
+
+The trouble starts one level up. Anything that needs to describe the *system* — an architecture overview, a quarterly release summary, a "what does this platform actually do" page for new hires — has to be assembled by hand from material the team has already written, just in different repos. AI assistants asked to summarize, search, or reason across the whole platform run into the same wall.
+
+## How this example handles it
+
+One citadel collects exactly the artifacts that describe each service. For every service repo, the citadel's source declares an `includes` list that pulls in the spec files and the changelog and nothing else — no service source code, no test fixtures, no build configs:
+
+- `specs/**/*.md` from each service repo
+- `CHANGELOG.md` from each service repo
+
+The resulting tree is a system map written in the same vocabulary the teams already use: one directory per service, each containing the canonical statement of what it does and the canonical record of what changed. Add a new service, add a new source entry; retire one, drop the entry.
+
+## What it gets you
+
+- **System-wide documentation, generated.** An AI agent reading the citadel can produce an up-to-date architecture overview, a service catalog, or a "how do these services fit together" page — grounded in specs written by the teams that own each service rather than guessed from code.
+- **One changelog across N deployables.** A release summary that covers every service is a walk across the aggregated `CHANGELOG.md` files — useful for stakeholder updates, quarterly reviews, and incident retrospectives.
+- **No central docs to drift.** Because the system view is rebuilt from the per-service sources, it cannot fall out of sync independently — the only way to change the system docs is to change the underlying specs and changelogs, exactly where the team is already working.
+- **Per-service autonomy preserved.** Each service team owns its repo, its spec format, and its release cadence. The citadel adds a system view without pulling anything back to a monorepo.
+
+> Spec-driven SOA pairs naturally with aggregation: the artifacts that describe each service are already structured, already authored, and already updated alongside the code. A citadel just makes them addressable as one thing.
