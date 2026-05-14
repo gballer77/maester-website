@@ -1,6 +1,9 @@
 # Maester citadel sync output
 .maester/
-context/
+context/*
+!context/source-context/
+context/source-context/*
+!context/source-context/CHANGELOG.md
 
 # Astro build output
 dist/
