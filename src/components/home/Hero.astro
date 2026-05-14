@@ -73,7 +73,7 @@ import citadelIllustration from '../../assets/illustration/citadel.png';
         src={citadelIllustration}
         alt=""
         widths={[360, 560, 720, 920, 1200, 1600, 2000, 2400, 3000]}
-        sizes="(max-width: 768px) 360px, (max-width: 1399px) 560px, (max-width: 1800px) 900px, (max-width: 2400px) 1200px, (max-width: 3000px) 1500px, 1700px"
+        sizes="(max-width: 768px) 100vw, (max-width: 1399px) 560px, (max-width: 1800px) 900px, (max-width: 2400px) 1200px, (max-width: 3000px) 1500px, 1700px"
         format="webp"
         quality={82}
         loading="eager"
@@ -147,6 +147,21 @@ import citadelIllustration from '../../assets/illustration/citadel.png';
 
   .hero-text {
     min-width: 0;
+    position: relative;
+    isolation: isolate;
+  }
+  .hero-text::before {
+    content: '';
+    position: absolute;
+    inset: -2.5rem -4rem;
+    z-index: -1;
+    background: radial-gradient(
+      ellipse 70% 80% at 50% 55%,
+      var(--bg) 0%,
+      color-mix(in srgb, var(--bg) 75%, transparent) 38%,
+      transparent 72%
+    );
+    pointer-events: none;
   }
 
   .hero-illustration {
@@ -353,8 +368,12 @@ import citadelIllustration from '../../assets/illustration/citadel.png';
       gap: 1.75rem;
       padding-inline: 1.375rem;
     }
+    .hero-illustration {
+      margin-inline: -1.375rem;
+    }
     .hero-illustration :global(img) {
-      max-width: 360px;
+      max-width: none;
+      width: 100%;
     }
     .figlet {
       font-size: 10px;
