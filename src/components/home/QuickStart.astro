@@ -1,10 +1,10 @@
 ---
-// Quick start: init → publish → sync as three numbered step cards, ending
-// in a prominent install affordance. Anchor `#start` is referenced from
+// Quick start: init → sync as two numbered step cards, ending in a
+// prominent install affordance. Anchor `#start` is referenced from
 // nav and footer. Replaces the previous standalone InstallSnippet.
 //
-// Per gspec/features/home-page.md §4 P0 "A three-step quick start section
-// shows the minimal init → publish → sync workflow."
+// Per gspec/features/home-page.md §4 P0 "A two-step quick start section
+// shows the minimal init → sync workflow."
 
 import Kicker from './Kicker.astro';
 import { site } from '../../config/site';
@@ -17,33 +17,24 @@ import { site } from '../../config/site';
 >
   <header class="section-head">
     <Kicker label="Quick start" />
-    <h2 id="start-heading">Three commands. One citadel.</h2>
+    <h2 id="start-heading">Two commands. One citadel.</h2>
   </header>
 
   <div class="start-steps">
     <article class="step">
       <header>
         <span class="step-num">01</span>
-        <h3>Set up the citadel</h3>
+        <h3>Init the citadel and any sources</h3>
       </header>
-      <p>In the repo that should aggregate your docs.</p>
+      <p>Same command in the aggregator repo and in any repo that should publish to it — it detects the context and writes the right config.</p>
       <pre class="snippet snippet-lg"><span class="mut">$</span> <span class="bold">npx baller-maester init</span>
-<span class="mut"># answers a few questions, writes citadel.yaml</span></pre>
+<span class="mut"># in the citadel → writes citadel.yaml</span>
+<span class="mut"># in a source   → writes maester.yaml</span></pre>
     </article>
 
     <article class="step">
       <header>
         <span class="step-num">02</span>
-        <h3>Publish from each source</h3>
-      </header>
-      <p>In any repo that should publish docs to the citadel.</p>
-      <pre class="snippet snippet-lg"><span class="mut">$</span> <span class="bold">npx baller-maester publish</span>
-<span class="mut"># pick the files this repo publishes, writes maester.yaml</span></pre>
-    </article>
-
-    <article class="step">
-      <header>
-        <span class="step-num">03</span>
         <h3>Sync — and keep syncing</h3>
       </header>
       <p>From the citadel, any time you want a fresh snapshot.</p>
@@ -119,9 +110,10 @@ import { site } from '../../config/site';
 
   .start-steps {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem;
-    margin-bottom: 3rem;
+    max-width: 860px;
+    margin: 0 auto 3rem;
   }
   .step {
     border: 1px solid var(--border);
