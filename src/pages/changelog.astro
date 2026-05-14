@@ -7,22 +7,28 @@ import ReleaseEntry from '../components/changelog/ReleaseEntry.astro';
 import { parseChangelog } from '../lib/changelog';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CHANGELOG_PATH = path.resolve(__dirname, '../../CHANGELOG.md');
+// The changelog page renders the Maester devtool's release notes, which the
+// citadel syncs from the maester source repo into this path. Run
+// `npx baller-maester sync` before building if the file is missing.
+const CHANGELOG_PATH = path.resolve(
+  __dirname,
+  '../../context/source-context/CHANGELOG.md',
+);
 
 let releases: ReturnType<typeof parseChangelog>;
 try {
   const source = readFileSync(CHANGELOG_PATH, 'utf-8');
   releases = parseChangelog(source);
 } catch (err) {
-  // Surface parser errors as a build failure with the offending file path.
-  throw new Error(
-    `Failed to parse ${CHANGELOG_PATH}: ${(err as Error).message}`,
-  );
+  const cause = (err as NodeJS.ErrnoException).code === 'ENOENT'
+    ? `${CHANGELOG_PATH} not found. Run \`npx baller-maester sync\` to populate the citadel before building.`
+    : `Failed to parse ${CHANGELOG_PATH}: ${(err as Error).message}`;
+  throw new Error(cause);
 }
 
 const title = 'Changelog';
 const description =
-  'Release notes for the Maester website — every version, dated, with categorized changes and stable anchor links.';
+  'Release notes for Maester — every version, dated, with categorized changes and stable anchor links.';
 
 // Click-to-copy for release version anchors gets the same UX as the
 // docs heading anchors. Logic lives in a small inline script below.

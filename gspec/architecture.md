@@ -39,7 +39,9 @@ maester-website/                # repo root; Astro project root
 ├── package.json                # Astro, @astrojs/mdx, @astrojs/sitemap, @astrojs/tailwind, tailwindcss, @tailwindcss/typography, prettier, prettier-plugin-astro, vitest, pagefind, gray-matter (for changelog parsing)
 ├── lychee.toml                 # Link/asset integrity checker config (used in CI Test stage)
 ├── pagefind.json               # Pagefind config (optional; defaults usually work)
-├── CHANGELOG.md                # Keep-a-Changelog-format release notes; the changelog page is generated from this
+├── CHANGELOG.md                # Keep-a-Changelog-format release notes for the website itself (not rendered on the changelog page)
+├── citadel.yaml                # Citadel config; `maester sync` populates `context/` (gitignored)
+├── context/                    # Synced citadel output (gitignored); `context/source-context/CHANGELOG.md` is the maester devtool's changelog and is what the changelog page renders
 ├── README.md                   # Per practices.md §4
 ├── DEPLOYMENT.md               # Per practices.md §4
 ├── .github/
@@ -149,7 +151,7 @@ maester-website/                # repo root; Astro project root
 | Docs layout                      | `src/layouts/DocsLayout.astro`                             |
 | Theme pre-paint script (inline)  | `src/scripts/theme-init.ts` (imported as raw string and emitted into `<head>` by `BaseLayout`) |
 | Global stylesheet & tokens       | `src/styles/global.css` (`:root` light, `[data-theme="dark"]` dark) |
-| Changelog source                 | `CHANGELOG.md` at repo root                                |
+| Changelog source                 | `context/source-context/CHANGELOG.md` (synced from the maester devtool repo by `maester sync`; gitignored) |
 | Sitemap (generated)              | `dist/sitemap-index.xml` via `@astrojs/sitemap`            |
 | robots.txt (generated)           | `dist/robots.txt` via `astro.config.mjs` integration or a static `public/robots.txt` (see §8) |
 | CI workflow                      | `.github/workflows/deploy.yml`                             |
@@ -271,7 +273,7 @@ Introduced by: [[examples-page]].
 
 #### ChangelogEntry / ChangeEntry
 
-Parsed from `CHANGELOG.md` at the repo root by `src/lib/changelog.ts`. The parser walks the AST (via `remark-parse` or a regex pass against the Keep-a-Changelog grammar) and returns an array of `ChangelogEntry`. The build fails if any release is malformed (missing date, unknown category heading, unparseable version).
+Parsed from `context/source-context/CHANGELOG.md` — the maester devtool's changelog as synced into the citadel — by `src/lib/changelog.ts`. The parser walks the AST (via `remark-parse` or a regex pass against the Keep-a-Changelog grammar) and returns an array of `ChangelogEntry`. The build fails if the file is missing (run `maester sync` first) or if any release is malformed (missing date, unknown category heading, unparseable version).
 
 Expected `CHANGELOG.md` shape:
 
