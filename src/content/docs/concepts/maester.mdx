@@ -5,7 +5,7 @@ group: Concepts
 order: 1
 ---
 
-A **maester** is any git repository that publishes documentation for
+A **maester** is any repository that publishes documentation for
 aggregation. The maester owns its publish surface: it decides which files
 to share via a single `maester.yaml` at the repository root.
 
@@ -21,19 +21,23 @@ Maesters invert that. Each repository's maintainers decide what is
 "public" for documentation purposes, declare it in plain YAML, and review
 changes to that surface alongside their code changes.
 
-## Generating the manifest
+## Creating the manifest
 
-From the root of a source repo, run the top-level entry point and pick
-**"Configure this repo as a maester"** from the menu:
+Three ways, from the root of the source repo:
 
-```bash
-npx baller-maester
-```
-
-The walkthrough collects one or more entries (path or glob, plus optional
-description, category, tags, and [state](/docs/concepts/document-state))
-and writes a `maester.yaml` at the repo root. It scaffolds no scripts —
-the maester is purely a published manifest.
+- **The walkthrough.** Run `npx baller-maester` and pick **"Configure
+  this repo as a maester"** (or run `maester publish`). It collects one
+  or more entries — path or glob, plus optional description, category,
+  tags, and [state](/docs/concepts/document-state) — and writes
+  `maester.yaml`. It scaffolds no scripts.
+- **Your coding agent.** Install the
+  [Publisher](/docs/concepts/publisher) skill and ask your agent to
+  "set this repo up as a maester". It inspects the repo, proposes a
+  full manifest, and writes only what you approve.
+- **Commands.** `maester publish add | remove | update | list` edit one
+  entry at a time, and `maester publish apply` applies a whole change
+  set atomically — see the
+  [CLI reference](/docs/cli-reference#maester-publish).
 
 ## The publish manifest
 
@@ -53,9 +57,21 @@ documents:
 ```
 
 Each entry declares a path or glob, plus optional `description`,
-`category`, `tags`, and `state`. Citadels can use those hints to organise
-their view; nothing about the publish manifest forces a particular
-consumer.
+`category`, `tags`, and `state`. When a citadel copies a matched file,
+`state`, `category`, and `tags` are **stamped into the file itself**,
+so every reader — human or agent — can classify it just by opening it.
+See [Document state, category and tags](/docs/concepts/document-state).
+
+## Publishing the whole repository
+
+A `maester.yaml` with `documents: []` — or no `maester.yaml` at all —
+means "publish everything". Citadels then surface every file except
+build output, dependencies, binaries, and large files, as
+**symlinks** rather than copies.
+
+Going from "everything" to a list of documents narrows what every
+citadel receives, so the editing commands ask you to confirm it
+(`--acknowledge-narrowing`).
 
 ## Resident vs traveling
 
@@ -73,18 +89,25 @@ Both forms end up in the same place — files materialised in the citadel
 under the source's destination — and are processed by the same sync
 command. See [Citadels](/docs/concepts/citadel) for the citadel side.
 
+Traveling maesters can also bring **live** data rather than files:
+[connectors](/docs/concepts/connectors) expose services such as issue
+trackers to agents as tools.
+
 ## What gets pulled
 
 A citadel that registers a resident maester pulls only the files listed
 in the publish manifest — not the entire repository. That keeps sync
 fast and avoids surfacing files that the source didn't intend to share.
 
+A maester doesn't have to be a git remote: a citadel can read one
+straight from a local directory with a `path:` source.
+
 ## Document state
 
 Each entry can carry an optional `state` of `canon` or `draft`. Every
 file matched by the entry inherits that state when sync materialises
 it in the citadel — so downstream readers can tell stable references
-from work in progress. Individual files can override the entry's state
-inline (markdown frontmatter, an HTML comment, a YAML key, or a
-plain-text first line). See [Document state](/docs/concepts/document-state)
-for the full resolution rules.
+from work in progress. Individual files can override the entry inline
+(markdown frontmatter, HTML comments, YAML/JSON keys, or leading lines
+in a text file). See [Document state, category and
+tags](/docs/concepts/document-state) for the full resolution rules.

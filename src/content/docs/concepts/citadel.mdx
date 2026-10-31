@@ -6,28 +6,33 @@ order: 2
 ---
 
 A **citadel** is a directory that aggregates documentation from many
-source repositories. The directory has a `citadel.yaml` at its root
-listing the sources to pull from, and a destination tree (by default
-under `citadel/`, configurable via `baseDir`) where the synced content
+sources. The directory has a `citadel.yaml` at its root listing the
+sources to pull from, and a destination tree (by default under
+`citadel/`, configurable via `baseDir`) where the synced content
 materialises.
 
-## Two modes of source
+## Kinds of source
 
-Every entry in a citadel's `sources` list is a git repository. What
-differs is *who decides which files materialise*:
+A source is either a **git repository** (`url:`) or a **directory on
+this machine** (`path:`). What differs between sources is *who decides
+which files materialise*:
 
-- **Manifest-driven** — the entry has no `includes` list. The remote
-  repo publishes its own `maester.yaml` declaring what it makes
-  available, and the citadel consumes exactly that surface. The source
+- **Manifest-driven** — the entry has no `includes` list, and the
+  source publishes its own `maester.yaml` declaring what it makes
+  available. The citadel consumes exactly that surface. The source
   owns the contract.
 - **Includes-driven** — the entry declares its own `includes` list of
   paths and globs. The citadel owns the filter set directly. Use this
   mode for public third-party repos or repos you have read access to
   but don't own (a [traveling
   maester](/docs/concepts/maester#resident-vs-traveling)).
+- **Whole-repository** — no `includes`, and the source has no
+  `maester.yaml` (or one with `documents: []`). Every file is
+  surfaced, minus build output, dependencies, binaries, and anything
+  you list in `excludes`.
 
-Both modes are processed by the same `maester sync` command. If
-`includes` is set, the remote's `maester.yaml` is ignored even when
+All three are processed by the same `maester sync` command. If
+`includes` is set, the source's `maester.yaml` is ignored even when
 present.
 
 ## Configuration example
@@ -48,18 +53,38 @@ sources:
     includes:
       - 'README.md'                                # state defaults to draft
       - { path: 'docs/**/*.md', state: draft }     # explicit draft
-      - { path: 'docs/v3/**/*.md', state: canon }  # v3 is ratified
+      - { path: 'docs/v3/**/*.md', state: canon, category: style-guide }
+  # Whole-repository: linked, never copied.
+  - name: handbook
+    url: https://github.com/your-org/handbook
+    excludes: [archive/**]
+  # A sibling checkout on this machine.
+  - name: platform-docs
+    path: ../platform-docs
 ```
 
 With `baseDir: context`, the example above surfaces as
-`context/source-context/` and `context/external-style-guide/`. Omitting
-`baseDir` uses the default `citadel/`. Per-source `destination`
-overrides win over both.
+`context/source-context/`, `context/external-style-guide/`, and so on.
+Omitting `baseDir` uses the default `citadel/`. Per-source
+`destination` overrides win over both.
 
-`includes` entries accept the bare string form (`'README.md'`) or the
-object form (`{ path, state }`) — use the object form to tag the entry
-with a [document state](/docs/concepts/document-state) of `canon` or
-`draft`.
+See [Configuration](/docs/configuration#citadelyaml) for every field.
+
+## Copied or linked
+
+How a source's files land depends on what you'd want to commit:
+
+| Source | Lands as | Commit it? |
+| ------ | -------- | ---------- |
+| Git, manifest- or includes-driven | **Copies**, with [state, category and tags](/docs/concepts/document-state) stamped inline | Yes |
+| Git, whole-repository | **Symlinks** into the local cache at `.maester/cache/<name>/` | No — gitignored automatically |
+| Local, `mode: link` (default) | **Symlinks** to the live files | No — gitignored automatically |
+| Local, `mode: copy` | **Copies**, with metadata stamped inline | Yes |
+
+Linked content is a view of something you already have, so it's kept
+out of git; edits to a linked local source show through immediately.
+For agents that won't follow symlinks, `maester mcp` exposes
+`citadel__list_linked_documents` and `citadel__read_linked_document`.
 
 ## Where content lands
 
@@ -83,10 +108,11 @@ the upstream restructures. The run still succeeds; the destination is
 left in a clean empty state.
 
 Each source's destination also carries a small provenance marker
-recording the remote URL, ref, resolved commit SHA, and active filter
-set — the same data
+(`.maester-source.json`) recording where the content came from, the
+resolved commit (or, for local sources, a content fingerprint), the
+mode, and the active filter set — the same data
 [`maester status`](/docs/cli-reference#maester-status) uses to decide
-whether a source is behind.
+whether a source is behind. Commit it alongside copied content.
 
 ## Checking freshness
 
@@ -97,8 +123,16 @@ can ask:
 maester status
 ```
 
-Status reads the provenance markers, resolves each source's configured
-ref against the remote, and reports `up-to-date`, `behind`, or
-`failed` for each. It never touches the working tree. Pair it with
+Status reads the provenance markers and reports `up-to-date`,
+`behind`, or `failed` for each source. Git sources are checked against
+their remote; local sources are compared on disk, with no network
+call. It never touches the working tree. Pair it with
 [`maester sync`](/docs/cli-reference#maester-sync) when something is
 behind.
+
+## More than documents
+
+A citadel can also give agents **live** context: issue trackers and
+other services through [connectors](/docs/concepts/connectors), and
+any third-party MCP server your team uses. They're declared in the
+same `citadel.yaml` and reach every agent host through one MCP entry.

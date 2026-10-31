@@ -1,0 +1,132 @@
+---
+title: Connectors and MCP servers
+description: Traveling maesters bring live data — issue trackers and third-party MCP servers — to every agent host through one maester MCP entry.
+group: Concepts
+order: 5
+---
+
+Synced documents answer "what did we decide?". Some questions need
+**live** data instead: "what's open on the payments board?", "what did
+the on-call ticket say?". A citadel can provide that too, through two
+kinds of **traveling maester** declared in `citadel.yaml`:
+
+- **Connectors** — built-in integrations (today: GitLab Issues) whose
+  operations become agent tools.
+- **MCP servers** — any third-party MCP server your team already uses,
+  declared once and shared with every agent host.
+
+Both are served by `maester mcp`, a stdio MCP server that agent hosts
+start from the registration the [Grand Maester](/docs/concepts/grand-maester)
+installs. One `maester` entry per host carries everything.
+
+## Connectors
+
+```yaml
+connectors:
+  - name: team-issues
+    type: gitlab-issues
+    description: Issues for the payments service.
+    auth: { type: token, envVar: GITLAB_TOKEN }
+    config:
+      project: your-group/your-project
+      host: https://gitlab.example.com   # optional; defaults to gitlab.com
+```
+
+Each operation becomes a tool named `<connector>__<operation>`, with
+dashes turned into underscores:
+
+| Tool | What it does |
+| ---- | ------------ |
+| `team_issues__list_issues` | List issues, filtered by state, labels, assignee, milestone, or free-text search, at most 100 per page. |
+| `team_issues__get_issue` | Fetch one issue by its project-scoped number: title, description, state, labels, assignees, milestone, timestamps, and link. |
+
+Connectors are **read-only**. Results come back in a consistent JSON
+envelope; failures say why (`missing-env-var`, an authentication
+error, or a remote error with GitLab's `Retry-After` when rate-limited).
+
+Add one interactively with `maester connector add`, or with flags:
+
+```bash
+maester connector add --type gitlab-issues --name team-issues \
+  --env-var GITLAB_TOKEN --config '{"project":"your-group/your-project"}'
+```
+
+## MCP servers
+
+```yaml
+mcpServers:
+  - name: code-host                 # tools appear as code_host__<tool>
+    kind: local
+    command: npx
+    args: ['-y', '@example/code-host-mcp']
+    envVars: [CODE_HOST_TOKEN]
+
+  - name: tracker
+    kind: remote
+    url: https://mcp.tracker.example.com/mcp
+    auth: { envVar: TRACKER_TOKEN } # sent as Authorization: Bearer <value>
+    tools: [search_tickets]         # optional allowlist
+
+  - name: wiki
+    kind: remote
+    url: https://mcp.wiki.example.com/mcp
+    register: direct
+```
+
+A server is registered in one of two ways:
+
+| `register` | How agents reach it | Use it when |
+| ---------- | ------------------- | ----------- |
+| `proxy` (default) | `maester mcp` starts or connects to the server and exposes its tools as `<server>__<tool>` under the single `maester` entry. | Almost always — one entry, one place to manage credentials. |
+| `direct` | A separate, maester-managed entry is written into each host's own MCP config. | The server needs the host's own sign-in flow. |
+
+Proxied servers start in parallel with a 10-second timeout each. A
+server that fails only loses its own tools, and the reason is logged
+(`missing-env-var`, `command-not-found`, `connection-refused`,
+`auth-failed`, `timeout`, `protocol-error`, `exited`).
+
+Add one with `maester mcp-server add`, which shows the exact command or
+URL before saving. `maester init` offers both connectors and MCP
+servers as optional steps.
+
+## Credentials
+
+Only env-var **names** ever appear in a file Maester writes —
+`citadel.yaml` and every host config alike. You export the values in
+your shell:
+
+- **Claude Code** and **Codex CLI** get the names in their `maester`
+  MCP entry and pass the values through.
+- **Cursor** has no working pass-through, so it inherits the
+  environment of the shell that launched it; its Grand Maester rule
+  lists the names to export.
+- **Local MCP servers** receive only the names you list in `envVars`,
+  plus basics such as `PATH` and `HOME`.
+
+Connector and MCP server names share one namespace, and `maester` and
+`citadel` are reserved.
+
+## Checking the wiring
+
+| Command | What it tells you |
+| ------- | ----------------- |
+| `maester connector tools` | The exact tool list `maester mcp` would expose, without starting a session. Add `--servers` to start proxied servers and list theirs. |
+| `maester mcp-server check` | Starts each proxied server outside an agent session and reports its tools, or why it failed. Exits `1` on any failure. |
+| `maester connector refresh --dry-run` | Per agent host: which env-var names would be forwarded and which connector or server needs each, without writing anything. |
+| `maester connector refresh` | Re-validates `citadel.yaml` and rewrites every host's registration. Run it after editing the file by hand. |
+
+For agent hosts without MCP support, `maester connector exec <name>
+<operation> [--key value …]` runs one operation and prints the same
+JSON envelope.
+
+## How agents use live data
+
+The Grand Maester tells the agent to treat connector output as
+**live, point-in-time** data: cite issue numbers and links, don't
+present it as settled documentation, and remember it can change
+between calls. It doesn't list your connectors — the agent discovers
+them through MCP.
+
+See the [configuration reference](/docs/configuration#connectors) for
+every field and the [CLI reference](/docs/cli-reference#maester-connector)
+for every command.

@@ -1,15 +1,22 @@
 ---
-title: Document state
-description: Every file in a citadel is tagged canon or draft so readers — humans and AI agents — can tell stable references from work in progress.
+title: Document state, category and tags
+description: Every copied file in a citadel carries its state (canon or draft), plus an optional category and tags, so readers — humans and AI agents — can classify it just by opening it.
 group: Concepts
 order: 3
 ---
 
-Every file in a citadel carries a **state** of either `canon` or `draft`.
-The state travels with the file: it's written into the file inline at sync
-time so any reader — a human, a coding agent, a CI job — can tell at a
-glance whether a document is a settled reference or a work in progress
-without consulting a separate index.
+Every copied file in a citadel carries up to three inline fields:
+
+| Field      | Values                                          | Default             |
+| ---------- | ----------------------------------------------- | ------------------- |
+| `state`    | `canon` or `draft`                              | `draft`             |
+| `category` | one kebab-case slug, e.g. `spec`, `runbook`     | unset (not written) |
+| `tags`     | a list of kebab-case slugs, e.g. `[api, public]` | unset (not written) |
+
+They travel with the file: sync writes them into the file inline, so
+any reader — a human, a coding agent, a CI job — can tell what a
+document is and how far to trust it without consulting a separate
+index.
 
 ## Why state matters
 
@@ -27,8 +34,6 @@ Tagging each file as `canon` or `draft` resolves both. Agents prefer
 `canon` files when answering authoritatively and mark `draft` citations
 as informational. Humans see the tag in the file itself.
 
-## The two values
-
 | State   | Meaning                                                                        |
 | ------- | ------------------------------------------------------------------------------ |
 | `canon` | Settled. Authoritative. Safe to act on without further confirmation.            |
@@ -38,52 +43,67 @@ as informational. Humans see the tag in the file itself.
 resolves to `draft`. That keeps the bar for `canon` deliberate — files
 become canon because someone said so, not by accident.
 
-## Three ways to declare state
+## Why category and tags
 
-State can be declared in three places, in this order of authority:
+`category` says what *kind* of document a file is — a `spec`, an
+`adr`, a `runbook`. `tags` add cross-cutting labels — `api`,
+`payments`, `external`. Together they let an agent narrow a large
+citadel to the files that matter ("the ADRs about payments") and let
+sync report what each source actually contributed.
+
+Neither has a fixed vocabulary. Reuse the values your sources already
+use; the [Publisher](/docs/concepts/publisher) skill does this for you
+when it drafts a manifest.
+
+## Where values come from
+
+Each field can be declared in three places, in this order of authority:
 
 1. **Inline in the file itself** — wins over everything else.
-2. **A matching rule** — either the maester config (manifest-driven
-   sources) or the citadel config (includes-driven sources).
-3. **The default** — `draft`.
+2. **A matching rule** — a `maester.yaml` entry (manifest-driven
+   sources) or a citadel `includes` entry (includes-driven sources).
+3. **The default** — `draft` for state; nothing for category and tags.
 
 ### Inline
 
-The inline form depends on the file format. Sync recognises four:
+The inline form depends on the file format:
 
 ```yaml
-# Markdown — `state` in YAML frontmatter
+# Markdown — YAML frontmatter
 ---
 title: Architecture notes
 state: canon
+category: reference
+tags: [architecture, payments]
 ---
 ```
 
 ```html
-<!-- HTML — first-content HTML comment -->
+<!-- HTML — a leading block of comments, before the DOCTYPE -->
 <!-- state: draft -->
+<!-- category: spec -->
 <!DOCTYPE html>
 ```
 
 ```yaml
-# YAML / JSON — top-level `state` key
+# YAML / JSON — top-level keys
 state: canon
+category: config
 schemaVersion: 1
 ```
 
 ```text
 state: canon
-A plain-text file's first line declares the state.
+category: notes
+A plain-text file's leading lines declare its fields.
 ```
 
-A file in a format outside this list (a PNG, a PDF, a binary asset)
-is materialised untagged. Sync doesn't fail — it just skips the
-tagging step for that file.
+Files in other formats (images, PDFs, binary assets) are materialised
+untagged. Sync doesn't fail — it just skips the stamping step.
 
 ### Rule in the maester config
 
-A maester can tag every file under a published entry by adding a
-`state` field to that entry:
+A maester can classify every file under a published entry:
 
 ```yaml
 # maester.yaml
@@ -91,17 +111,17 @@ schemaVersion: 1
 documents:
   - path: docs/runbooks/**/*.md
     state: canon            # everything under runbooks is authoritative
+    category: runbook
+    tags: [ops]
   - path: docs/architecture/**/*.md
     state: draft            # the architecture notes are still cooking
+    category: reference
 ```
-
-Every file matched by the entry inherits the entry's state — unless
-the file declares its own inline state, which wins.
 
 ### Rule on a citadel-side `includes` entry
 
 For includes-driven sources (where the citadel owns the filter set)
-each entry can be an object carrying its own state:
+each entry can be an object carrying its own fields:
 
 ```yaml
 # citadel.yaml
@@ -110,39 +130,51 @@ sources:
     url: https://github.com/another-org/style-guide
     ref: main
     includes:
-      - 'README.md'                                # state defaults to draft
-      - { path: 'docs/**/*.md', state: draft }     # explicit draft tag
-      - { path: 'docs/v3/**/*.md', state: canon }  # v3 dir is ratified
+      - 'README.md'                                       # defaults only
+      - { path: 'docs/**/*.md', state: draft }
+      - { path: 'docs/v3/**/*.md', state: canon, category: style-guide, tags: [design] }
 ```
 
-The bare-string form (`'README.md'`) is still valid — it just inherits
-the default state.
+The bare-string form (`'README.md'`) is still valid — it just gets the
+defaults.
 
 ## Resolution at sync time
 
-For each file being materialised, sync resolves state in this order:
+For each file being copied, sync resolves **each field independently**:
 
-1. **Inline state in the source file** — wins. Stamped through to
-   the destination unchanged.
-2. **A matching rule** — the maester-config entry (for manifest-driven
-   sources) or the citadel-side `includes` entry (for includes-driven
-   sources). If exactly one rule matches the file, the rule's state is
-   used.
-3. **Default** — `draft`.
+1. **Inline value in the source file** — wins.
+2. **The first matching rule that sets that field** — so a broad rule
+   early in the list can set `state` while a narrower one later sets
+   `category`.
+3. **Default.**
 
-The resolved state is then written into the destination copy inline
-using the format-specific convention from the "Inline" section above.
-A markdown file that arrives with no frontmatter ends up with a
-`state:` field in newly-added frontmatter; an HTML file ends up with a
-`<!-- state: ... -->` comment near the top. The original source file
-is never modified.
+Inline `tags` replace the rule's list entirely rather than merging.
+An inline value that isn't valid (say, `state: final`) produces a
+warning and falls through to the rule.
 
-When a rule and inline state would have disagreed, sync may emit an
-informational warning so the discrepancy is diagnosable — but the
-inline value still wins. To see the source of truth for every file's
-state on a given run, pass `--verbose` to `maester sync`.
+The resolved values are then written into the destination copy using
+the format's inline convention. A markdown file that arrives with no
+frontmatter ends up with newly added frontmatter; an HTML file ends up
+with a leading comment block. **The original source file is never
+modified, and [linked](/docs/concepts/citadel#copied-or-linked) files
+are never rewritten** — they carry only what's already in the
+original.
 
-## How agents use state
+When a rule and an inline value disagree, sync emits a warning so the
+discrepancy is diagnosable — but the inline value still wins. To see
+every file's values and where each came from, pass `--verbose` to
+`maester sync`. Sync also prints a per-source roll-up:
+
+```
+›    categories: spec 12 · adr 4 · unclassified 3 · tags: 7 distinct
+```
+
+With `--json`, the same data arrives as `categoryBreakdown` and
+`tagRollup`. To check a manifest's effect *before* syncing, run
+[`maester publish preview`](/docs/cli-reference#maester-publish-preview)
+in the source repo.
+
+## How agents use these fields
 
 When the [Grand Maester](/docs/concepts/grand-maester) skill is
 installed, the host AI coding agent is told to:
@@ -150,20 +182,19 @@ installed, the host AI coding agent is told to:
 - treat `canon` files as authoritative when answering;
 - treat `draft` files as informational context only, and mark citations
   as draft when used;
-- read state inline from each file — no external index.
+- read the fields inline from each file — no external index.
 
 The same convention works for humans and other tooling. Anything that
-can read a file can read its state.
+can read a file can read its state, category and tags.
 
 ## Caveats
 
 - **Untagged binary content.** PDFs, images, and other formats without a
-  supported inline convention materialise without a state tag. A future
-  sidecar-metadata mechanism may close that gap.
+  supported inline convention materialise without fields.
 - **The default is `draft` on purpose.** Promoting something to `canon`
   should be a deliberate act. A file that was never tagged anywhere is
   almost certainly not yet canonical.
 - **Inline wins.** If your config says one thing and the file says
-  another, the file wins. That keeps individual documents in control of
-  their own state when an author has explicitly opted in or out of
-  whatever the surrounding rule would have said.
+  another, the file wins. That keeps individual documents in control
+  when an author has explicitly opted in or out of whatever the
+  surrounding rule would have said.

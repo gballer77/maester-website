@@ -37,14 +37,19 @@ pre-read hook.
 
 ## Supported agents
 
-Four targets are supported in v1:
+Four targets are supported:
 
-| Agent | Integration                                                                       |
-| ----- | --------------------------------------------------------------------------------- |
-| Claude Code | A skill plus a `PreToolUse` hook that runs `maester status` before citadel reads. |
-| Codex CLI   | Managed region inside the repo's `AGENTS.md`. Instruction-only.                   |
-| Cursor      | A rules file under `.cursor/rules/grand-maester.mdc`. Instruction-only.           |
-| Generic     | The same managed `AGENTS.md` block — any agent that reads project-level instructions can use it. |
+| Target (`--target`) | Integration |
+| ------------------- | ----------- |
+| `claude-code` | A skill at `.claude/skills/grand-maester/SKILL.md` plus a `PreToolUse` hook that runs `maester status` before citadel reads. |
+| `codex`       | A skill at `.agents/skills/grand-maester/SKILL.md`. Instruction-only. |
+| `cursor`      | A rules file at `.cursor/rules/grand-maester.mdc`. Instruction-only. |
+| `agents-md`   | A managed region in the repo's `AGENTS.md` — any agent that reads project-level instructions can use it. |
+
+For Claude Code, Codex CLI, and Cursor, installing also registers
+Maester's MCP server in that host's project config (`.mcp.json`,
+`.codex/config.toml`, `.cursor/mcp.json`) — see
+[Live tools](#live-tools).
 
 You can install for one target or several in the same run. The
 artifacts go into the citadel-bearing repository and are safe to
@@ -143,6 +148,29 @@ The check is intentionally cheap. It uses status's documented
 exit-code contract (network only — no clone, no destination writes)
 so the cost of running it before every read is negligible.
 
+## Live tools
+
+Every host the Grand Maester is installed for gets one `maester` MCP
+entry, which runs `maester mcp` in the citadel. Through it the agent
+can call:
+
+- **[Connector](/docs/concepts/connectors) tools** such as
+  `team_issues__list_issues` — live data the agent is told to cite by
+  identifier and treat as point-in-time.
+- **Proxied third-party MCP server tools**, as `<server>__<tool>`.
+- **`citadel__list_linked_documents` and
+  `citadel__read_linked_document`**, when the citadel has
+  [linked](/docs/concepts/citadel#copied-or-linked) sources, for
+  agents that won't follow symlinks. The instructions also explain
+  what a dangling link means (the cache or original is gone; sync
+  restores it).
+
+Credentials are forwarded by env-var **name** only. Claude Code and
+Codex CLI receive the names in their MCP entry; Cursor inherits the
+environment of the shell that launched it, so its rule lists the
+names to export. The `agents-md` target documents
+`maester connector exec` as a fallback for agents without MCP.
+
 ## Managed regions and upgrades
 
 Every artifact the Grand Maester writes contains a clearly marked
@@ -162,7 +190,7 @@ To add a new target to an existing install without reinstalling the
 others, use `add-target`:
 
 ```bash
-maester skill add-target --target cursor
+maester skill add-target cursor
 ```
 
 ## What it isn't
@@ -182,9 +210,13 @@ maester skill add-target --target cursor
 
 ## See also
 
-- [Document state](/docs/concepts/document-state) — what `canon` and
-  `draft` mean and how they get into each file.
+- [Document state, category and tags](/docs/concepts/document-state)
+  — what `canon` and `draft` mean and how they get into each file.
 - [`maester status`](/docs/cli-reference#maester-status) — the
   freshness check the Grand Maester runs before reads.
 - [`maester skill`](/docs/cli-reference#maester-skill) — the CLI
   surface for installing, upgrading, and adjusting the skill.
+- [Publisher](/docs/concepts/publisher) — the other installable skill,
+  for the repos that *publish* documentation.
+- [Connectors](/docs/concepts/connectors) — the live tools the Grand
+  Maester exposes.

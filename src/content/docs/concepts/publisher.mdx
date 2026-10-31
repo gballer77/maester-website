@@ -1,0 +1,104 @@
+---
+title: The Publisher
+description: An installable agent skill that lets your own coding agent propose a repository's maester.yaml — grounded in the repo, shown to you in full, and written only when you approve.
+group: Concepts
+order: 6
+---
+
+The **Publisher** is an installable agent skill that lets the coding
+agent you already use define a repository's
+[`maester.yaml`](/docs/concepts/maester): which documents to publish,
+and a description, category, tags and state for each.
+
+**Maester never calls a model.** The skill is instructions for your
+agent, plus a set of read-only commands it grounds itself with and one
+validated command it writes through. You see the full proposal before
+anything is written.
+
+## Installing
+
+From the root of the repository that publishes documentation — no
+citadel needed:
+
+```bash
+npx baller-maester skill install --skill publisher
+```
+
+Pick one or more targets:
+
+| Target | Installed as |
+| ------ | ------------ |
+| `claude-code` | `.claude/skills/maester-publisher/SKILL.md` |
+| `codex` | `.agents/skills/maester-publisher/SKILL.md` |
+| `cursor` | `.cursor/rules/maester-publisher.mdc` |
+| `agents-md` | Its own managed region in `AGENTS.md`, alongside the Grand Maester's if both are installed |
+
+`maester publish` also offers to install it at the end of its
+walkthrough. Refresh it after upgrading Maester with
+`maester skill upgrade --skill publisher`.
+
+## Using it
+
+Ask your agent something like **"set this repo up as a maester"** or
+**"tidy up maester.yaml"**. The skill walks it through five steps:
+
+1. **Ground itself.** `maester publish list --json` says whether a
+   manifest exists; `maester publish inventory --json` lists candidate
+   documents with their inline metadata, which entry already covers
+   each, the categories and tags already in use, and likely-sensitive
+   files. Inventory never prints file contents.
+2. **Draft a change set** — a JSON list of entries to add, update, and
+   remove.
+3. **Validate it** with `maester publish apply --dry-run`, and check
+   exactly which files each entry would publish with
+   `maester publish preview --from -`.
+4. **Show you the proposal** — one table with path, description,
+   category, tags, state and a one-line rationale per entry, plus what
+   it left out and why, and any category or tag that's new to the repo.
+5. **Write only what you approve** through `maester publish apply`,
+   then point you at `git diff`.
+
+### Create and refine
+
+- **Create** (no manifest yet, or one that publishes everything): the
+  agent proposes a complete set of entries covering the documentation
+  worth sharing, and leaves out generated, vendored, and sensitive
+  files.
+- **Refine** (an existing manifest): the agent proposes only changes —
+  additions for uncovered documents, removals for entries that match
+  nothing, and fill-ins for missing descriptions, categories, or tags.
+  Changing a field that already has a value is listed separately and
+  needs your explicit approval for each one.
+
+## Guardrails
+
+The write path enforces these whether a human or an agent is driving:
+
+- **Atomic and comment-preserving.** A change set applies completely or
+  not at all, after full validation, and keeps comments, key order, and
+  untouched entries byte-for-byte.
+- **Narrowing needs consent.** If the repo currently publishes
+  everything, switching to a list of documents requires
+  `acknowledgeNarrowing` — and the skill tells you that's what it means.
+- **Sensitive paths are refused.** Entries matching likely secrets
+  (`.env` files, keys and certificates, credential stores, `secrets/`
+  directories) need an explicit `allowSensitive`, which the skill never
+  sets unless you ask.
+- **No content edits.** The agent proposes manifest fields only; it
+  never adds frontmatter or edits your documents.
+- **No hand edits.** The skill never edits `maester.yaml` directly.
+
+## Without an agent
+
+Every command the skill uses works on its own — see
+[`maester publish`](/docs/cli-reference#maester-publish) in the CLI
+reference. `maester publish preview` is useful by itself whenever you
+want to know exactly what a manifest publishes.
+
+## See also
+
+- [Maesters](/docs/concepts/maester) — what the manifest is for.
+- [Document state, category and tags](/docs/concepts/document-state)
+  — what the fields mean once a citadel copies your files.
+- [The Grand Maester](/docs/concepts/grand-maester) — the other skill,
+  for repos that *read* a citadel.
