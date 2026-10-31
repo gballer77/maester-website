@@ -41,21 +41,27 @@ It will:
 
 1. Prompt for a `baseDir` — the parent folder under which every
    default-destination source lands (pre-filled with `citadel`).
-2. Prompt for one or more **source repositories** to register, each
-   with a name, git URL, and ref.
+2. Prompt for one or more **sources** to register, asking **"Git
+   repository or local directory?"** for each. A git source takes a
+   name, URL, and ref; a local directory takes a path and whether to
+   link or copy its files.
 3. Per source, offer an optional `includes` list — leave it blank to
-   defer to the remote's own `maester.yaml`, or declare paths/globs
-   directly when the remote has no manifest (a third-party repo, say).
+   use the source's own `maester.yaml` if it has one (otherwise the
+   whole repository is linked), or declare paths/globs directly when
+   the source has no manifest (a third-party repo, say).
 4. Validate any `auth.type` env-var names so secrets never land in
    the `citadel.yaml`.
-5. Add an idempotent `maester:sync` script to `package.json` if one
+5. Optionally register [connectors](/docs/concepts/connectors) and
+   third-party MCP servers, so agents can query live services.
+6. Add an idempotent `maester:sync` script to `package.json` if one
    exists.
-6. Offer a final, recommended-by-default opt-in to install the
+7. Offer a final, recommended-by-default opt-in to install the
    [Grand Maester](/docs/concepts/grand-maester) agent skill — see
    below.
 
 When it's done, you'll have a `citadel.yaml` at the repo root. Commit
-it.
+it. To change it later, use `maester add`, `maester remove`, and
+`maester list` rather than editing the YAML by hand.
 
 ### About the Grand Maester step
 
@@ -95,6 +101,12 @@ paths the source actually publishes. Each source's destination
 receives a small provenance marker recording the remote URL, ref,
 resolved commit SHA, and active filter set.
 
+Published files are **copied** and stamped with their
+[state, category and tags](/docs/concepts/document-state). Sources that
+resolve to the whole repository, and local directories in link mode,
+are **linked** instead and kept out of git — see
+[Copied or linked](/docs/concepts/citadel#copied-or-linked).
+
 ## Check what's behind
 
 Before relying on the citadel — or before an agent reads from it —
@@ -123,11 +135,24 @@ npx baller-maester
 walkthrough writes a `maester.yaml` at the repo root. No scripts are
 scaffolded — the maester is purely a published manifest.
 
+Prefer to let your coding agent draft it? Install the
+[Publisher](/docs/concepts/publisher) skill:
+
+```bash
+npx baller-maester skill install --skill publisher
+```
+
+…then ask the agent to "set this repo up as a maester". It shows you
+the full proposal and writes only what you approve.
+
 ## Next steps
 
 - Learn the [maester / citadel model](/docs/concepts/maester).
-- Understand [document state](/docs/concepts/document-state) (canon
-  vs draft) and how it shapes what agents trust.
+- Understand [document state, category and
+  tags](/docs/concepts/document-state) and how they shape what agents
+  trust.
+- Give agents live data with [connectors and MCP
+  servers](/docs/concepts/connectors).
 - Meet the [Grand Maester](/docs/concepts/grand-maester) — the
   optional agent skill that does the work of integrating the citadel
   into your coding agent.

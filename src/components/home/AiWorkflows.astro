@@ -9,6 +9,7 @@
 
 import { Image } from 'astro:assets';
 import Kicker from './Kicker.astro';
+import { withBase } from '../../lib/url';
 import grandMaesterIllustration from '../../assets/illustration/grand-maester.png';
 ---
 
@@ -137,7 +138,14 @@ import grandMaesterIllustration from '../../assets/illustration/grand-maester.pn
           context surface for whichever coding agent you run. It teaches the
           agent where the citadel lives, prefers <code>canon</code> files over
           <code>draft</code>, and runs <code>maester status</code> before
-          substantial reads so it never answers from a stale corpus.
+          substantial reads so it never answers from a stale corpus. It also
+          hands the agent your live tools — issue trackers and team MCP
+          servers — through one <code>maester</code> MCP entry.
+        </p>
+        <p>
+          Its sibling, the <a href={withBase('/docs/concepts/publisher')}>Publisher</a>,
+          works on the other side: your agent proposes a repo's
+          <code>maester.yaml</code>, and nothing is written until you approve.
         </p>
         <p class="gm-agents-label">Supported agents</p>
         <ul class="gm-agents" aria-label="Supported agents">

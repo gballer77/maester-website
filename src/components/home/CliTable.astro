@@ -29,17 +29,17 @@ const verbs: Verb[] = [
   {
     cmd: 'maester publish',
     role: 'maester',
-    desc: 'Declare which documents this repo publishes. Writes <code>maester.yaml</code>.',
+    desc: 'Declare which documents this repo publishes. Writes <code>maester.yaml</code> — or let your coding agent draft it with the Publisher skill.',
   },
   {
     cmd: 'maester sync',
     role: 'citadel',
-    desc: 'Fetch every configured source. Idempotent, atomic, parallelised. Honours <code>--json</code>.',
+    desc: 'Fetch every configured source — git or local. Idempotent, atomic, parallelised. Pass a name to sync just one.',
   },
   {
-    cmd: 'maester sync <name>',
-    role: 'scoped',
-    desc: 'Sync a single source by name. Useful for fast iteration on one connection.',
+    cmd: 'maester status',
+    role: 'citadel',
+    desc: 'Read-only freshness check. Exit <code>0</code> fresh, <code>1</code> behind, <code>2</code> failed — built for CI and agents.',
   },
 ];
 

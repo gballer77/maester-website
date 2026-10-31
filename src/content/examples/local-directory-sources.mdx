@@ -1,0 +1,42 @@
+---
+title: Docs from a sibling checkout
+description: Pull documentation straight from a directory on your machine — linked for live edits, or copied for a committable snapshot — with no git round-trip.
+date: 2026-10-30
+categories: [Configuration, Recipes]
+---
+
+You're editing a service's design docs in one checkout and want your agent, working in another repo, to see them *now* — not after you push, merge, and sync.
+
+## The scenario
+
+Your platform team keeps its docs in `platform-docs`, checked out next to the app you're working on. A git source would only see what's been pushed. You want the citadel to read the working copy directly, and you also keep a team handbook in a folder that isn't a git repo at all.
+
+## How this example handles it
+
+Declare the sources with `path:` instead of `url:`:
+
+```yaml
+# citadel.yaml
+schemaVersion: 1
+sources:
+  # Linked (default): one symlink per file, gitignored.
+  - name: platform-docs
+    path: ../platform-docs
+
+  # Copied: a committable snapshot, stamped with state/category/tags.
+  - name: handbook
+    path: ${HANDBOOK_HOME}
+    mode: copy
+    includes:
+      - '**/*.md'
+```
+
+`maester sync` links every file `platform-docs` publishes (from its own `maester.yaml`, if it has one) and copies the handbook's Markdown. No git, no cache, no network.
+
+## What it gets you
+
+- **Edits show through immediately.** A linked file *is* the original; only adding or removing files needs another sync.
+- **A snapshot when you want one.** `mode: copy` gives teammates and CI the same files, committed alongside your code.
+- **Status still works.** `maester status` compares on disk and reports `local-changed` when the files have moved on since the last sync — or `source-missing` if the directory is gone.
+
+> Linked sources are machine-specific by design, so they stay out of git. Paths can be relative, absolute, `~/…`, or built from an environment variable so each teammate can point at their own checkout.

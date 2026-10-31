@@ -1,0 +1,38 @@
+---
+title: Let your agent draft maester.yaml
+description: Install the Publisher skill and have your coding agent propose a repository's publish manifest — grounded in the repo, reviewed by you, written atomically.
+date: 2026-10-30
+categories: [Setup, Recipes]
+---
+
+A repository with forty markdown files, three doc folders, and an `.env` nobody should ever publish. Writing its `maester.yaml` by hand means auditing every directory. Your coding agent can do the audit; you just review it.
+
+## The scenario
+
+The billing service has never published anything, so every citadel that pulls it gets the whole repository. You want a curated manifest — overview, ADRs, runbooks — with sensible descriptions and categories that match what other repos already use.
+
+## How this example handles it
+
+Install the Publisher skill once, in the service repo:
+
+```bash
+npx baller-maester skill install --skill publisher --target claude-code
+```
+
+Then ask the agent: *"Set this repo up as a maester."* It runs `maester publish inventory`, drafts a change set, checks it with `maester publish apply --dry-run` and `maester publish preview`, and shows you something like:
+
+| Path | Description | Category | State | Why |
+| ---- | ----------- | -------- | ----- | --- |
+| `README.md` | Billing service overview | `readme` | `canon` | Entry point for new readers |
+| `docs/adr/*.md` | Architecture decisions | `adr` | `canon` | 12 ADRs; `adr` already used in 3 files |
+| `docs/runbooks/**/*.md` | On-call runbooks | `runbook` *(new)* | `draft` | Operational docs, still being revised |
+
+It also tells you what it left out — `.env` (sensitive), `dist/` (generated) — and that switching from "publish everything" to a list narrows what every citadel receives. Approve, drop, or edit rows; only what you approve is written.
+
+## What it gets you
+
+- **A grounded proposal, not a guess.** Every row comes from the repo's actual files and the categories and tags already in use.
+- **Nothing written behind your back.** One atomic `maester publish apply` after you approve, preserving any comments you add later.
+- **Safe by construction.** Sensitive paths are refused unless you explicitly allow them, and the agent never edits your documents.
+
+> Run it again later with *"tidy up maester.yaml"*: in refine mode the agent proposes only additions, removals, and missing fields, and asks separately before changing anything you already set.

@@ -20,7 +20,8 @@ import Kicker from './Kicker.astro';
     <p class="lede">
       Same publish contract, same destination, same provenance. The
       difference is <em>where the maester is defined</em> — at the source,
-      or at the citadel.
+      or at the citadel. Either way, the source can be a git remote or a
+      directory on your machine.
     </p>
   </header>
 
@@ -48,7 +49,7 @@ import Kicker from './Kicker.astro';
         </div>
         <div>
           <dt>If the source has no manifest?</dt>
-          <dd>the citadel falls back to the full tree</dd>
+          <dd>the citadel links the whole tree, never copies it</dd>
         </div>
         <div>
           <dt>Reach for it when…</dt>
