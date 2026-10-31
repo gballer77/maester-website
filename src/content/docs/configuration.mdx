@@ -1,6 +1,6 @@
 ---
 title: Configuration
-description: Reference for citadel.yaml and maester.yaml — the two configuration files Maester reads.
+description: Reference for citadel.yaml and maester.yaml — sources, connectors, MCP servers, and the publish manifest.
 group: Reference
 order: 1
 ---
@@ -12,10 +12,15 @@ root of each source repository.
 Both files carry a `schemaVersion` so future tooling can migrate them.
 Current version is `1`.
 
+You rarely need to edit either file by hand. `maester init`,
+`maester add | remove | list`, and `maester publish …` create and edit
+them through the same prompts and validators — see
+[Editing your config](#editing-your-config).
+
 ## citadel.yaml
 
-The aggregator's configuration. Lists the sources to pull from and
-where their content lands.
+The aggregator's configuration. Lists the sources to pull from, where
+their content lands, and any live services agents can query.
 
 ```yaml
 schemaVersion: 1
@@ -35,8 +40,27 @@ sources:
     ref: main
     includes:
       - 'README.md'                              # bare string — state defaults to draft
-      - { path: 'docs/**/*.md', state: draft }   # object form with state
+      - { path: 'docs/**/*.md', state: draft, category: reference }
       - { path: 'docs/v3/**/*.md', state: canon } # ratified subset
+  # Whole-repository: no includes, and the remote has no maester.yaml.
+  - name: handbook
+    url: https://github.com/your-org/handbook
+    excludes:
+      - archive/**
+  # Local directory: no git, no network.
+  - name: platform-docs
+    path: ../platform-docs
+connectors:
+  - name: team-issues
+    type: gitlab-issues
+    auth: { type: token, envVar: GITLAB_TOKEN }
+    config:
+      project: your-group/your-project
+mcpServers:
+  - name: tracker
+    kind: remote
+    url: https://mcp.tracker.example.com/mcp
+    auth: { envVar: TRACKER_TOKEN }
 ```
 
 ### Top-level fields
@@ -45,7 +69,9 @@ sources:
 | --------------- | ------- | -------- | ---------------------------------------------------------------------------- |
 | `schemaVersion` | integer | yes      | Schema version. Current version is `1`.                                       |
 | `baseDir`       | string  | no       | Parent folder for sources whose `destination` is unset. Default: `citadel`.    |
-| `sources`       | list    | yes      | The remote git repositories this citadel pulls from. At least one entry.      |
+| `sources`       | list    | yes      | Where documents come from: git repositories or local directories. At least one entry. |
+| `connectors`    | list    | no       | Live services exposed to agents as MCP tools. See [Connectors](#connectors).   |
+| `mcpServers`    | list    | no       | Third-party MCP servers shared with every agent host. See [MCP servers](#mcp-servers). |
 
 `baseDir` is validated by the same path-safety rules as a per-source
 `destination`: it must be repo-relative, with no leading `/` and no
@@ -58,29 +84,92 @@ directories under the old base alone for you to remove manually.
 
 ### Per-source fields
 
-Every entry in `sources[]` accepts:
+Every entry in `sources[]` declares **exactly one** of `url` (a git
+repository) or `path` (a directory on this machine), plus:
 
-- `name` — unique slug; becomes the destination folder name (unless
-  `destination` is set).
-- `url` — git URL (`https://`, `ssh://`, `file://`, or `git@host:path`).
-- `ref` — optional branch, tag, or commit SHA. Defaults to the
-  remote's default branch.
-- `includes` — optional list of include entries. **When set, the
-  citadel owns the filter set and the remote `maester.yaml` is not
-  consulted. When unset, sync looks for a `maester.yaml` on the
-  remote and uses its paths.** An empty `includes` array is rejected.
-- `destination` — optional override for the output path. Wins over
-  `baseDir`.
-- `auth` — optional credentials object. `auth.envVar` names the env
-  var that holds the token; the value itself never lands in YAML.
-- `description`, `tags` — optional metadata surfaced in `--verbose`
-  output.
+| Field         | Applies to | Description |
+| ------------- | ---------- | ----------- |
+| `name`        | all        | Unique kebab-case slug; becomes the destination folder name unless `destination` is set. |
+| `url`         | git        | `https://`, `ssh://`, or `git@host:path`. |
+| `ref`         | git        | Branch, tag, or commit SHA. Defaults to the remote's default branch. |
+| `auth`        | git        | `{ type: token, envVar: NAME }` — the *name* of the env var holding the token; the value never lands in YAML. |
+| `path`        | local      | Repo-relative, absolute, `~/…`, or `${ENV_VAR}/…`. |
+| `mode`        | local      | `link` (default) or `copy`. See [Local directories](#local-directories). |
+| `includes`    | all        | Declares the filter set; see [How a source picks its files](#how-a-source-picks-its-files). An empty list is rejected. |
+| `excludes`    | all        | Globs to skip — **whole-repository mode only**. Ignored, with a warning, in the other modes. |
+| `destination` | all        | Output path override. Wins over `baseDir`. |
+| `description`, `tags` | all | Optional metadata shown by `maester list` and `--verbose` output. |
 
-The two source modes — manifest-driven (no `includes`) and
-includes-driven (`includes` set) — are processed by the same sync
-command. Use includes-driven sources for public third-party repos or
-repos you have read access to but do not own (see
-[traveling maesters](/docs/concepts/maester#resident-vs-traveling)).
+`ref` and `auth` are rejected on local sources; `mode` is rejected on
+git sources.
+
+### How a source picks its files
+
+Each source resolves to one of three modes, checked in this order:
+
+1. **Includes-driven** — `includes` is set. The citadel owns the
+   filter set; the remote `maester.yaml` is not consulted. Use it for
+   public third-party repos or repos you can read but don't own (see
+   [traveling maesters](/docs/concepts/maester#resident-vs-traveling)).
+2. **Manifest-driven** — no `includes`, and the source has a
+   `maester.yaml` listing at least one document. The source owns its
+   publish surface.
+3. **Whole-repository** — no `includes`, and the source has no
+   `maester.yaml` (or one with `documents: []`). Every file is
+   surfaced, minus the built-in excludes and your `excludes`.
+
+A `maester.yaml` that fails validation is always an error — it never
+falls back to whole-repository mode.
+
+### Whole-repository sources are linked, not copied
+
+Whole-repository content is never committed into the citadel. Sync
+fills the destination with **one symbolic link per file**, pointing
+into the local cache at `.maester/cache/<name>/`, and adds the
+destination to `.gitignore` the first time. Deleting `.maester/`
+leaves the links dangling: `maester status` reports `cache-missing`
+and the next sync restores them.
+
+These are always skipped (`maester sync --help` prints the list):
+
+- VCS, dependency and build directories — `.git`, `node_modules`,
+  `vendor`, `.venv`, `__pycache__`, `dist`, `build`, `target`,
+  `coverage`, `.next`, `.cache`, `.maester`, and similar.
+- Binary files (a NUL byte in the first 8000 bytes) and files over
+  1 MiB.
+
+To get a committable copy instead, declare `includes` on the source
+or publish a `maester.yaml` from it.
+
+### Local directories
+
+A source with `path:` reads straight from a directory on this machine —
+a sibling checkout, a notes folder, anything you're editing locally.
+It picks its files exactly like a git source.
+
+```yaml
+sources:
+  # Linked (default): symlinks to the live files, gitignored.
+  - name: platform-docs
+    path: ../platform-docs
+
+  # Copied: a committable snapshot, refreshed on each sync.
+  - name: handbook
+    path: ${HANDBOOK_HOME}
+    mode: copy
+    includes:
+      - '**/*.md'
+```
+
+- **`mode: link`** creates one symlink per file and gitignores the
+  destination. Edits show through immediately; adding or removing
+  files needs a sync.
+- **`mode: copy`** copies only the resolved files and stamps inline
+  metadata, like a git source. It requires declared paths (`includes`
+  or a manifest) — whole-directory copies are refused.
+- **Guards:** a `path` may not sit inside, or contain, the citadel's
+  base directory or any destination. A missing directory or unset
+  `${VAR}` fails only that source.
 
 ### `includes` entry forms
 
@@ -88,14 +177,15 @@ Each entry in an `includes` list can take two shapes:
 
 ```yaml
 includes:
-  - 'README.md'                              # bare string
-  - { path: 'docs/**/*.md', state: draft }   # object with state
+  - 'README.md'                                    # bare string
+  - { path: 'docs/**/*.md', state: draft }         # object with metadata
+  - { path: 'docs/adr/*.md', category: adr, tags: [architecture] }
 ```
 
-The bare-string form is shorthand for `{ path: '<value>' }`. Use the
-object form when you want to tag the entry with a
-[document state](/docs/concepts/document-state) of `canon` or `draft`.
-Mixing the two forms in the same list is fine.
+The bare-string form is shorthand for `{ path: '<value>' }`. The object
+form accepts `state`, `category`, and `tags`, which are
+[stamped into each copied file](/docs/concepts/document-state). Mixing
+the two forms in the same list is fine.
 
 ### Destination resolution
 
@@ -108,6 +198,66 @@ For each source, sync resolves the destination in this order:
 Destination collisions across sources (two sources resolving to the
 same directory) are rejected at config-validation time, before any
 sync work begins.
+
+### Connectors
+
+A connector registers a live external service — a
+[traveling maester](/docs/concepts/connectors) — whose operations
+agents call as MCP tools through `maester mcp`.
+
+```yaml
+connectors:
+  - name: team-issues            # tools appear as team_issues__list_issues, …
+    type: gitlab-issues
+    description: Issues for the payments service.
+    auth: { type: token, envVar: GITLAB_TOKEN }
+    config:
+      host: https://gitlab.com   # optional; defaults to gitlab.com
+      project: your-group/your-project
+```
+
+| Field         | Required | Description |
+| ------------- | -------- | ----------- |
+| `name`        | yes      | Kebab-case slug; the prefix of every tool the connector exposes. |
+| `type`        | yes      | Connector type. Built in: `gitlab-issues` (`list-issues`, `get-issue`). |
+| `auth`        | no       | `{ type: token, envVar: NAME }` — names only, never values. |
+| `description` | no       | Prepended to each tool's description. |
+| `config`      | per type | Validated by the type. `gitlab-issues` takes `project` (required) and `host` (HTTPS, optional). |
+
+### MCP servers
+
+Declare a third-party MCP server once and every agent host with the
+[Grand Maester](/docs/concepts/grand-maester) installed gets the same
+tools.
+
+```yaml
+mcpServers:
+  - name: code-host                 # tools appear as code_host__<tool>
+    kind: local
+    command: npx
+    args: ['-y', '@example/code-host-mcp']
+    envVars: [CODE_HOST_TOKEN]      # names only; export the values yourself
+
+  - name: wiki
+    kind: remote
+    url: https://mcp.wiki.example.com/mcp
+    register: direct                # written into each host's own config
+```
+
+| Field         | Applies to | Description |
+| ------------- | ---------- | ----------- |
+| `name`        | all        | Lowercase letters, digits and `-`; at most 32 characters. |
+| `kind`        | all        | `local` (maester starts a command) or `remote` (a Streamable HTTP URL). |
+| `command`, `args` | local  | The executable and its arguments. No shell is used. |
+| `envVars`     | local      | Env-var **names** forwarded to the server. |
+| `url`         | remote     | `https://` (or `http://` for localhost only). |
+| `auth`        | remote     | `{ envVar: NAME, header?: Header-Name }` — sent as `Authorization: Bearer <value>` by default. |
+| `register`    | all        | `proxy` (default: tools appear under maester's own MCP entry) or `direct` (a separate managed entry per host). |
+| `tools`       | all        | Optional allowlist of upstream tool names. |
+| `description` | all        | Optional. |
+
+Connector and MCP server names share one namespace, and `maester` and
+`citadel` are reserved.
 
 ## maester.yaml
 
@@ -134,48 +284,58 @@ documents:
 | Field           | Type    | Required | Description                                                                  |
 | --------------- | ------- | -------- | ---------------------------------------------------------------------------- |
 | `schemaVersion` | integer | yes      | Current version is `1`.                                                       |
-| `documents`     | list    | yes      | The publish list. Each entry declares a `path` (file or glob, repo-relative). |
+| `documents`     | list    | no       | The publish list. Empty or omitted means **publish the whole repository**.    |
 
 Each entry in `documents[]` accepts:
 
 - `path` — file or glob, repo-relative. Leading slashes and `..`
   segments are rejected.
 - `description` — short free-text.
-- `category` — short identifier (e.g. `readme`, `runbook`, `adr`).
-  Citadels can use this to organise their view; the manifest does not
-  enforce a taxonomy.
-- `tags` — list of short identifiers.
-- `state` — optional. `canon` or `draft`. Applies to every file the
-  entry matches. Files can override inline. See
-  [Document state](/docs/concepts/document-state).
+- `category` — one kebab-case slug (e.g. `readme`, `runbook`, `adr`).
+- `tags` — list of kebab-case slugs.
+- `state` — `canon` or `draft`. Omit it to let each file's own header
+  decide.
 
-## Generating either file
+`state`, `category`, and `tags` are written inline into every file the
+entry matches when a citadel copies it; a value already in the file
+wins. See [Document state, category and tags](/docs/concepts/document-state).
 
-You don't have to write these by hand. Run the top-level entry point
-and pick the option you want:
+You can also let your coding agent draft this file — see
+[Publisher](/docs/concepts/publisher).
 
-```bash
-npx baller-maester
-```
+## Editing your config
 
-The menu offers **"Initialize a citadel"** (writes `citadel.yaml` and
-scaffolds a sync entry) and **"Configure this repo as a maester"**
-(writes `maester.yaml`). `maester init` is also a direct subcommand
-for the citadel flow.
+Once a file exists, change it with the same prompts that created it:
+
+| Citadel (`citadel.yaml`) | Maester (`maester.yaml`) |
+| ------------------------ | ------------------------ |
+| `maester add` — add a source | `maester publish add` — add a document |
+| `maester remove` — remove a source | `maester publish remove` — remove a document |
+| `maester list` — table of sources | `maester publish list` — table of documents |
+| `maester connector add`, `remove` | `maester publish update --path …` — change one entry |
+| `maester mcp-server add`, `remove` | `maester publish apply` — apply a change set |
+
+- Edits keep your comments, key order, and every entry you didn't
+  touch, and are written atomically after a full re-validation.
+- `remove` won't delete the last entry: a citadel needs one source,
+  and an empty `documents` list would publish the whole repository.
+- Running `npx baller-maester` with no arguments offers these verbs
+  once a config exists.
 
 ## Validation
 
 Both files are validated before any work begins:
 
-- Unknown fields are tolerated (so older `maester` versions don't
-  break on a newer config) but flagged in `--verbose` output.
-- Required fields with the wrong shape fail validation with a clear,
+- **Unknown fields are rejected**, with the field named in the error.
+- Required fields with the wrong shape fail with a clear,
   field-named error pointing at the offending entry.
-- State values outside `{canon, draft}` are rejected at parse time.
+- `state` values outside `{canon, draft}` and `category` / `tags`
+  values that aren't kebab-case slugs are rejected.
 - Path safety rules (no `..` segments, no leading `/`) apply to
-  `baseDir`, `destination`, `path`, and every `includes.path`.
-- Auth env-var names that look like raw tokens (whitespace, length
-  heuristic) trigger a warning during the init walkthrough.
+  `baseDir`, `destination`, every `includes` / `excludes` entry, and
+  every manifest `path`.
+- Credential fields accept env-var **names** only (uppercase letters,
+  digits, underscores) — a pasted token is rejected.
 
-When validation fails, sync exits with code `2` and no remote
-operations occur.
+When validation fails, `maester sync` exits with code `1` and no
+remote operations occur.

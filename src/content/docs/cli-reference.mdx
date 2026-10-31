@@ -1,6 +1,6 @@
 ---
 title: CLI reference
-description: Commands and flags for the maester CLI — the top-level menu, init, sync, status, skill, and global options.
+description: Commands and flags for the maester CLI — init, sync, status, config editing, publish, connectors, MCP servers, skills, and global options.
 group: Reference
 order: 2
 ---
@@ -16,8 +16,8 @@ There are two ways to invoke Maester:
 - `npx baller-maester` — the **top-level interactive menu**. Detects whether
   the current repo is a citadel, a maester, both, or neither, and
   offers the relevant next step (initialize a citadel, configure this
-  repo as a maester, view existing configuration, install or upgrade
-  the [Grand Maester](/docs/concepts/grand-maester) skill).
+  repo as a maester, add or remove sources and documents, install or
+  upgrade an agent skill).
 - `maester <subcommand>` — direct invocation of a named subcommand
   (e.g. `maester sync`, `maester status`, `maester skill install`).
   Useful for scripts, CI, and once you know which verb you want.
@@ -31,15 +31,27 @@ These flags work on every subcommand:
 
 | Flag                    | Description                                                       |
 | ----------------------- | ----------------------------------------------------------------- |
-| `--verbose`, `-v`       | Log file paths, env detection results, and skip reasons.          |
-| `--quiet`               | Print only failures and the final summary line.                   |
-| `--json`                | Emit machine-readable NDJSON output instead of styled console UI. |
+| `--verbose`             | Log file paths, per-file metadata and its source, and skip reasons. |
+| `--quiet`               | Print only errors and the final summary line.                     |
+| `--json`                | Emit machine-readable output — one JSON object per line.           |
+| `--color`, `--no-color` | Force colored output on or off.                                   |
+| `--theme <theme>`       | `dark` or `light`, overriding detection.                          |
 | `--no-welcome`          | Suppress the banner on `--help`, `--version`, and first run.      |
 | `--help`, `-h`          | Show command help and exit.                                       |
-| `--version`             | Print the installed Maester version and exit.                     |
+| `--version`, `-V`       | Print the installed Maester version and exit.                     |
 
 The `MAESTER_NO_WELCOME=1` environment variable has the same effect as
 `--no-welcome`.
+
+## Command map
+
+| Area | Commands |
+| ---- | -------- |
+| Citadel setup | [`init`](#maester-init), [`add`, `remove`, `list`](#maester-add-remove-list) |
+| Keeping content fresh | [`sync`](#maester-sync), [`status`](#maester-status) |
+| Publishing (a maester) | [`publish`](#maester-publish) and its sub-verbs |
+| Live services | [`connector`](#maester-connector), [`mcp-server`](#maester-mcp-server), [`mcp`](#maester-mcp) |
+| Agent skills | [`skill`](#maester-skill) |
 
 ## maester init
 
@@ -54,26 +66,45 @@ maester init
 
 The walkthrough collects:
 
-- One or more **sources** to register, each with a name, git URL, and
-  ref (defaulting to the remote's default branch).
-- An optional **`includes` list** per source. Sources without
-  `includes` rely on the remote's own `maester.yaml`; sources with
-  `includes` let the citadel own the filter set directly (a
-  [traveling maester](/docs/concepts/maester#resident-vs-traveling)).
+- One or more **sources**. For each, it asks **"Git repository or
+  local directory?"**: a git source takes a URL and ref; a
+  [local directory](/docs/configuration#local-directories) takes a
+  path and a link-or-copy choice.
+- An optional **`includes` list** per source. Skipping it means "use
+  the source's `maester.yaml` if present, otherwise link the whole
+  repository" (see
+  [How a source picks its files](/docs/configuration#how-a-source-picks-its-files)).
 - Per-source **auth**, captured as the *name* of an environment
   variable. The secret value never lands on disk.
-- An optional per-source **destination** override.
-- A top-level **`baseDir`** — the parent folder under which every
-  default-destination source lands. Pre-filled with `citadel` and one
-  keystroke to accept.
+- An optional per-source **destination** override and a top-level
+  **`baseDir`** (pre-filled with `citadel`).
+- Optional **[connectors](/docs/concepts/connectors)** and
+  **[MCP servers](/docs/configuration#mcp-servers)**.
 - A final, recommended-by-default opt-in to **install the
   [Grand Maester](/docs/concepts/grand-maester) agent skill** for one
-  or more target agents (Claude Code, Codex CLI, Cursor, generic
-  `AGENTS.md`). Declining writes zero skill artifacts.
+  or more target agents. Declining writes zero skill artifacts.
 
 The walkthrough is idempotent — re-running it on a repo that already
 has a citadel shows the existing summary and offers safe options
 rather than silently overwriting.
+
+## maester add, remove, list
+
+Edit the sources in an existing `citadel.yaml` without hand-editing
+YAML.
+
+```bash
+maester add       # same prompts as init, for one source
+maester remove    # pick a source to remove
+maester list      # table of sources
+```
+
+- Edits keep comments, key order, and every entry you didn't touch,
+  and are fully re-validated and written atomically.
+- `remove` refuses the last source. It leaves the source's synced
+  folder on disk for you to delete.
+- Exit codes: `0` ok · `1` declined · `2` missing or invalid config,
+  or a refused edit · `130` Ctrl-C.
 
 ## maester sync
 
@@ -81,82 +112,92 @@ Synchronises the configured sources into the citadel's destination
 tree.
 
 ```bash
-maester sync                # all sources
-maester sync source-context # one named source
-maester sync source-a source-b  # several
+maester sync                     # all sources
+maester sync source-context      # one named source
+maester sync source-a source-b   # several
+maester sync --concurrency 8     # more sources in parallel (default 4)
 ```
 
 Sync is **atomic per source**: each source's destination is swapped in
 only after its checkout completes successfully. Individual source
-failures are isolated — other sources still land — but the overall
-exit code is non-zero if any source failed, so the command is
-CI-safe.
+failures are isolated — other sources still land — but the exit code
+is non-zero if any source failed, so the command is CI-safe.
 
 Each source's destination receives a small **provenance marker**
-recording the remote URL, ref, resolved commit SHA, and active filter
-set. The marker is small enough to commit and is what
-[`maester status`](#maester-status) reads to decide whether the
-source is behind.
+(`.maester-source.json`) recording where the content came from, the
+resolved commit or content fingerprint, the mode, and the active
+filter set. [`maester status`](#maester-status) reads it to decide
+whether the source is behind.
 
-### State tagging at sync time
+How each source is materialised depends on its mode:
 
-Sync resolves each file's
-[document state](/docs/concepts/document-state) (`canon` or `draft`)
-in the order **inline → rule → default** and writes the resolved
-state into the destination copy using the format-specific inline
-convention. The original source files are never modified. Files in
-unsupported formats (binary assets, images, PDFs) are materialised
-untagged.
+| Source | Result |
+| ------ | ------ |
+| Git, includes- or manifest-driven | Files **copied**, with metadata stamped inline. Safe to commit. |
+| Git, whole-repository | One **symlink** per file into `.maester/cache/<name>/`; destination gitignored. |
+| Local, `mode: link` | One **symlink** per file into the source directory; destination gitignored. |
+| Local, `mode: copy` | Files **copied**, with metadata stamped inline. |
 
-The per-source sync summary includes counts of `canon`, `draft`, and
-`untagged` files materialised. Pass `--verbose` to see the resolved
-state and source-of-truth (`inline` / `rule` / `default`) for every
-file.
+### Metadata at sync time
+
+For every copied file, sync resolves
+[`state`, `category`, and `tags`](/docs/concepts/document-state) **per
+field** in the order **inline → first matching rule → default**, and
+writes them into the destination copy using the format's inline
+convention. The original source files are never modified. Formats with
+no inline convention (images, PDFs, binaries) are copied untagged, and
+linked files are never rewritten.
+
+A value inline in the file that differs from its rule produces a
+warning (silenced by `--quiet`). `--verbose` shows every file's values
+and where each came from.
 
 ### Sync output
 
-By default, sync prints one line per source as it lands:
+By default, sync prints one line per source, plus a category and tag
+roll-up:
 
 ```
-source-context  →  context/source-context/  (43 files, 218 KB)
-                   canon: 28  draft: 12  untagged: 3
-third-party     →  context/third-party/     (12 files, 41 KB)
-                   canon: 0   draft: 12  untagged: 0
+✓  source-context: added (71ce137)  canon: 0 · draft: 25 · untagged: 0
+›    categories: spec 24 · changelog 1 · tags: none
 ```
 
-With `--json`, each source emits NDJSON records suitable for piping to
-`jq` or another structured-log processor. Each record includes the
-source's filter mode (`manifest` or `includes`) and the state counts.
+Linked sources are labelled `(linked)`, with the reason a source
+resolved to whole-repository mode.
+
+With `--json`, sync emits one JSON object per line: progress events,
+then a result per source carrying `name`, `kind`, `status`,
+`destination`, `commitSha`, `mode`, `filterMode`, state counts,
+`categoryBreakdown`, `tagRollup`, and any warnings.
 
 ### Sync exit codes
 
 | Code | Meaning                                                          |
 | ---- | ---------------------------------------------------------------- |
 | 0    | All sources synced successfully.                                 |
-| 1    | One or more sources failed; see logs for which.                  |
-| 2    | Invalid input — bad `citadel.yaml`, unknown flag, missing arg.   |
-| 3    | Environment problem — missing required env var, git not found.   |
+| 1    | One or more sources failed, or `citadel.yaml` is missing or invalid. |
 
 ## maester status
 
 Read-only check that reports whether each configured source is up to
-date with its remote or behind and needs a sync. **Status never writes
-to the working tree** — agents and CI scripts can call it freely.
+date or behind and needs a sync. **Status never writes to the working
+tree** — agents and CI scripts can call it freely.
 
 ```bash
 maester status                # check every source
 maester status source-context # check one named source
 ```
 
-For each source, status checks three signals:
+A source is `behind` for one or more of these reasons:
 
 | Reason                | Meaning                                                                          |
 | --------------------- | -------------------------------------------------------------------------------- |
-| `never-synced`        | The source has no provenance marker — no prior sync ran. No network call made.    |
-| `remote-ref-advanced` | The configured ref now resolves to a different commit than the recorded one.      |
-| `manifest-changed`    | (Manifest-driven sources only) The remote `maester.yaml` publish surface changed. |
+| `never-synced`        | No provenance marker — no prior sync ran. No network call made.                  |
+| `remote-ref-advanced` | (Git) The configured ref now resolves to a different commit than the recorded one. |
+| `manifest-changed`    | The source's `maester.yaml` publish surface changed, or the source switched filter mode (e.g. a manifest appeared). |
+| `cache-missing`       | (Linked git sources) The `.maester/cache/` copy the links point into is gone.    |
+| `local-changed`       | (Local sources) The files differ from the last sync. No network call made.       |
 
-A source can be flagged for more than one reason in the same run.
 Includes-driven sources skip the `manifest-changed` check (their
 filter set is owned by the citadel, not the remote).
 
@@ -166,10 +207,11 @@ Each source is reported as one of:
 
 - `up-to-date` — matches the recorded provenance for every checked
   signal.
-- `behind` — at least one signal indicates the source needs a sync.
-  The reason is included alongside the verdict.
+- `behind` — at least one reason above applies.
 - `failed` — the check itself couldn't complete (missing env var,
-  network error, unreachable remote). Other sources continue.
+  network error, unreachable remote). A local source whose directory
+  or linked original is gone fails with reason `source-missing`.
+  Other sources continue.
 
 ### Status exit codes
 
@@ -186,13 +228,12 @@ appear in the same run.
 
 ### Machine-readable output
 
-Pass `--json` for structured per-source results suitable for agent and
-CI consumption:
+Pass `--json` for one object per source, then a summary:
 
 ```json
-{"source":"source-context","verdict":"behind","reasons":["remote-ref-advanced"],"recordedSha":"a1b2c3…","resolvedSha":"e4f5g6…"}
-{"source":"third-party","verdict":"up-to-date"}
-{"summary":{"upToDate":1,"behind":1,"failed":0}}
+{"name":"source-context","verdict":"behind","kind":"git","mode":"copy","filterMode":"manifest","reasons":["remote-ref-advanced"],"commitSha":"a1b2c3…","resolvedSha":"e4f5g6…"}
+{"name":"platform-docs","verdict":"up-to-date","kind":"path","mode":"link","filterMode":"manifest"}
+{"type":"summary","upToDate":1,"behind":1,"failed":0}
 ```
 
 Exit-code semantics are identical in both output modes. The
@@ -200,30 +241,165 @@ Exit-code semantics are identical in both output modes. The
 interface — and the exit code — to decide whether to offer a sync
 before reading citadel content.
 
+## maester publish
+
+Configure the current repo as a **maester** — declare what it
+publishes in `maester.yaml`.
+
+```bash
+maester publish   # walkthrough: creates maester.yaml
+```
+
+The walkthrough collects path-or-glob entries with optional
+`description`, `category`, `tags`, and
+[`state`](/docs/concepts/document-state). Finishing with zero entries
+(after a confirmation) writes `documents: []`, which publishes the
+whole repository. At the end it offers to install the
+[Publisher](/docs/concepts/publisher) skill, so your coding agent can
+maintain the manifest for you. If `maester.yaml` already exists, it
+changes nothing and points you at the editing verbs below.
+
+### Editing the manifest
+
+| Command | What it does |
+| ------- | ------------ |
+| `maester publish add` | Add an entry with the walkthrough prompts. With `--path`, runs without prompts. |
+| `maester publish remove` | Pick an entry to remove. With `--path`, runs without prompts. |
+| `maester publish update --path <path>` | Change one entry in place, without prompts. |
+| `maester publish list` | Table of entries. `--json` adds `manifest: none \| whole-repository \| listed`. |
+| `maester publish apply` | Apply a JSON change set in one validated, atomic edit. |
+
+Non-interactive field flags for `add --path` and `update`:
+
+| Flag | Description |
+| ---- | ----------- |
+| `--description <text>` | One-line description. |
+| `--category <slug>` | Category slug. |
+| `--tags <a,b>` | Comma-separated tag slugs. |
+| `--state <canon\|draft>` | Omit to defer to each file's header. |
+| `--unset <field>` | (`update` only, repeatable) Clear `description`, `category`, `tags`, or `state`. |
+| `--create` | (`add` only) Create `maester.yaml` if it doesn't exist. |
+| `--dry-run` | Validate and print the result without writing. |
+| `--acknowledge-narrowing` | Confirm that a whole-repository manifest becomes a list of documents. |
+| `--allow-sensitive` | Allow an entry that matches a likely-sensitive path (`.env`, keys, `secrets/`, …). |
+
+### maester publish apply
+
+Reads a change set from stdin, or from `--from <file>` (`-` for
+stdin), and applies it all-or-nothing:
+
+```bash
+echo '{
+  "add":    [{ "path": "docs/adr/*.md", "category": "adr" }],
+  "update": [{ "path": "README.md", "set": { "description": "Overview" }, "unset": ["tags"] }],
+  "remove": ["old/notes.md"]
+}' | maester publish apply --dry-run --json
+```
+
+- Operations run **remove → update → add**, keyed by each entry's
+  exact `path`.
+- `--create` creates `maester.yaml` when it doesn't exist;
+  `--dry-run` writes nothing.
+- **Guards:** `"acknowledgeNarrowing": true` is required when the
+  repo currently publishes everything (no file, or `documents: []`);
+  `"allowSensitive": true` is required for paths matching likely
+  secrets; the last entry can't be removed.
+- Exit codes: `0` ok · `2` invalid or refused change set. Under
+  `--json`, failures print `{"ok": false, "error": {"field", "path", "message"}}`.
+
+### maester publish inventory
+
+Read-only. Lists candidate documents — honouring `.gitignore` and the
+built-in excludes — with any inline `state` / `category` / `tags`,
+which entry covers each, the categories and tags already in use, a
+per-directory roll-up, and a `sensitive` list of files that are never
+offered as candidates. **It never prints file contents.**
+
+```bash
+maester publish inventory --json
+maester publish inventory --all --limit 500   # every non-excluded file, capped
+```
+
+### maester publish preview
+
+Read-only. Shows exactly which files each entry publishes and the
+`state` / `category` / `tags` each file ends up with, resolved by the
+same code sync uses.
+
+```bash
+maester publish preview                                  # the current manifest
+echo '<change set>' | maester publish preview --from -   # a proposed change
+```
+
+Entries that match nothing are flagged `empty-entry`; entries whose
+files are all published by an earlier entry are flagged `redundant`;
+files matched by several entries list every match. In whole-repository
+mode, preview shows per-directory counts.
+
+## maester connector
+
+Manage [connectors](/docs/concepts/connectors) — live services exposed
+to agents as MCP tools.
+
+| Command | What it does |
+| ------- | ------------ |
+| `maester connector add` | Register a connector. Interactive, or `--type --name --env-var --config <json> [--description]`. |
+| `maester connector remove <name>` | Remove it and refresh every host's MCP entry. |
+| `maester connector list` | Configured connectors and the tool names they expose. |
+| `maester connector refresh` | Re-validate `citadel.yaml` and rewrite each host's MCP registration. Run it after hand edits. `--dry-run` shows, per host, which env-var names would be forwarded and why, writing nothing. |
+| `maester connector tools` | The tool list `maester mcp` would expose, without starting a session. `--servers` also starts proxied MCP servers to list theirs. |
+| `maester connector exec <name> <operation> [args…]` | Fallback for agents without MCP: runs one operation and prints its JSON envelope. |
+
+## maester mcp-server
+
+Manage [third-party MCP servers](/docs/configuration#mcp-servers)
+declared in `citadel.yaml`.
+
+| Command | What it does |
+| ------- | ------------ |
+| `maester mcp-server add` | Declare a server. Interactive, or flags: `--name --kind local\|remote`, then `--command --args --env-var` (local) or `--url --auth-env-var --auth-header` (remote), plus `--register proxy\|direct`, `--tools`, `--description`, `--yes`. Shows the exact command or URL before saving. |
+| `maester mcp-server remove <name>` | Remove it and refresh every host registration. |
+| `maester mcp-server list` | Name, kind, mode, and env-var names. |
+| `maester mcp-server check [names…]` | Start or connect to each proxied server outside an agent session and report its tools, or why it failed (`missing-env-var`, `command-not-found`, `connection-refused`, `auth-failed`, `timeout`, …). Exits `1` if any fails. |
+
+## maester mcp
+
+Runs the stdio MCP server for the citadel. You don't run this
+yourself: agent hosts (Claude Code, Cursor, Codex CLI) start it from
+the project-level MCP config that `skill install` and
+`connector refresh` write. It exposes connector tools, proxied MCP
+server tools (as `<server>__<tool>`), and — when the citadel has a
+linked destination — `citadel__list_linked_documents` and
+`citadel__read_linked_document` for agents that won't follow symlinks.
+
 ## maester skill
 
-Manage the [Grand Maester](/docs/concepts/grand-maester) agent skill.
-Every verb runs from a citadel-bearing repo; running from outside one
-exits with a clear error.
+Install and manage Maester's two agent skills:
 
-The supported v1 targets are `claude-code`, `codex`, `cursor`, and
-`generic` (any agent that reads project-root `AGENTS.md`).
+| `--skill` | What it teaches your agent | Needs a citadel? |
+| --------- | -------------------------- | ---------------- |
+| `grand-maester` | Read the citadel well: state, freshness, connectors. See [Grand Maester](/docs/concepts/grand-maester). | Yes |
+| `publisher` | Define and tidy this repo's `maester.yaml`. See [Publisher](/docs/concepts/publisher). | No |
+
+Without `--skill`, install asks which one when both apply; upgrade and
+status cover every installed skill.
+
+Targets are `claude-code`, `codex`, `cursor`, and `agents-md` (any
+agent that reads a project-root `AGENTS.md`).
 
 ### maester skill install
-
-Install the Grand Maester into the current citadel.
 
 ```bash
 maester skill install                                      # interactive
 maester skill install --target claude-code                 # one target
 maester skill install --target claude-code --target codex  # several
+maester skill install --skill publisher --target cursor    # the Publisher
 ```
 
-Interactive mode shows a multi-select of the v1 targets; flag mode
-skips the prompt. Running install when the skill is already installed
-for the chosen target performs an idempotent refresh — artifacts are
-left byte-identical, user-added content in managed regions is
-preserved.
+Interactive mode shows a multi-select of the targets; flag mode skips
+the prompt. Re-installing an installed target is an idempotent
+refresh. Both skills can share one `AGENTS.md`, each in its own managed
+region.
 
 ### maester skill upgrade
 
@@ -233,43 +409,28 @@ you added outside it survives.
 
 ```bash
 maester skill upgrade
+maester skill upgrade --skill publisher
 ```
-
-Upgrade applies to every target that's already installed. If no
-targets are installed, the command reports that and exits without
-writing anything.
 
 ### maester skill add-target
 
-Add a new target to an existing install without reinstalling the
-others.
+Add a target to an existing install without reinstalling the others.
 
 ```bash
-maester skill add-target --target cursor
+maester skill add-target cursor
 ```
 
-Useful when you started with one agent and want to layer in another.
+### maester skill status
 
-### Switching targets
-
-To switch from one target to another, install the new one and remove
-the old artifacts manually (a clean `uninstall` verb is deferred for
-v1). The targets are independent — each one's artifacts live in its
-own location, so removing one doesn't affect the others.
-
-## Configuring a repo as a maester
-
-To declare what your repo publishes (a "maester"), run:
+Shows, per skill and target, whether it's installed and up to date.
 
 ```bash
-npx baller-maester
+maester skill status
 ```
 
-…and pick **"Configure this repo as a maester"** from the menu. The
-walkthrough collects path-or-glob entries with optional `description`,
-`category`, `tags`, and [`state`](/docs/concepts/document-state) and
-writes a `maester.yaml` at the repo root. No scripts are scaffolded —
-the maester is purely a published manifest.
+To switch targets, install the new one and remove the old artifacts
+manually (there is no `uninstall` verb). Each target's artifacts live
+in their own location, so removing one doesn't affect the others.
 
 ## See also
 
@@ -277,7 +438,10 @@ the maester is purely a published manifest.
   from install to first sync.
 - [Configuration](/docs/configuration) — full schema reference for
   `citadel.yaml` and `maester.yaml`.
-- [Document state](/docs/concepts/document-state) — what `canon` and
-  `draft` mean and how they get resolved.
-- [Grand Maester](/docs/concepts/grand-maester) — the optional agent
-  skill the `skill` verbs install.
+- [Document state, category and tags](/docs/concepts/document-state) —
+  what gets stamped into each file and how it's resolved.
+- [Connectors](/docs/concepts/connectors) — live services and MCP
+  servers for agents.
+- [Grand Maester](/docs/concepts/grand-maester) and
+  [Publisher](/docs/concepts/publisher) — the agent skills the `skill`
+  verbs install.
