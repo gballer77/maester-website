@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Changelog page renders inline Markdown (bold, code, italic, links) in change bullets instead of showing raw `**` and backticks; bullets, category labels, and page header alignment are restyled.
 
+### Changed
+- Changelog page shows each change as a one-line summary (bold lead or first sentence); the full entry text expands on click.
+
 ## [0.2.0] - 2026-05-13
 
 ### Added
