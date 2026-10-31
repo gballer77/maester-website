@@ -74,6 +74,7 @@ This matters now because the moment the project ships a second public release, u
   - Changes are grouped under category headings: Added, Changed, Fixed, Removed, Deprecated, Security
   - Category headings appear only when the release has entries in that category — empty categories are omitted
   - Within each category, individual changes are rendered as a bulleted list
+  - The page stays terse: each change shows a one-line summary (its bold lead or first sentence), with the full entry text available on demand via an expandable disclosure. The source file may be as verbose as needed
 
 - [x] **P0**: Each release entry has a stable anchor link
   - The release's version is used as the anchor id (e.g., `#v1-2-0` or equivalent slug)

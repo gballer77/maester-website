@@ -210,3 +210,58 @@ export function renderInlineMarkdown(text: string): string {
     (_, i: string) => codeSpans[Number(i)],
   );
 }
+
+/** Summaries longer than this fall back to the bullet's bold lead. */
+const MAX_SUMMARY_LENGTH = 100;
+
+/**
+ * Split a change bullet into a terse one-line summary and the remaining
+ * detail. The page shows the summary and tucks the detail behind a
+ * disclosure, so CHANGELOG.md can stay verbose while the page stays
+ * scannable.
+ *
+ * The summary ends at the first sentence break — `.`, `;` or `:` followed
+ * by whitespace, a spaced em dash, or a comma that closes a bold span —
+ * ignoring anything inside code spans or parentheses (so "e.g. foo" in a
+ * parenthetical doesn't split). A closing `**` right after the break stays
+ * with the summary, so `**Config editing verbs.** ...` summarizes as the
+ * bold lead. If that first sentence is still long and the bullet opens with
+ * a bold lead, the bold lead alone is used.
+ */
+export function splitChange(text: string): { summary: string; detail: string } {
+  const split = splitAtFirstBreak(text);
+  if (split.summary.length <= MAX_SUMMARY_LENGTH) return split;
+  const lead = /^\*\*(.+?)\*\*\s*/.exec(text);
+  if (!lead) return split;
+  return {
+    summary: `**${lead[1].replace(/[.;:,]$/, '')}**`,
+    detail: text.slice(lead[0].length).replace(/^[—:]\s*/, ''),
+  };
+}
+
+function splitAtFirstBreak(text: string): { summary: string; detail: string } {
+  let inCode = false;
+  let parens = 0;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '`') inCode = !inCode;
+    if (inCode) continue;
+    if (ch === '(') parens++;
+    else if (ch === ')') parens = Math.max(0, parens - 1);
+    if (parens > 0) continue;
+
+    if (text.startsWith(' — ', i)) {
+      return { summary: text.slice(0, i), detail: text.slice(i + 3).trim() };
+    }
+    const closesBold = text.startsWith('**', i + 1);
+    const isBreak = ch === '.' || ch === ';' || ch === ':' || (ch === ',' && closesBold);
+    if (!isBreak) continue;
+    const end = i + 1 + (closesBold ? 2 : 0);
+    if (end !== text.length && !/\s/.test(text[end])) continue;
+    return {
+      summary: text.slice(0, i) + (closesBold ? '**' : ''),
+      detail: text.slice(end).trim(),
+    };
+  }
+  return { summary: text, detail: '' };
+}

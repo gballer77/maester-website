@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseChangelog, renderInlineMarkdown, CHANGELOG_CATEGORIES } from '../src/lib/changelog';
+import { parseChangelog, renderInlineMarkdown, splitChange, CHANGELOG_CATEGORIES } from '../src/lib/changelog';
 
 const TWO_RELEASE_DOC = `
 # Changelog
@@ -192,5 +192,60 @@ describe('renderInlineMarkdown', () => {
 
   it('leaves snake_case and unsafe link schemes alone', () => {
     expect(renderInlineMarkdown('some_var_name [x](javascript:void)')).toBe('some_var_name x');
+  });
+});
+
+describe('splitChange', () => {
+  it('uses a bold lead as the summary', () => {
+    expect(splitChange('**Config editing verbs.** `maester add` edits sources.')).toEqual({
+      summary: '**Config editing verbs**',
+      detail: '`maester add` edits sources.',
+    });
+  });
+
+  it('uses the first sentence when the bold lead runs into prose', () => {
+    expect(splitChange('**`maester x`** applies a change. It keeps comments.')).toEqual({
+      summary: '**`maester x`** applies a change',
+      detail: 'It keeps comments.',
+    });
+  });
+
+  it('splits on a colon and ignores punctuation in code and parentheses', () => {
+    expect(splitChange('Exports (`src/index.ts`, e.g. `a.b`): `x`, `y`')).toEqual({
+      summary: 'Exports (`src/index.ts`, e.g. `a.b`)',
+      detail: '`x`, `y`',
+    });
+  });
+
+  it('returns the whole text when there is a single sentence', () => {
+    expect(splitChange('**`maester skill install`.**')).toEqual({
+      summary: '**`maester skill install`**',
+      detail: '',
+    });
+    expect(splitChange('Version 1.2.3 ships')).toEqual({ summary: 'Version 1.2.3 ships', detail: '' });
+  });
+});
+
+describe('splitChange lead patterns', () => {
+  it('splits on a spaced em dash', () => {
+    expect(splitChange('**Pretty CLI** styling layer — themed colors')).toEqual({
+      summary: '**Pretty CLI** styling layer',
+      detail: 'themed colors',
+    });
+  });
+
+  it('splits on a comma that closes the bold lead', () => {
+    expect(splitChange('**Links use real paths,** fixing dangling links.')).toEqual({
+      summary: '**Links use real paths**',
+      detail: 'fixing dangling links.',
+    });
+  });
+
+  it('falls back to the bold lead when the first sentence is long', () => {
+    const rest = 'shows ' + 'a lot of words '.repeat(10) + 'here.';
+    expect(splitChange(`**\`maester refresh\`** ${rest}`)).toEqual({
+      summary: '**`maester refresh`**',
+      detail: rest,
+    });
   });
 });
