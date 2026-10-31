@@ -26,7 +26,6 @@ export const site = {
   // already taken.
   cliRepoUrl: 'https://github.com/gballer77/maester',
   cliIssuesUrl: 'https://github.com/gballer77/maester/issues',
-  cliDiscussionsUrl: 'https://github.com/gballer77/maester/discussions',
   cliRegistryUrl: 'https://www.npmjs.com/package/baller-maester',
   cliPackageName: 'baller-maester',
   installCommand: 'npm install -g baller-maester',

@@ -2,7 +2,7 @@
 // "Get involved" section. Per gspec/features/about-page.md §4 P0:
 // links to source repo, issue tracker, and community channels (or explicitly
 // states that none exist). Resolved via gspec/architecture.md §9.12: no
-// dedicated chat/mailing list at this time; GitHub Discussions stands in.
+// dedicated chat/mailing list or Discussions tab; the issue tracker stands in.
 
 import { site } from '../../config/site';
 ---
@@ -20,11 +20,7 @@ import { site } from '../../config/site';
     </li>
     <li>
       <a href={site.cliIssuesUrl} rel="noopener external">Issue tracker</a>
-      <span class="involved-desc">— report a bug, request a feature, or pick up a "good first issue".</span>
-    </li>
-    <li>
-      <a href={site.cliDiscussionsUrl} rel="noopener external">GitHub Discussions</a>
-      <span class="involved-desc">— ask questions and trade configuration tips with other adopters.</span>
+      <span class="involved-desc">— report a bug, request a feature, ask a question, or pick up a "good first issue".</span>
     </li>
   </ul>
 

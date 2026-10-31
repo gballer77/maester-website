@@ -4,7 +4,7 @@
   "sourceName": "source-context",
   "sourceUrl": "https://github.com/gballer77/maester",
   "ref": "main",
-  "commitSha": "71ce1373aea02481ae8fc9dac193262d8b9cf07a",
+  "commitSha": "220adedb4671cbacfe1f3603f2e053ca43cb23c5",
   "mode": "copy",
   "filterMode": "manifest",
   "filterSet": [
@@ -12,5 +12,5 @@
     "gspec/**/*.md",
     "CHANGELOG.md"
   ],
-  "syncedAt": "2026-10-31T01:41:31.440Z"
+  "syncedAt": "2026-10-31T01:45:39.606Z"
 }

@@ -617,7 +617,7 @@ This section captures gaps identified while reading the specs against an impleme
 
 **Why it matters:** Without these, `astro.config.mjs` cannot set `site` or `base`, canonical URLs cannot be emitted, sitemap entries cannot be absolute, and `robots.txt`'s `Sitemap:` directive cannot be written. The lychee CI check cannot validate base-path-prefixed links.
 
-**Resolution:** Website repo is `baller-software/maester-website`. The site is served from GitHub Pages under the custom subdomain `maester.baller.software` (configured via a `public/CNAME` file that Astro copies into `dist/`). Production URL: `https://maester.baller.software`. Base path: `/` (root deployment, not a project-site subpath). These values are recorded in `src/config/site.ts` at implementation time.
+**Resolution:** Website repo is `gballer77/maester-website`. The site is served from GitHub Pages under the custom subdomain `maester.baller.software` (configured via a `public/CNAME` file that Astro copies into `dist/`). Production URL: `https://maester.baller.software`. Base path: `/` (root deployment, not a project-site subpath). These values are recorded in `src/config/site.ts` at implementation time.
 
 #### 9.3 — Product's source repo and package name (CTA + install targets)
 
@@ -625,7 +625,7 @@ This section captures gaps identified while reading the specs against an impleme
 
 **Why it matters:** The home page hero, the install snippet, the footer, and the About page's "Get involved" links all depend on these values. Without them, primary CTAs cannot be wired.
 
-**Resolution:** Product source repo: `https://github.com/baller-software/maester`. Package: `baller-maester` (unscoped — the unscoped `maester` name was already taken on npm). Install snippet: `npm install -g baller-maester`. Run-without-install: `npx baller-maester`. These values are recorded in `src/config/site.ts`.
+**Resolution:** Product source repo: `https://github.com/gballer77/maester`. Package: `baller-maester` (unscoped — the unscoped `maester` name was already taken on npm). Install snippet: `npm install -g baller-maester`. Run-without-install: `npx baller-maester`. These values are recorded in `src/config/site.ts`.
 
 #### 9.4 — Maintainership and governance
 
@@ -687,7 +687,7 @@ This section captures gaps identified while reading the specs against an impleme
 
 **What's missing or ambiguous:** [[about-page]] §4.P0 requires a "Get involved" section that lists community channels — or explicitly states that none exist. No channels are declared anywhere.
 
-**Resolution:** The About page states: "Discussion happens on the source repository's issues and discussions tabs — no dedicated chat or mailing list at this time." Links to `https://github.com/baller-software/maester/issues` and `https://github.com/baller-software/maester/discussions`. The implementing agent can adjust copy in voice.
+**Resolution:** The About page states that there is no dedicated chat or mailing list and that discussion happens on the source repository. It links to the repository and its issue tracker (`https://github.com/gballer77/maester/issues`); the repository has no Discussions tab. The implementing agent can adjust copy in voice.
 
 #### 9.13 — Top-level navigation order and labels
 
