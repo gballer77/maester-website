@@ -4,6 +4,8 @@ context/*
 !context/source-context/
 context/source-context/*
 !context/source-context/CHANGELOG.md
+# Provenance marker: lets `maester sync` recognise its own output on a fresh clone.
+!context/source-context/.maester-source.json
 
 # Astro build output
 dist/

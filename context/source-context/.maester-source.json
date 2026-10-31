@@ -1,0 +1,16 @@
+{
+  "markerVersion": 2,
+  "kind": "git",
+  "sourceName": "source-context",
+  "sourceUrl": "https://github.com/gballer77/maester",
+  "ref": "main",
+  "commitSha": "71ce1373aea02481ae8fc9dac193262d8b9cf07a",
+  "mode": "copy",
+  "filterMode": "manifest",
+  "filterSet": [
+    "maester.yaml",
+    "gspec/**/*.md",
+    "CHANGELOG.md"
+  ],
+  "syncedAt": "2026-10-31T01:41:31.440Z"
+}

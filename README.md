@@ -1,6 +1,6 @@
 # Maester Website
 
-The official site for [Maester](https://github.com/baller-software/maester) — a Node CLI for aggregating documentation from many sources into one central knowledge home. This repository builds and serves the marketing landing page, documentation, examples gallery, and changelog at <https://baller-software.github.io/maester-website>.
+The official site for [Maester](https://github.com/gballer77/maester) — a Node CLI for aggregating documentation from many sources into one central knowledge home. This repository builds and serves the marketing landing page, documentation, examples gallery, and changelog at <https://baller-software.github.io/maester-website>.
 
 The site is a static Astro 5 project. There is no backend, no database, and zero JavaScript shipped on routes that don't need interactivity.
 
@@ -16,7 +16,7 @@ Optional, only needed if you run the integrity check locally:
 ## Local Development
 
 ```sh
-git clone https://github.com/baller-software/maester-website.git
+git clone https://github.com/gballer77/maester-website.git
 cd maester-website
 npm install
 npm run dev

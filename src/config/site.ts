@@ -19,14 +19,14 @@ export const site = {
   basePath: '/',
 
   // This website's source repository.
-  websiteRepoUrl: 'https://github.com/baller-software/maester-website',
+  websiteRepoUrl: 'https://github.com/gballer77/maester-website',
 
   // The Maester CLI's source and distribution. Published under the
   // unscoped name `baller-maester` because the `maester` name on npm was
   // already taken.
-  cliRepoUrl: 'https://github.com/baller-software/maester',
-  cliIssuesUrl: 'https://github.com/baller-software/maester/issues',
-  cliDiscussionsUrl: 'https://github.com/baller-software/maester/discussions',
+  cliRepoUrl: 'https://github.com/gballer77/maester',
+  cliIssuesUrl: 'https://github.com/gballer77/maester/issues',
+  cliDiscussionsUrl: 'https://github.com/gballer77/maester/discussions',
   cliRegistryUrl: 'https://www.npmjs.com/package/baller-maester',
   cliPackageName: 'baller-maester',
   installCommand: 'npm install -g baller-maester',
