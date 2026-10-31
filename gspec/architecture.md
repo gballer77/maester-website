@@ -98,7 +98,8 @@ maester-website/                # repo root; Astro project root
 │   │   ├── examples/
 │   │   │   └── ExampleCard.astro
 │   │   └── changelog/
-│   │       └── ReleaseEntry.astro
+│   │       ├── ReleaseEntry.astro
+│   │       └── ReleaseChanges.astro
 │   ├── content/
 │   │   ├── config.ts           # Zod schemas for `docs` and `examples` collections (see §3)
 │   │   ├── docs/               # One MDX file per docs page
@@ -109,7 +110,8 @@ maester-website/                # repo root; Astro project root
 │   │   └── examples/           # One MDX file per example
 │   │       └── *.mdx
 │   ├── config/
-│   │   └── site.ts             # Single-source site config (URLs, names, base path, maintainer) — see §3 & §8
+│   │   ├── site.ts             # Single-source site config (URLs, names, base path, maintainer) — see §3 & §8
+│   │   └── release-notes.ts    # Hand-written, user-facing note per release for the changelog page
 │   ├── lib/                    # Pure, testable utilities (the unit-test surface)
 │   │   ├── changelog.ts        # Parse CHANGELOG.md → ChangelogEntry[]
 │   │   ├── url.ts              # withBase(path), absoluteUrl(path), isExternal(url)
@@ -152,6 +154,7 @@ maester-website/                # repo root; Astro project root
 | Theme pre-paint script (inline)  | `src/scripts/theme-init.ts` (imported as raw string and emitted into `<head>` by `BaseLayout`) |
 | Global stylesheet & tokens       | `src/styles/global.css` (`:root` light, `[data-theme="dark"]` dark) |
 | Changelog source                 | `context/source-context/CHANGELOG.md` (synced from the maester devtool repo by `maester sync`; gitignored) |
+| User-facing release notes        | `src/config/release-notes.ts` (hand-written outcome summaries per version, shown ahead of the technical changes) |
 | Sitemap (generated)              | `dist/sitemap-index.xml` via `@astrojs/sitemap`            |
 | robots.txt (generated)           | `dist/robots.txt` via `astro.config.mjs` integration or a static `public/robots.txt` (see §8) |
 | CI workflow                      | `.github/workflows/deploy.yml`                             |
@@ -402,7 +405,8 @@ graph TD
 | `home/*`                        | Hero / Concept / Benefits / Install — composition only          | [[home-page]]                                          |
 | `about/*`                       | Story / Mission / Maintainers / Get involved                    | [[about-page]]                                         |
 | `examples/ExampleCard.astro`    | Grid card with title, description, preview, outbound link        | [[examples-page]]                                      |
-| `changelog/ReleaseEntry.astro`  | One release: version heading, date, categorized lists, anchor   | [[changelog-page]]                                     |
+| `changelog/ReleaseEntry.astro`  | One release: version heading, date, user-facing note, anchor    | [[changelog-page]]                                     |
+| `changelog/ReleaseChanges.astro`| A release's categorized technical changes (summary + expandable detail) | [[changelog-page]]                             |
 
 ### Component Patterns
 
