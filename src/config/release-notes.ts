@@ -22,6 +22,13 @@ export interface ReleaseNote {
 }
 
 export const releaseNotes: Record<string, ReleaseNote> = {
+  '0.6.1': {
+    summary: 'Small fixes for scripting and for publishing safely.',
+    highlights: [
+      'Script against your citadel: `maester list --json` now returns your sources as JSON.',
+      'When Maester blocks a sensitive file from being published, it now tells you which file.',
+    ],
+  },
   '0.6.0': {
     summary:
       'Your coding agent can now set up publishing for you, and a citadel can pull from local folders, whole repositories, and other MCP servers.',
