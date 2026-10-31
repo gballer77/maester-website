@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseChangelog, CHANGELOG_CATEGORIES } from '../src/lib/changelog';
+import { parseChangelog, renderInlineMarkdown, CHANGELOG_CATEGORIES } from '../src/lib/changelog';
 
 const TWO_RELEASE_DOC = `
 # Changelog
@@ -166,5 +166,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com).
 - a
 `;
     expect(() => parseChangelog(doc)).toThrow(/anchor id "v1-0-0"/);
+  });
+});
+
+describe('renderInlineMarkdown', () => {
+  it('renders code spans, bold, italic, and links', () => {
+    expect(renderInlineMarkdown('**Bold.** run `a --b` *now* [docs](https://x.dev)')).toBe(
+      '<strong>Bold.</strong> run <code>a --b</code> <em>now</em> <a href="https://x.dev">docs</a>',
+    );
+  });
+
+  it('allows bold to wrap code spans', () => {
+    expect(renderInlineMarkdown('**`maester publish`** applies')).toBe(
+      '<strong><code>maester publish</code></strong> applies',
+    );
+  });
+
+  it('does not apply emphasis inside code spans', () => {
+    expect(renderInlineMarkdown('`**not bold** _x_`')).toBe('<code>**not bold** _x_</code>');
+  });
+
+  it('escapes HTML everywhere', () => {
+    expect(renderInlineMarkdown('<b> and `<file>`')).toBe('&lt;b&gt; and <code>&lt;file&gt;</code>');
+  });
+
+  it('leaves snake_case and unsafe link schemes alone', () => {
+    expect(renderInlineMarkdown('some_var_name [x](javascript:void)')).toBe('some_var_name x');
   });
 });

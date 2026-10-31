@@ -170,3 +170,43 @@ export function parseChangelog(source: string): ChangelogEntry[] {
 
   return releases;
 }
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** Bold, italic, and links within a run of text that contains no code spans. */
+function renderEmphasis(text: string): string {
+  return escapeHtml(text)
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, label: string, href: string) =>
+      /^(https?:|\/|#|mailto:)/i.test(href) ? `<a href="${href}">${label}</a>` : label,
+    )
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^\w*])\*(?!\s)(.+?)\*(?!\w)/g, '$1<em>$2</em>')
+    .replace(/(^|[^\w])_(?!\s)(.+?)_(?!\w)/g, '$1<em>$2</em>');
+}
+
+/**
+ * Render a change bullet's inline Markdown (code spans, bold, italic, links)
+ * to HTML. Changelog bullets are authored as one-line Markdown, so this
+ * covers the inline subset only; all text is HTML-escaped first.
+ *
+ * Code spans are cut out before emphasis is applied so `*` or `_` inside
+ * code never turns into markup, while bold may still wrap a code span
+ * (e.g. **`maester publish`**).
+ */
+export function renderInlineMarkdown(text: string): string {
+  const codeSpans: string[] = [];
+  const withPlaceholders = text.replace(/`([^`]+)`/g, (_, code: string) => {
+    codeSpans.push(`<code>${escapeHtml(code)}</code>`);
+    return `\u0000${codeSpans.length - 1}\u0000`;
+  });
+  return renderEmphasis(withPlaceholders).replace(
+    /\u0000(\d+)\u0000/g,
+    (_, i: string) => codeSpans[Number(i)],
+  );
+}
