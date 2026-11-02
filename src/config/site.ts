@@ -28,6 +28,8 @@ export const site = {
   cliIssuesUrl: 'https://github.com/gballer77/maester/issues',
   cliRegistryUrl: 'https://www.npmjs.com/package/baller-maester',
   cliPackageName: 'baller-maester',
+  // Current released CLI version, shown in the home page hero. Bump on release.
+  cliVersion: '0.6.1',
   installCommand: 'npm install -g baller-maester',
   // Run-without-install bootstrap command, used as the home page's primary
   // hero CTA. The `npx` form is the friction-free first invocation the
